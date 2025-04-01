@@ -40,7 +40,7 @@ namespace Fika.Headless
     [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
     public class FikaHeadlessPlugin : BaseUnityPlugin
     {
-        public const string HeadlessVersion = "1.3.1";
+        public const string HeadlessVersion = "1.3.3";
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
@@ -112,6 +112,7 @@ namespace Fika.Headless
             new SkipRaidSettingsOnlinePvePatch().Enable();
             new WindowBreaker_method_11_Transpiler().Enable();
             new GClass3597_HasItems_Patch().Enable();
+            new HeadlessPatch().Enable();
 
             if (!ShouldBotsSleep.Value)
             {
@@ -237,7 +238,7 @@ namespace Fika.Headless
             FikaPlugin.QuestTypesToShareAndReceive.Value = 0;
             FikaPlugin.ConnectionTimeout.Value = 30;
             FikaPlugin.UseNamePlates.Value = false;
-            FikaPlugin.UseFikaGC.Value = true;
+            FikaPlugin.UseFikaGC.Value = false;
 
             FikaPlugin.Instance.AllowFreeCam = true;
             FikaPlugin.Instance.AllowSpectateFreeCam = true;
