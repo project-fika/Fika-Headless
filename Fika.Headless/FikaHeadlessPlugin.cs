@@ -40,7 +40,7 @@ namespace Fika.Headless
     [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
     public class FikaHeadlessPlugin : BaseUnityPlugin
     {
-        public const string HeadlessVersion = "1.3.3";
+        public const string HeadlessVersion = "1.3.4";
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
@@ -52,6 +52,7 @@ namespace Fika.Headless
                 return SystemInfo.operatingSystemFamily == OperatingSystemFamily.Windows;
             }
         }
+        public bool CanHost { get; internal set; }
 
         private static HeadlessWebSocket FikaHeadlessWebSocket;
         private float gcCounter;
@@ -215,6 +216,12 @@ namespace Fika.Headless
             {
                 throw new NullReferenceException("OnFikaStartRaid: Could not find TarkovApplication!");
             }
+
+            if (!CanHost)
+            {
+                throw new InvalidOperationException("The headless client was not ready to host yet");
+            }
+
             ISession session = tarkovApplication.GetClientBackEndSession();
             if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out LocationSettingsClass.Location location))
             {
@@ -225,16 +232,24 @@ namespace Fika.Headless
             OfflineRaidSettingsMenuPatch_Override.UseCustomWeather = request.CustomWeather;
 
             Logger.LogInfo($"Starting on location {location.Name}");
+            CanHost = false;
             StartCoroutine(BeginFikaStartRaid(request, session, tarkovApplication));
         }
 
         private IEnumerator RunPluginValidation()
         {
+            Logger.LogInfo("Running plugin validation");
             yield return new WaitForSeconds(5);
             VerifyPlugins();
             while (FikaPlugin.OfficialVersion == null)
             {
                 yield return null;
+            }
+
+            WaitForSeconds waitForSeconds = new(1f);
+            while (!CanHost)
+            {
+                yield return waitForSeconds;
             }
 
             FikaPlugin.AutoExtract.Value = true;
@@ -245,6 +260,8 @@ namespace Fika.Headless
 
             FikaPlugin.Instance.AllowFreeCam = true;
             FikaPlugin.Instance.AllowSpectateFreeCam = true;
+
+            Logger.LogInfo("Plugin validation completed");
         }
 
         private void VerifyPlugins()
@@ -290,6 +307,25 @@ namespace Fika.Headless
             invalidPluginsFound = false;
 
             Logger.LogInfo("Plugins verified successfully");
+
+            if (!FikaPlugin.Instance.LocalesLoaded)
+            {
+                StartCoroutine(VerifyLocalesLoaded());
+            }
+            else if (!invalidPluginsFound)
+            {
+                FikaHeadlessWebSocket.Connect();
+            }
+        }
+
+        private IEnumerator VerifyLocalesLoaded()
+        {
+            Logger.LogInfo("Waiting for core locales to be loaded");
+            WaitForSeconds waitForSeconds = new(1f);
+            while (!FikaPlugin.Instance.LocalesLoaded)
+            {
+                yield return waitForSeconds;
+            }
 
             if (!invalidPluginsFound)
             {

@@ -37,6 +37,7 @@ namespace Fika.Headless.Patches
             {
                 ValidationUtil._crashHandler = "FikaHeadless";
                 FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Profile verified");
+                FikaHeadlessPlugin.Instance.CanHost = true;
             }
         }
     }
