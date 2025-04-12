@@ -55,6 +55,7 @@ namespace Fika.Headless
 
         private static HeadlessWebSocket FikaHeadlessWebSocket;
         private float gcCounter;
+        private float gcPoint;
         private Coroutine verifyConnectionsRoutine;
         private bool invalidPluginsFound;
         private int currentRaidCount = 0;
@@ -75,6 +76,8 @@ namespace Fika.Headless
 
             GetHeadlessRestartAfterRaidAmount();
             SetupConfig();
+
+            gcPoint = RAMCleanInterval.Value * 60f;
 
             new DLSSPatch1().Enable();
             new DLSSPatch2().Enable();
@@ -197,10 +200,10 @@ namespace Fika.Headless
         {
             gcCounter += Time.unscaledDeltaTime;
 
-            if (gcCounter > (RAMCleanInterval.Value * 60) && !FikaGlobals.IsInRaid())
+            if (gcCounter > (gcPoint) && !FikaGlobals.IsInRaid())
             {
                 Logger.LogDebug("Clearing memory");
-                gcCounter = 0;
+                gcCounter -= gcPoint;
                 Resources.UnloadUnusedAssets().Await();
                 MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
             }
