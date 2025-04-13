@@ -149,7 +149,22 @@ namespace Fika.Headless
 
             FikaHeadlessWebSocket = new();
 
-            StartCoroutine(RunPluginValidation());
+            _ = Task.Run(RunPluginValidation);
+        }
+
+        private void GetQuestTemplates(Class303 session)
+        {
+            Logger.LogInfo("Getting quest templates");
+            List<RawQuestClass> list = session.method_3<List<RawQuestClass>>(new LegacyParamsStruct
+            {
+                Url = session.gclass1321_0.Main + "/fika/headless/questtemplates",
+                ParseInBackground = true,
+                Params = new Class59<bool>(true),
+                Retries = new byte?(LegacyParamsStruct.DefaultRetries)
+            }).Result;
+            Logger.LogInfo($"Received {list.Count} quest templates");
+
+            GClass3709.Instance.GlobalQuestTemplates.AddRange(list);
         }
 
         private void CleanupLogFiles()
@@ -236,20 +251,19 @@ namespace Fika.Headless
             StartCoroutine(BeginFikaStartRaid(request, session, tarkovApplication));
         }
 
-        private IEnumerator RunPluginValidation()
+        private async Task RunPluginValidation()
         {
             Logger.LogInfo("Running plugin validation");
-            yield return new WaitForSeconds(5);
+            await Task.Delay(5000);
             VerifyPlugins();
             while (FikaPlugin.OfficialVersion == null)
             {
-                yield return null;
+                await Task.Delay(100);
             }
 
-            WaitForSeconds waitForSeconds = new(1f);
             while (!CanHost)
             {
-                yield return waitForSeconds;
+                await Task.Delay(1000);
             }
 
             FikaPlugin.AutoExtract.Value = true;
@@ -262,6 +276,14 @@ namespace Fika.Headless
             FikaPlugin.Instance.AllowSpectateFreeCam = true;
 
             Logger.LogInfo("Plugin validation completed");
+
+            if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+            {
+                Logger.LogWarning("Could not find TarkovApplication");
+                return;
+            }
+
+            GetQuestTemplates((Class303)tarkovApplication.Session);
         }
 
         private void VerifyPlugins()
