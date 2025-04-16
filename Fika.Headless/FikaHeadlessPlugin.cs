@@ -12,6 +12,7 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
+using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
 using Fika.Headless.Patches;
@@ -40,7 +41,7 @@ namespace Fika.Headless
     [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
     public class FikaHeadlessPlugin : BaseUnityPlugin
     {
-        public const string HeadlessVersion = "1.3.4";
+        public const string HeadlessVersion = "1.3.5";
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
@@ -129,9 +130,7 @@ namespace Fika.Headless
             }
 
             HeadlessAutoPatcher.EnableDisableAudioPatches();
-
-            new TarkovApplication_method_18_Patch().Disable();
-            new MenuScreen_Awake_Patch().Disable();
+            DisableFikaCorePatches();
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
 
@@ -150,6 +149,14 @@ namespace Fika.Headless
             FikaHeadlessWebSocket = new();
 
             _ = Task.Run(RunPluginValidation);
+        }
+
+        private static void DisableFikaCorePatches()
+        {
+            PatchManager manager = new("com.fika.core", "Fika.Core");
+            manager.AddPatch(new TarkovApplication_method_18_Patch());
+            manager.AddPatch(new MenuScreen_Awake_Patch());
+            manager.DisablePatches();
         }
 
         private void GetQuestTemplates(Class303 session)
