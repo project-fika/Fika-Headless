@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
+using Diz.Utils;
 using EFT;
 using EFT.UI;
 using Fika.Core;
@@ -146,11 +147,12 @@ namespace Fika.Headless
 
             FikaBackendUtils.IsHeadless = true;
 
-            FikaHeadlessWebSocket = new();
-
             _ = Task.Run(RunPluginValidation);
         }
 
+        /// <summary>
+        /// Disables patches from Fika.Core that the headless does not need
+        /// </summary>
         private static void DisableFikaCorePatches()
         {
             PatchManager manager = new("com.fika.core", "Fika.Core");
@@ -159,21 +161,29 @@ namespace Fika.Headless
             manager.DisablePatches();
         }
 
-        private void GetQuestTemplates(Class303 session)
+        /// <summary>
+        /// Gets all quest templates from the server
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        private async Task GetQuestTemplates(Class303 session)
         {
             Logger.LogInfo("Getting quest templates");
-            List<RawQuestClass> list = session.method_3<List<RawQuestClass>>(new LegacyParamsStruct
+            List<RawQuestClass> list = await session.method_3<List<RawQuestClass>>(new()
             {
                 Url = session.gclass1321_0.Main + "/fika/headless/questtemplates",
                 ParseInBackground = true,
                 Params = new Class59<bool>(true),
                 Retries = new byte?(LegacyParamsStruct.DefaultRetries)
-            }).Result;
+            });
             Logger.LogInfo($"Received {list.Count} quest templates");
 
             GClass3709.Instance.GlobalQuestTemplates.AddRange(list);
         }
 
+        /// <summary>
+        /// Cleans up all old log files
+        /// </summary>
         private void CleanupLogFiles()
         {
             string exePath = AppContext.BaseDirectory;
@@ -199,6 +209,9 @@ namespace Fika.Headless
             }
         }
 
+        /// <summary>
+        /// Initializes the <see cref="ConfigFile"/> settings
+        /// </summary>
         private void SetupConfig()
         {
             UpdateRate = Config.Bind("Headless", "Update Rate", 60,
@@ -232,6 +245,12 @@ namespace Fika.Headless
             }
         }
 
+        /// <summary>
+        /// When a request to start a raid is received
+        /// </summary>
+        /// <param name="request"></param>
+        /// <exception cref="NullReferenceException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void OnFikaStartRaid(StartHeadlessRequest request)
         {
             if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
@@ -258,11 +277,15 @@ namespace Fika.Headless
             StartCoroutine(BeginFikaStartRaid(request, session, tarkovApplication));
         }
 
+        /// <summary>
+        /// Verifies that this headless client is valid for hosting
+        /// </summary>
+        /// <returns></returns>
         private async Task RunPluginValidation()
         {
             Logger.LogInfo("Running plugin validation");
             await Task.Delay(5000);
-            VerifyPlugins();
+            await VerifyPlugins();
             while (FikaPlugin.OfficialVersion == null)
             {
                 await Task.Delay(100);
@@ -290,10 +313,30 @@ namespace Fika.Headless
                 return;
             }
 
-            GetQuestTemplates((Class303)tarkovApplication.Session);
+            await GetQuestTemplates((Class303)tarkovApplication.Session);
+
+            // Artifical 5 second delay to let the game work an extra bit
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            AsyncWorker.RunInMainTread(CreateHeadlessWebsocket);
         }
 
-        private void VerifyPlugins()
+        /// <summary>
+        /// Creates and connects the <see cref="HeadlessWebSocket"/>
+        /// </summary>
+        private void CreateHeadlessWebsocket()
+        {
+            FikaHeadlessWebSocket = new();
+            if (!invalidPluginsFound)
+            {
+                FikaHeadlessWebSocket.Connect();
+            }
+        }
+
+        /// <summary>
+        /// Verifies that no invalid plugins are loaded
+        /// </summary>
+        private async Task VerifyPlugins()
         {
             Logger.LogInfo("Verifying plugins");
 
@@ -339,31 +382,53 @@ namespace Fika.Headless
 
             if (!FikaPlugin.Instance.LocalesLoaded)
             {
-                StartCoroutine(VerifyLocalesLoaded());
-            }
-            else if (!invalidPluginsFound)
-            {
-                FikaHeadlessWebSocket.Connect();
+                await VerifyLocalesLoaded();
             }
         }
 
-        private IEnumerator VerifyLocalesLoaded()
+        /// <summary>
+        /// Verifies that all locales are fully loaded
+        /// </summary>
+        /// <returns></returns>
+        private async Task VerifyLocalesLoaded()
         {
             Logger.LogInfo("Waiting for core locales to be loaded");
-            WaitForSeconds waitForSeconds = new(1f);
+            TimeSpan delay = TimeSpan.FromSeconds(1);
             while (!FikaPlugin.Instance.LocalesLoaded)
             {
-                yield return waitForSeconds;
-            }
-
-            if (!invalidPluginsFound)
-            {
-                FikaHeadlessWebSocket.Connect();
+                await Task.Delay(delay);
             }
         }
 
-        private IEnumerator VerifyPlayersRoutine()
+        /// <summary>
+        /// Verifies that the <see cref="GameWorld"/> has started loading and that at least one peer has connected
+        /// </summary>
+        /// <param name="tarkovApplication"></param>
+        /// <returns></returns>
+        private IEnumerator VerifyPlayersRoutine(TarkovApplication tarkovApplication)
         {
+            MatchmakerPlayerControllerClass matchmakerPlayerController = tarkovApplication.MatchmakerPlayerControllerClass;
+            WaitForSeconds waitForSeconds = new(5);
+            int initialAttempts = 0;
+            while (matchmakerPlayerController.MatchingAbortAvailability || initialAttempts < 5)
+            {
+                yield return waitForSeconds;
+                initialAttempts++;
+                if (initialAttempts >= 5)
+                {
+                    Logger.LogError("Critical Error: GameWorld does not seem to have started loading after 30 seconds!");
+                }
+            }
+
+            if (matchmakerPlayerController.MatchingAbortAvailability)
+            {
+                Logger.LogWarning("GameWorld has still not started loading");
+            }
+            else
+            {
+                Logger.LogInfo("Verified that GameWorld started loading");
+            }
+
             yield return new WaitForSeconds(300);
             if (Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount < 1)
             {
@@ -379,8 +444,11 @@ namespace Fika.Headless
                 }
 
                 CoopGame coopGame = (CoopGame)Singleton<IFikaGame>.Instance;
-                coopGame.StopFromCancel(FikaBackendUtils.Profile.ProfileId, ExitStatus.Runner);
-                Logger.LogWarning("The were no connections after 5 minutes, terminating session...");
+                if (coopGame != null)
+                {
+                    coopGame.StopFromCancel(FikaBackendUtils.Profile.ProfileId, ExitStatus.Runner);
+                }
+                Logger.LogWarning("The were no connections after 5 minutes, attempting to terminate session...");
             }
         }
 
@@ -455,7 +523,7 @@ namespace Fika.Headless
 
             FikaBackendUtils.IsHeadlessGame = true;
 
-            verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine());
+            verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
 
             tarkovApplication.method_37(raidSettings.TimeAndWeatherSettings);
         }
@@ -463,7 +531,6 @@ namespace Fika.Headless
         public void OnSessionResultExitStatus_Show()
         {
             currentRaidCount++;
-
             if (restartAfterAmountOfRaids != 0)
             {
                 if (currentRaidCount >= restartAfterAmountOfRaids)
