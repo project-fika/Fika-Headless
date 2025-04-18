@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
+using Diz.Jobs;
 using Diz.Utils;
 using EFT;
 using EFT.UI;
@@ -22,6 +23,7 @@ using Fika.Headless.Patches.DLSS;
 using Fika.Headless.Patches.TextureValidateFormat;
 using Fika.Headless.Patches.VRAM;
 using HarmonyLib;
+using JsonType;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
 using SPT.Custom.Utils;
@@ -34,6 +36,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking.Match;
+using UnityEngine.SocialPlatforms;
 
 namespace Fika.Headless
 {
@@ -274,7 +278,7 @@ namespace Fika.Headless
 
             Logger.LogInfo($"Starting on location {location.Name}");
             CanHost = false;
-            StartCoroutine(BeginFikaStartRaid(request, session, tarkovApplication));
+            _ = BeginFikaStartRaid(request, session, tarkovApplication);
         }
 
         /// <summary>
@@ -407,28 +411,6 @@ namespace Fika.Headless
         /// <returns></returns>
         private IEnumerator VerifyPlayersRoutine(TarkovApplication tarkovApplication)
         {
-            MatchmakerPlayerControllerClass matchmakerPlayerController = tarkovApplication.MatchmakerPlayerControllerClass;
-            WaitForSeconds waitForSeconds = new(5);
-            int initialAttempts = 0;
-            while (matchmakerPlayerController.MatchingAbortAvailability || initialAttempts < 5)
-            {
-                yield return waitForSeconds;
-                initialAttempts++;
-                if (initialAttempts >= 5)
-                {
-                    Logger.LogError("Critical Error: GameWorld does not seem to have started loading after 30 seconds!");
-                }
-            }
-
-            if (matchmakerPlayerController.MatchingAbortAvailability)
-            {
-                Logger.LogWarning("GameWorld has still not started loading");
-            }
-            else
-            {
-                Logger.LogInfo("Verified that GameWorld started loading");
-            }
-
             yield return new WaitForSeconds(300);
             if (Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount < 1)
             {
@@ -452,7 +434,7 @@ namespace Fika.Headless
             }
         }
 
-        private IEnumerator BeginFikaStartRaid(StartHeadlessRequest request, ISession session, TarkovApplication tarkovApplication)
+        private async Task BeginFikaStartRaid(StartHeadlessRequest request, ISession session, TarkovApplication tarkovApplication)
         {
             RaidSettings raidSettings = new()
             {
@@ -498,7 +480,7 @@ namespace Fika.Headless
                     Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR FORCING IP",
                         $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.",
                         ErrorScreen.EButtonType.OkButton, 10f);
-                    yield break;
+                    return;
                 }
             }
 
@@ -509,7 +491,7 @@ namespace Fika.Headless
                     Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR BINDING",
                         $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.",
                         ErrorScreen.EButtonType.OkButton, 10f);
-                    yield break;
+                    return;
                 }
             }
 
@@ -518,14 +500,27 @@ namespace Fika.Headless
             Task createMatchTask = FikaBackendUtils.CreateMatch(session.Profile.ProfileId, session.Profile.Info.Nickname, raidSettings);
             while (!createMatchTask.IsCompleted)
             {
-                yield return null;
+                await Task.Delay(100);
             }
 
             FikaBackendUtils.IsHeadlessGame = true;
 
             verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
 
-            tarkovApplication.method_37(raidSettings.TimeAndWeatherSettings);
+            try
+            {
+                Singleton<JobScheduler>.Instance.SetForceMode(true, -1f);
+                Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
+                await tarkovApplication.method_37(raidSettings.TimeAndWeatherSettings);
+                Logger.LogInfo("Raid init complete, starting raid");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Exception caught during raid init: {ex.Message}");
+                Logger.LogError(ex);
+                tarkovApplication.method_35("Local game matching", ex);
+            }
+            Singleton<JobScheduler>.Instance.SetForceMode(false, -1f);
         }
 
         public void OnSessionResultExitStatus_Show()
@@ -543,7 +538,6 @@ namespace Fika.Headless
         private void GetHeadlessRestartAfterRaidAmount()
         {
             RestartAfterRaidAmountModel headlessConfig = FikaRequestHandler.GetHeadlessRestartAfterRaidAmount();
-
             restartAfterAmountOfRaids = headlessConfig.Amount;
         }
     }
