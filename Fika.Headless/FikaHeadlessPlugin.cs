@@ -314,6 +314,7 @@ namespace Fika.Headless
                 return;
             }
 
+            // Temporarily disabled
             //await GetQuestTemplates((Class303)tarkovApplication.Session);
 
             // Artifical 5 second delay to let the game work an extra bit
