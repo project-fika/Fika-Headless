@@ -23,7 +23,6 @@ using Fika.Headless.Patches.DLSS;
 using Fika.Headless.Patches.TextureValidateFormat;
 using Fika.Headless.Patches.VRAM;
 using HarmonyLib;
-using JsonType;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
 using SPT.Custom.Utils;
@@ -36,8 +35,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking.Match;
-using UnityEngine.SocialPlatforms;
 
 namespace Fika.Headless
 {
@@ -46,7 +43,7 @@ namespace Fika.Headless
     [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
     public class FikaHeadlessPlugin : BaseUnityPlugin
     {
-        public const string HeadlessVersion = "1.3.5";
+        public const string HeadlessVersion = "1.3.6";
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
@@ -317,7 +314,8 @@ namespace Fika.Headless
                 return;
             }
 
-            await GetQuestTemplates((Class303)tarkovApplication.Session);
+            // Temporarily disabled
+            //await GetQuestTemplates((Class303)tarkovApplication.Session);
 
             // Artifical 5 second delay to let the game work an extra bit
             await Task.Delay(TimeSpan.FromSeconds(5));
