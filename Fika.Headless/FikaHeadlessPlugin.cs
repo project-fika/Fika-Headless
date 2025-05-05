@@ -103,7 +103,7 @@ namespace Fika.Headless
             new GameWorld_OnGameStarted_Patch().Enable();
             new MainMenuControllerClass_method_50_Patch().Enable();
             new ConsoleScreen_OnProfileReceive_Patch().Enable();
-            new Class437_Run_Patch().Enable();
+            new Class438_Run_Patch().Enable();
             new Player_VisualPass_Patch().Enable();
             new IsReflexAvailablePatch().Enable();
             new AudioSource_Play_Transpiler().Enable();
@@ -118,7 +118,7 @@ namespace Fika.Headless
             new ProceduralWeaponAnimation_StartFovCoroutine_Transpiler().Enable();
             new SkipRaidSettingsOnlinePvePatch().Enable();
             new WindowBreaker_method_11_Transpiler().Enable();
-            new GClass3597_HasItems_Patch().Enable();
+            new GClass3645_HasItems_Patch().Enable();
             new HeadlessPatch().Enable();
 
             if (!ShouldBotsSleep.Value)
@@ -172,14 +172,14 @@ namespace Fika.Headless
             Logger.LogInfo("Getting quest templates");
             List<RawQuestClass> list = await session.method_3<List<RawQuestClass>>(new()
             {
-                Url = session.gclass1321_0.Main + "/fika/headless/questtemplates",
+                Url = session.Gclass1358_0.Main + "/fika/headless/questtemplates",
                 ParseInBackground = true,
                 Params = new Class59<bool>(true),
                 Retries = new byte?(LegacyParamsStruct.DefaultRetries)
             });
             Logger.LogInfo($"Received {list.Count} quest templates");
 
-            GClass3709.Instance.GlobalQuestTemplates.AddRange(list);
+            GClass3772.Instance.GlobalQuestTemplates.AddRange(list);
         }
 
         /// <summary>
@@ -509,14 +509,14 @@ namespace Fika.Headless
             {
                 Singleton<JobScheduler>.Instance.SetForceMode(true, -1f);
                 Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
-                await tarkovApplication.method_37(raidSettings.TimeAndWeatherSettings);
+                await tarkovApplication.method_41(raidSettings.TimeAndWeatherSettings);
                 Logger.LogInfo("Raid init complete, starting raid");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Exception caught during raid init: {ex.Message}");
                 Logger.LogError(ex);
-                tarkovApplication.method_35("Local game matching", ex);
+                tarkovApplication.method_39("Local game matching", ex);
             }
             Singleton<JobScheduler>.Instance.SetForceMode(false, -1f);
         }

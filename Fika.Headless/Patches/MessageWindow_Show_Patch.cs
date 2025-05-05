@@ -1,6 +1,5 @@
 ﻿using EFT.UI;
 using SPT.Reflection.Patching;
-using System;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
@@ -16,7 +15,7 @@ namespace Fika.Headless.Patches
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(GClass3546 __result, MessageWindow __instance)
+        public static void PatchPostfix(GClass3594 __result, MessageWindow __instance)
         {
             __result.AcceptAndClose();
             /*__instance.Close(ECloseState.Accept);
