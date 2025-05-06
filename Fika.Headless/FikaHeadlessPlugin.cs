@@ -101,7 +101,7 @@ namespace Fika.Headless
             new ValidateFormatPatch2().Enable();
             new ValidateFormatPatch3().Enable();
             new GameWorld_OnGameStarted_Patch().Enable();
-            new MainMenuControllerClass_method_50_Patch().Enable();
+            new MainMenuControllerClass_method_51_Patch().Enable();
             new ConsoleScreen_OnProfileReceive_Patch().Enable();
             new Class438_Run_Patch().Enable();
             new Player_VisualPass_Patch().Enable();
@@ -109,10 +109,10 @@ namespace Fika.Headless
             new AudioSource_Play_Transpiler().Enable();
             new LevelSettings_ApplySettings_Transpiler().Enable();
             new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
-            new MainMenuControllerClass_method_46_Patch().Enable();
             new MainMenuControllerClass_method_47_Patch().Enable();
-            new MainMenuControllerClass_method_74_Patch().Enable();
+            new MainMenuControllerClass_method_48_Patch().Enable();
             new MainMenuControllerClass_method_75_Patch().Enable();
+            new MainMenuControllerClass_method_76_Patch().Enable();
             new LocaleManagerClass_String_0_Patch().Enable();
             new TarkovApplication_method_39_Patch().Enable();
             new ProceduralWeaponAnimation_StartFovCoroutine_Transpiler().Enable();
