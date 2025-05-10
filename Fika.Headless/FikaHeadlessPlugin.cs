@@ -43,7 +43,7 @@ namespace Fika.Headless
     [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
     public class FikaHeadlessPlugin : BaseUnityPlugin
     {
-        public const string HeadlessVersion = "1.3.6";
+        public const string HeadlessVersion = "1.3.7";
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
@@ -526,7 +526,7 @@ namespace Fika.Headless
             currentRaidCount++;
             if (restartAfterAmountOfRaids != 0)
             {
-                if (currentRaidCount >= restartAfterAmountOfRaids)
+                if (currentRaidCount >= restartAfterAmountOfRaids && !FikaBackendUtils.IsTransit)
                 {
                     Application.Quit();
                 }
