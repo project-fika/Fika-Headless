@@ -15,9 +15,9 @@ namespace Fika.Headless.Patches
         }
 
         [PatchPostfix]
-        public static void Postfix(MainMenuControllerClass __instance, RaidSettings ___raidSettings_0)
+        public static void Postfix(MainMenuControllerClass __instance, RaidSettings ___RaidSettings_0)
         {
-            if (___raidSettings_0.IsScav)
+            if (___RaidSettings_0.IsScav)
             {
                 __instance.method_49();
             }

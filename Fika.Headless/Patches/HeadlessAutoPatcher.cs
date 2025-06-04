@@ -36,7 +36,9 @@ namespace Fika.Headless.Patches
 
         public static void EnableDisableAudioPatches()
         {
-            IEnumerable<Type> query = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.BaseType == typeof(ModulePatch) && t.Namespace == "Fika.Headless.Patches.Audio");
+            IEnumerable<Type> query = Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => t.BaseType == typeof(ModulePatch) && t.Namespace == "Fika.Headless.Patches.Audio");
 
             FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Autoloading patches in the Audio namespace");
             int i = 0;

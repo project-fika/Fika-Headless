@@ -11,10 +11,10 @@ namespace Fika.Headless.Patches
         }
 
         [PatchPrefix]
-        public static bool Prefix(ref string ___string_2)
+        public static bool Prefix(ref string ___String_2)
         {
             Logger.LogInfo("Forcing 'en' language");
-            ___string_2 = "en";
+            ___String_2 = "en";
             return false;
         }
     }
