@@ -83,29 +83,6 @@ namespace Fika.Headless
 
             gcPoint = RAMCleanInterval.Value * 60f;
 
-            new DLSSPatch1().Enable();
-            new DLSSPatch2().Enable();
-            new DLSSPatch3().Enable();
-            new DLSSPatch4().Enable();
-            new VRAMPatch1().Enable();
-            new VRAMPatch2().Enable();
-            new VRAMPatch3().Enable();
-            new VRAMPatch4().Enable();
-            new SettingsPatch().Enable();
-            new SessionResultExitStatusPatch().Enable();
-            new MessageWindow_Show_Patch().Enable();
-            new HealthTreatmentScreen_IsAvailable_Patch().Enable();
-            new CoopPlayer_CreateMovementContext_Patch().Enable();
-            new Player_Init_Patch().Enable();
-            new ValidateFormatPatch1().Enable();
-            new ValidateFormatPatch2().Enable();
-            new ValidateFormatPatch3().Enable();
-            new GameWorld_OnGameStarted_Patch().Enable();
-            new MainMenuControllerClass_method_51_Patch().Enable();
-            new ConsoleScreen_OnProfileReceive_Patch().Enable();
-            new Class438_Run_Patch().Enable();
-            new Player_VisualPass_Patch().Enable();
-            new IsReflexAvailablePatch().Enable();
             new AudioSource_Play_Transpiler().Enable();
             new LevelSettings_ApplySettings_Transpiler().Enable();
             new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
@@ -131,10 +108,35 @@ namespace Fika.Headless
                 HeadlessAutoPatcher.EnableDestroyGraphicsPatches();
             }
 
-            HeadlessAutoPatcher.EnableDisableAudioPatches();
+            //HeadlessAutoPatcher.EnableDisableAudioPatches();
             DisableFikaCorePatches();
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
+
+            new DLSSPatch1().Enable();
+            new DLSSPatch2().Enable();
+            new DLSSPatch3().Enable();
+            new DLSSPatch4().Enable();
+            new VRAMPatch1().Enable();
+            new VRAMPatch2().Enable();
+            new VRAMPatch3().Enable();
+            new VRAMPatch4().Enable();
+            new SettingsPatch().Enable();
+            new SessionResultExitStatusPatch().Enable();
+            new MessageWindow_Show_Patch().Enable();
+            new HealthTreatmentScreen_IsAvailable_Patch().Enable();
+            new CoopPlayer_CreateMovementContext_Patch().Enable();
+            new Player_Init_Patch().Enable();
+            new ValidateFormatPatch1().Enable();
+            new ValidateFormatPatch2().Enable();
+            new ValidateFormatPatch3().Enable();
+            new GameWorld_OnGameStarted_Patch().Enable();
+            new MainMenuControllerClass_method_51_Patch().Enable();
+            new ConsoleScreen_OnProfileReceive_Patch().Enable();
+            new Class438_Run_Patch().Enable();
+            new Player_VisualPass_Patch().Enable();
+            new IsReflexAvailablePatch().Enable();
+            
 
             Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
             if (!IsRunningWindows)
