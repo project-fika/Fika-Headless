@@ -1,11 +1,11 @@
 ﻿using Audio.AmbientSubsystem;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class SoundPlayerRandomPointComponent_Awake_Patch : ModulePatch
+    internal class SoundPlayerRandomPointComponent_Awake_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

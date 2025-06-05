@@ -1,12 +1,12 @@
 ﻿using EFT;
 using EFT.UI;
 using EFT.UI.SessionEnd;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System;
 using System.Reflection;
 namespace Fika.Headless.Patches
 {
-    public class SessionResultExitStatusPatch : ModulePatch
+    public class SessionResultExitStatusPatch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

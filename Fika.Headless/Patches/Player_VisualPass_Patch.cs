@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// This patch aims to decrease the amount of CPU cycles spent updating data the headless does not see
     /// </summary>
-    public class Player_VisualPass_Patch : ModulePatch
+    public class Player_VisualPass_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

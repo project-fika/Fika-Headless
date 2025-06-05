@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
@@ -6,7 +6,7 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// Target the IsReflexAvailable() method with no parameters
     /// </summary>
-    public class IsReflexAvailablePatch : ModulePatch
+    public class IsReflexAvailablePatch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

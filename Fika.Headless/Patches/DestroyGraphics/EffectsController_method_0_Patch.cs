@@ -1,11 +1,11 @@
 ﻿using EFT;
 using EFT.CameraControl;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class EffectsController_method_0_Patch : ModulePatch
+    public class EffectsController_method_0_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

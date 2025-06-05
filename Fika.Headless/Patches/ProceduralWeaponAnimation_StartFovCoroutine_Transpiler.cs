@@ -1,6 +1,6 @@
 ﻿using EFT.Animations;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// This patch aims to decrease the amount of CPU cycles spent updating data the headless does not see
     /// </summary>
-    public class ProceduralWeaponAnimation_StartFovCoroutine_Transpiler : ModulePatch
+    public class ProceduralWeaponAnimation_StartFovCoroutine_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

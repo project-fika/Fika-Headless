@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -8,7 +8,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
     /// <summary>
     /// This patch deletes various effects out of the player's camera that the headless will never see.
     /// </summary>
-    public class CameraNuker : ModulePatch
+    public class CameraNuker : FikaPatch
     {
         // Whitelisted types we can delete out of the camera that will not cause it to throw exceptions.
         private static List<string> DeleteTypes = [

@@ -1,10 +1,10 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 using static EFT.UI.ScavengerInventoryScreen;
 
 namespace Fika.Headless.Patches
 {
-    public class GClass3645_HasItems_Patch : ModulePatch
+    public class GClass3645_HasItems_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

@@ -1,13 +1,13 @@
 ﻿using GPUInstancer;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class GPUInstancerManager_Update_Transpiler : ModulePatch
+    public class GPUInstancerManager_Update_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

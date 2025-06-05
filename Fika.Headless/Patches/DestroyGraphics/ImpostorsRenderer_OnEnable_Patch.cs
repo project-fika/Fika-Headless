@@ -1,5 +1,5 @@
 ﻿using EFT.Impostors;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
     /// <summary>
     /// This patch mostly deals with deleting the tree renderer.
     /// </summary>
-    public class ImpostorsRenderer_OnEnable_Patch : ModulePatch
+    public class ImpostorsRenderer_OnEnable_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

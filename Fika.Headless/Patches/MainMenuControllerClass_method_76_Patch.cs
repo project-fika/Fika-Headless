@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
@@ -7,7 +7,7 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// This patch ensures that the raid settings are skipped if you are playing as a scav
     /// </summary>
-    internal class MainMenuControllerClass_method_76_Patch : ModulePatch
+    internal class MainMenuControllerClass_method_76_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

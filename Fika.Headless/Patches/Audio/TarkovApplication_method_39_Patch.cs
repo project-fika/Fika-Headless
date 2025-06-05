@@ -2,12 +2,12 @@
 using Audio.SpatialSystem;
 using Comfort.Common;
 using EFT;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class TarkovApplication_method_39_Patch : ModulePatch
+    internal class TarkovApplication_method_39_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

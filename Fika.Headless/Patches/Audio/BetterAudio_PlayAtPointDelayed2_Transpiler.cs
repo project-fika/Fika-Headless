@@ -1,6 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -9,7 +9,7 @@ using UnityEngine.Audio;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class BetterAudio_PlayAtPointDelayed2_Transpiler : ModulePatch
+    internal class BetterAudio_PlayAtPointDelayed2_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

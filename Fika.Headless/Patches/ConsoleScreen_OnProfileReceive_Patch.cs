@@ -2,13 +2,13 @@
 using EFT.UI;
 using SPT.Core.Utils;
 using SPT.Custom.Utils;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
+    public class ConsoleScreen_OnProfileReceive_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

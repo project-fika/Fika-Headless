@@ -1,10 +1,10 @@
 ﻿using EFT.UI;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
 {
-    public class MessageWindow_Show_Patch : ModulePatch
+    public class MessageWindow_Show_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

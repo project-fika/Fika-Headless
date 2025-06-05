@@ -87,7 +87,10 @@ namespace Fika.Headless
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
 
-            new DLSSPatch1().Enable();
+            PatchManager manager = new(this, true);
+            manager.EnablePatches();
+
+            /*new DLSSPatch1().Enable();
             new DLSSPatch2().Enable();
             new DLSSPatch3().Enable();
             new DLSSPatch4().Enable();
@@ -124,19 +127,13 @@ namespace Fika.Headless
             new SkipRaidSettingsOnlinePvePatch().Enable();
             new WindowBreaker_method_11_Transpiler().Enable();
             new GClass3645_HasItems_Patch().Enable();
-            new HeadlessPatch().Enable();
+            new HeadlessPatch().Enable();*/
 
             if (!ShouldBotsSleep.Value)
             {
-                new BotStandBy_Update_Transpiler().Enable();
+                PatchManager botManager = new(this);
+                botManager.EnablePatch(new BotStandBy_Update_Transpiler());
             }
-
-            if (ShouldDestroyGraphics.Value)
-            {
-                HeadlessAutoPatcher.EnableDestroyGraphicsPatches();
-            }
-
-            HeadlessAutoPatcher.EnableDisableAudioPatches();
 
             Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
             if (!IsRunningWindows)

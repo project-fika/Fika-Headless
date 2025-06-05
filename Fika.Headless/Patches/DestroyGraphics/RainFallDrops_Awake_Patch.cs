@@ -1,10 +1,10 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using UnityEngine;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    internal class RainFallDrops_Awake_Patch : ModulePatch
+    internal class RainFallDrops_Awake_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

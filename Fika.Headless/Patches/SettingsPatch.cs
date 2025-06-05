@@ -1,12 +1,12 @@
 ﻿using EFT.Settings.Graphics;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class SettingsPatch : ModulePatch
+    public class SettingsPatch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

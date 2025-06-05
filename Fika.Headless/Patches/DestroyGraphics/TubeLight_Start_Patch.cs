@@ -1,10 +1,10 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class TubeLight_Start_Patch : ModulePatch
+    public class TubeLight_Start_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

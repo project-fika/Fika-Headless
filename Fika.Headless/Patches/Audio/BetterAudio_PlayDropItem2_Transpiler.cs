@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using JsonType;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class BetterAudio_PlayDropItem2_Transpiler : ModulePatch
+    internal class BetterAudio_PlayDropItem2_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

@@ -1,14 +1,14 @@
 ﻿using EFT;
 using Fika.Core.Coop.ObservedClasses;
 using Fika.Core.Coop.Players;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class CoopPlayer_CreateMovementContext_Patch : ModulePatch
+    public class CoopPlayer_CreateMovementContext_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

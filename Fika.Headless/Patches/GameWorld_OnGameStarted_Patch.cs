@@ -2,13 +2,13 @@
 using EFT;
 using Fika.Core.Coop.Players;
 using Fika.Headless.Classes;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class GameWorld_OnGameStarted_Patch : ModulePatch
+    public class GameWorld_OnGameStarted_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

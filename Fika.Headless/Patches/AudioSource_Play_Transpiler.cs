@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class AudioSource_Play_Transpiler : ModulePatch
+    public class AudioSource_Play_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

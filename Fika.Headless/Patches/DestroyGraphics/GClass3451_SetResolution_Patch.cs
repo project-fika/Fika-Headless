@@ -1,9 +1,9 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class GClass3451_SetResolution_Patch : ModulePatch
+    public class GClass3451_SetResolution_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

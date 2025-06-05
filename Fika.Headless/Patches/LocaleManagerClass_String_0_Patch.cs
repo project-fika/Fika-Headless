@@ -1,9 +1,9 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
 {
-    internal class LocaleManagerClass_String_0_Patch : ModulePatch
+    internal class LocaleManagerClass_String_0_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

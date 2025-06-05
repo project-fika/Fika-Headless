@@ -1,12 +1,12 @@
 ﻿using EFT;
 using EFT.HealthSystem;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches
 {
-    public class Player_Init_Patch : ModulePatch
+    public class Player_Init_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

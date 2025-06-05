@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Fika.Headless.Patches.VRAM
 {
     // Token: 0x0200000A RID: 10
-    public class VRAMPatch2 : ModulePatch
+    public class VRAMPatch2 : FikaPatch
     {
         // Token: 0x0600001D RID: 29 RVA: 0x00002440 File Offset: 0x00000640
         protected override MethodBase GetTargetMethod()

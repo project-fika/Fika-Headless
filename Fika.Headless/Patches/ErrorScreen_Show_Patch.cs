@@ -1,21 +1,19 @@
 ﻿using EFT.UI;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
 {
-    // Token: 0x02000008 RID: 8
-    internal class ErrorScreen_Show_Patch : ModulePatch
+    public class ErrorScreen_Show_Patch : FikaPatch
     {
-        // Token: 0x06000017 RID: 23 RVA: 0x0000237C File Offset: 0x0000057C
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ErrorScreen).GetMethod("Show");
+            return typeof(ErrorScreen).GetMethod(nameof(ErrorScreen.Show),
+                [typeof(string), typeof(string), typeof(float), typeof(ErrorScreen.EButtonType), typeof(bool)]);
         }
 
-        // Token: 0x06000018 RID: 24 RVA: 0x000023A4 File Offset: 0x000005A4
         [PatchPrefix]
-        public static bool Prefix(string message)
+        public static bool Prefix(string message, ref GClass3595 __result)
         {
             if (!string.IsNullOrEmpty(message))
             {
@@ -25,6 +23,8 @@ namespace Fika.Headless.Patches
             {
                 Logger.LogWarning("Received an empty error");
             }
+
+            __result = new GClass3595();
             return false;
         }
     }

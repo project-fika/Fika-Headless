@@ -1,13 +1,13 @@
 ﻿using EFT;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class BetterAudio_GetSource_Transpiler : ModulePatch
+    internal class BetterAudio_GetSource_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

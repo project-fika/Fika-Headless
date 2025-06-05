@@ -1,10 +1,10 @@
 ﻿using EFT.UI.SessionEnd;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
 {
-    public class HealthTreatmentScreen_IsAvailable_Patch : ModulePatch
+    public class HealthTreatmentScreen_IsAvailable_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

@@ -1,11 +1,11 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class ScopeMaskRenderer_Awake_Patch : ModulePatch
+    public class ScopeMaskRenderer_Awake_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {

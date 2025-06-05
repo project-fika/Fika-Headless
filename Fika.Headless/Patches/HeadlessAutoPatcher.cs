@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿/*using Fika.Core.Patching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches
     {
         public static void EnableDestroyGraphicsPatches()
         {
-            IEnumerable<Type> query = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.BaseType == typeof(ModulePatch) && t.Namespace == "Fika.Headless.Patches.DestroyGraphics");
+            IEnumerable<Type> query = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.BaseType == typeof(FikaPatch) && t.Namespace == "Fika.Headless.Patches.DestroyGraphics");
 
             FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Autoloading patches in the DestroyGraphics namespace");
             int i = 0;
@@ -27,7 +27,7 @@ namespace Fika.Headless.Patches
                     }
                 }
 
-                ((ModulePatch)Activator.CreateInstance(patch)).Enable();
+                ((FikaPatch)Activator.CreateInstance(patch)).Enable();
                 i++;
             }
 
@@ -38,14 +38,14 @@ namespace Fika.Headless.Patches
         {
             IEnumerable<Type> query = Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(t => t.BaseType == typeof(ModulePatch) && t.Namespace == "Fika.Headless.Patches.Audio");
+                .Where(t => t.BaseType == typeof(FikaPatch) && t.Namespace == "Fika.Headless.Patches.Audio");
 
             FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Autoloading patches in the Audio namespace");
             int i = 0;
 
             foreach (Type patch in query)
             {
-                ((ModulePatch)Activator.CreateInstance(patch)).Enable();
+                ((FikaPatch)Activator.CreateInstance(patch)).Enable();
                 i++;
             }
 
@@ -53,3 +53,4 @@ namespace Fika.Headless.Patches
         }
     }
 }
+*/

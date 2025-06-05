@@ -1,12 +1,12 @@
 ﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches
 {
-    public class LevelSettings_ApplyTreeWindSettings_Transpiler : ModulePatch
+    public class LevelSettings_ApplyTreeWindSettings_Transpiler : FikaPatch
     {
         /// <summary>
         /// Prevents unneccesary code from running
