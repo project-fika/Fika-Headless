@@ -1,0 +1,488 @@
+﻿using BepInEx.Logging;
+using Comfort.Common;
+using Dissonance.Networking.Client;
+using EFT;
+using EFT.Bots;
+using EFT.CameraControl;
+using EFT.HealthSystem;
+using EFT.Interactive;
+using EFT.UI;
+using EFT.Weather;
+using Fika.Core;
+using Fika.Core.Coop.GameMode;
+using Fika.Core.Coop.Patches;
+using Fika.Core.Coop.Utils;
+using Fika.Core.Modding;
+using Fika.Core.Modding.Events;
+using Fika.Core.Networking;
+using JsonType;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+using static LocationSettingsClass;
+using UnityEngine.Profiling;
+using EFT.InventoryLogic;
+using System.Linq;
+using System.Threading;
+using UnityEngine.LowLevel;
+using UnityEngine.PlayerLoop;
+using System.Diagnostics;
+using System.Collections;
+using EFT.UI.Matchmaker;
+using EFT.UI.Screens;
+
+namespace Fika.Headless.Classes.GameMode
+{
+    public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
+    {
+        public override string LocationObjectId
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override GameUI GameUi
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override string ProfileId
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public List<int> ExtractedPlayers
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public ExitStatus ExitStatus
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string ExitLocation
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public ESeason Season
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public SeasonsSettingsClass SeasonsSettings
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private ManualLogSource Logger { get; set; }
+
+        public ISession BackendSession { get; set; }
+
+        public BaseGameController GameController { get; set; }
+        public GameDateTime GameDateTime { get; private set; }
+        public GameWorld GameWorld { get; private set; }
+
+        private LocalRaidSettings _localRaidSettings;
+        private Callback<ExitStatus, TimeSpan, MetricsClass> _exitCallback;
+        private LocationSettingsClass.Location _location;
+        private EDateTime _tarkovDateTime;
+        private DateTime _dateTime;
+        private float _voipDistance;
+        private readonly Dictionary<string, DateTime> _factoryTimes = new()
+        {
+            {
+                "factory4_day",
+                new DateTime(2016, 8, 4, 15, 28, 0, DateTimeKind.Utc)
+            },
+            {
+                "factory4_night",
+                new DateTime(2016, 8, 4, 3, 28, 0, DateTimeKind.Utc)
+            }
+        };
+
+        public static HeadlessGame Create(GameWorld gameWorld, GameDateTime backendDateTime,
+            LocationSettingsClass.Location location, TimeAndWeatherSettings timeAndWeather, WavesSettings wavesSettings,
+            EDateTime dateTime, Callback<ExitStatus, TimeSpan, MetricsClass> callback, float fixedDeltaTime,
+            EUpdateQueue updateQueue, ISession backEndSession, TimeSpan sessionTime, LocalRaidSettings localRaidSettings,
+            RaidSettings raidSettings)
+        {
+            HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
+            game.Logger = new(nameof(HeadlessGame));
+            game.GameWorld = gameWorld;
+
+            float num = 1.5f;
+            foreach (WildSpawnWave wildSpawnWave in location.waves)
+            {
+                wildSpawnWave.slots_min = (int)(wildSpawnWave.slots_min * num);
+                wildSpawnWave.slots_max = (int)(wildSpawnWave.slots_max * num);
+            }
+
+            game.BackendSession = backEndSession;
+            game._exitCallback = callback;
+            game._location = location;
+            game._tarkovDateTime = dateTime;
+            game.FixedDeltaTime = fixedDeltaTime;
+            game.HandleLocationData(location, wavesSettings.BotAmount);
+            if (!Singleton<BotEventHandler>.Instantiated)
+            {
+                Singleton<BotEventHandler>.Create(new BotEventHandler());
+            }
+
+            HeadlessGameController headlessGameController = new(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime);
+            game.GameDateTime = backendDateTime;
+            game.GameController = headlessGameController;
+            game._localRaidSettings = localRaidSettings;
+            game.DoWeatherThings(timeAndWeather.IsRandomTime, timeAndWeather.IsRandomWeather);
+            WorldInteractiveObject.InteractionShouldBeConfirmed = false;
+
+            float hearingDistance = FikaGlobals.VOIPHandler.PushToTalkSettings.HearingDistance;
+            game._voipDistance = hearingDistance * hearingDistance + 9;
+
+            ClientHearingTable.Instance = game;
+
+            if (game.GameController.IsServer)
+            {
+                gameWorld.World_0.method_0();
+            }
+
+            if (timeAndWeather.TimeFlowType != ETimeFlowType.x1)
+            {
+                float newFlow = timeAndWeather.TimeFlowType.ToTimeFlow();
+                gameWorld.GameDateTime.TimeFactor = newFlow;
+                game.Logger.LogInfo($"Using custom time flow: {newFlow}");
+            }
+
+            if (OfflineRaidSettingsMenuPatch_Override.UseCustomWeather && game.GameController.IsServer)
+            {
+                game.Logger.LogInfo("Custom weather enabled, initializing curves");
+                (game.GameController as HostGameController).SetupCustomWeather(timeAndWeather);
+            }
+
+            Singleton<IFikaGame>.Create(game);
+            FikaEventDispatcher.DispatchEvent(new FikaGameCreatedEvent(game));
+
+            game.GameController.RaidSettings = raidSettings;
+            game.GameController.ThrownGrenades = [];
+
+            return game;
+        }
+
+        private void HandleLocationData(LocationSettingsClass.Location location, EBotAmount botAmount)
+        {
+            location.OldSpawn = location.OfflineOldSpawn;
+            location.NewSpawn = location.OfflineNewSpawn;
+            float num = 1f;
+            switch (botAmount)
+            {
+                case EBotAmount.NoBots:
+                case EBotAmount.Low:
+                    num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_LOW : LocalBotSettingsProviderClass.Core.WAVE_COEF_LOW;
+                    break;
+                case EBotAmount.Medium:
+                    num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_MID : LocalBotSettingsProviderClass.Core.WAVE_COEF_MID;
+                    break;
+                case EBotAmount.High:
+                    num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_HIGH : LocalBotSettingsProviderClass.Core.WAVE_COEF_HIGH;
+                    break;
+                case EBotAmount.Horde:
+                    num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_HORDE : LocalBotSettingsProviderClass.Core.WAVE_COEF_HORDE;
+                    break;
+            }
+
+            location.BotMax = (int)(location.BotMax * num);
+        }
+
+        private void DoWeatherThings(bool isRandomTime, bool isRandomWeather)
+        {
+            System.Random random = new();
+            if (isRandomTime)
+            {
+                _dateTime = new DateTime(2016, 4, 30, random.Next(1, 24), random.Next(1, 59), 0, DateTimeKind.Utc);
+            }
+            else if (!_factoryTimes.TryGetValue(_location.Id, out _dateTime))
+            {
+                _dateTime = _tarkovDateTime == EDateTime.CURR ? GameDateTime.Calculate() : GameDateTime.Calculate().AddHours(12.0);
+            }
+            GameDateTime = new GameDateTime(GameDateTime.DateTime_0, _dateTime, GameDateTime.TimeFactor, GameDateTime.Boolean_0);
+            GameWorld.GameDateTime = GameDateTime;
+            if (WeatherController.Instance != null || MonoBehaviourSingleton<TODSkySimple>.Instance != null)
+            {
+                GClass4.Instance.CurrentTime.GameDateTime = GameDateTime;
+                WeatherClass[] randomTestWeatherNodes = WeatherClass.GetRandomTestWeatherNodes(600, 12);
+                if (!isRandomWeather)
+                {
+                    long time = randomTestWeatherNodes[0].Time;
+                    randomTestWeatherNodes[0] = BackendSession.Weather;
+                    randomTestWeatherNodes[0].Time = time;
+                }
+                if (WeatherController.Instance != null)
+                {
+                    WeatherController.Instance.method_0(randomTestWeatherNodes);
+                }
+            }
+        }
+
+        public async Task Init(BotControllerSettings botsSettings, string backendUrl)
+        {
+            Logger.LogInfo("Unloading unused resources");
+            await Resources.UnloadUnusedAssets().Await();
+
+            Status = GameStatus.Running;
+
+            Status = GameStatus.Running;
+            UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
+
+            await GameController.SetupCoopHandler();
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            gameWorld.LocationId = _location.Id;
+            ExfiltrationControllerClass.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
+            !GameController.IsServer, _location.DisabledScavExits);
+
+            Logger.LogInfo($"Location: {_location.Name}");
+            BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
+
+            GameController.InitShellingController(instance, gameWorld, _location);
+            GameController.InitHalloweenEvent(instance, gameWorld, _location);
+            GameController.InitBTRController(instance, gameWorld, _location);
+
+            if ((FikaBackendUtils.IsHeadless || FikaBackendUtils.IsHeadlessGame) && FikaPlugin.Instance.EnableTransits)
+            {
+                //GameController.InitializeTransitSystem(gameWorld, instance, Profile_0, localRaidSettings_0, _location);
+            }
+
+            GameController.InitializeRunddans(instance, gameWorld, _location);
+
+            gameWorld.ClientBroadcastSyncController = new ClientBroadcastSyncControllerClass();
+
+            ApplicationConfigClass config = BackendConfigAbstractClass.Config;
+            if (config.FixedFrameRate > 0f)
+            {
+                FixedDeltaTime = 1f / config.FixedFrameRate;
+            }
+
+            try
+            {
+                CameraClass.Instance.SetOcclusionCullingEnabled(_location.OcculsionCullingEnabled);
+                CameraClass.Instance.IsActive = false;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"InitPlayer: {ex.Message}");
+                throw;
+            }
+            await GameController.WaitForHostToStart();
+
+            LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
+
+            await GameController.InitializeLoot(_location);
+            await LoadLoot(location);
+
+            GameController.CoopHandler.ShouldSync = true;
+            await StartBotSystemsAndCountdown(botsSettings);
+
+            Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(_location.Loot, LocationScene.GetAllObjects<LootableContainer>(false));
+            AirdropEventClass airdropEventClass = new()
+            {
+                AirdropParameters = _location.airdropParameters
+            };
+            airdropEventClass.Init(true);
+            (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
+            GameWorld.SynchronizableObjectLogicProcessor.Ginterface257_0 = Singleton<FikaServer>.Instance;
+
+            await RunMemoryCleanup();
+            FikaEventDispatcher.DispatchEvent(new GameWorldStartedEvent(GameWorld));
+        }
+
+        private Task RunMemoryCleanup()
+        {
+            MemoryControllerClass.RunHeapPreAllocation();
+            MemoryControllerClass.Collect(true);
+            if (MemoryControllerClass.Settings.OverrideRamCleanerSettings ? MemoryControllerClass.Settings.RamCleanerEnabled : Singleton<SharedGameSettingsClass>.Instance.Game.Settings.AutoEmptyWorkingSet)
+            {
+                MemoryControllerClass.EmptyWorkingSet();
+            }
+            MemoryControllerClass.GCEnabled = false;
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            CameraClass.Instance.IsActive = true;
+            TaskCompletionSource taskCompletionSource = new();
+            StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
+            return taskCompletionSource.Task;
+        }
+
+        private IEnumerator FinishRaidSetup(Action complete)
+        {
+            yield return GameController.FinishRaidSetup();
+            yield return FinishHeadlessRaidSetup(complete);
+        }
+
+        private IEnumerator FinishHeadlessRaidSetup(Action complete)
+        {
+            yield return new WaitForSeconds(Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal);
+            GameController.SetupEventsAndExfils(null);
+            complete?.Invoke();
+        }
+
+        private async Task StartBotSystemsAndCountdown(BotControllerSettings botsSettings)
+        {
+            await GameController.StartBotSystemsAndCountdown(botsSettings, GameWorld);
+        }
+
+        private async Task LoadLoot(LocationSettingsClass.Location location)
+        {
+            if (BackendConfigAbstractClass.Config.NoLootForLocalGame)
+            {
+                foreach (LootItemPositionClass lootItemPositionClass in location.Loot
+                    .Where(new Func<LootItemPositionClass, bool>(IsLootItemContainer))
+                    .ToList()
+                    )
+                {
+                    LootContainerItemClass lootContainerItemClass = lootItemPositionClass.Item as LootContainerItemClass;
+                    StashGridClass[] grids = lootContainerItemClass.Grids;
+                    for (int i = 0; i < grids.Length; i++)
+                    {
+                        grids[i].RemoveAll();
+                    }
+                    Slot[] slots = lootContainerItemClass.Slots;
+                    for (int i = 0; i < slots.Length; i++)
+                    {
+                        slots[i].RemoveItem(false);
+                    }
+                }
+            }
+
+            Item[] array = [.. location.Loot.Select(ItemFromPositionClass)];
+            ResourceKey[] array2 = [.. array.OfType<GClass3090>().GetAllItemsFromCollections()
+                .Concat(array
+                    .Where((IsItemSpecialContainer))
+                )
+                .SelectMany(GetResourceKeys)];
+            if (array2.Length != 0)
+            {
+                PlayerLoopSystem playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
+                GClass655.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
+                PlayerLoopSystem[] array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
+                if (num != -1)
+                {
+                    Array.Copy(playerLoopSystem2.subSystemList, array3, playerLoopSystem2.subSystemList.Length);
+                    PlayerLoopSystem playerLoopSystem3 = new()
+                    {
+                        updateDelegate = new PlayerLoopSystem.UpdateFunction(StaticUpdateFunction),
+                        type = typeof(UpdateType)
+                    };
+                    playerLoopSystem2.subSystemList[num] = playerLoopSystem3;
+                    PlayerLoop.SetPlayerLoop(playerLoopSystem);
+                }
+                await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid,
+                    PoolManagerClass.AssemblyType.Local, array2, JobPriorityClass.General,
+                    new GClass3824<LoadingProgressStruct>(HandleProgress, default),
+                    default);
+                if (num != -1)
+                {
+                    Array.Copy(array3, playerLoopSystem2.subSystemList, playerLoopSystem2.subSystemList.Length);
+                    PlayerLoop.SetPlayerLoop(playerLoopSystem);
+                }
+                playerLoopSystem = default;
+                playerLoopSystem2 = default;
+                array3 = null;
+            }
+            GClass1370 gclass = GameWorld.method_4(location.Loot);
+            GameWorld.method_5(gclass, true);
+        }
+
+        private void HandleProgress(LoadingProgressStruct progress)
+        {
+            // Do nothing
+        }
+
+        private void StaticUpdateFunction()
+        {
+            
+        }
+
+        private class UpdateType()
+        {
+
+        }
+
+        private IEnumerable<ResourceKey> GetResourceKeys(Item item)
+        {
+            return item.Template.AllResources;
+        }
+
+        private bool IsItemSpecialContainer(Item item)
+        {
+            return item is not GClass3090;
+        }
+
+        public bool IsLootItemContainer(LootItemPositionClass x)
+        {
+            return x.Item is LootContainerItemClass;
+        }
+
+        public Item ItemFromPositionClass(LootItemPositionClass x)
+        {
+            return x.Item;
+        }
+
+        public bool IsHeard()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReportAbuse()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Stop(string profileId, ExitStatus exitStatus, string exitName, float delay = 0)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
