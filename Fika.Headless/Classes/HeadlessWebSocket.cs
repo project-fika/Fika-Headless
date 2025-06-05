@@ -1,10 +1,13 @@
 ﻿using BepInEx.Logging;
 using Diz.Utils;
+using EFT;
 using Fika.Core.Networking.Websocket;
 using Fika.Core.Networking.Websocket.Headless;
 using Fika.Headless;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SPT.Common.Http;
+using SPT.Common.Utils;
 using System;
 using System.Threading.Tasks;
 using WebSocketSharp;
@@ -50,7 +53,6 @@ namespace Fika.Core.Networking
 
         public void Connect()
         {
-            logger.LogInfo($"WS Connect()");
             logger.LogInfo($"Attempting to connect to {Url}...");
             _webSocket.Connect();
         }
@@ -67,24 +69,31 @@ namespace Fika.Core.Networking
 
         private void WebSocket_OnMessage(object sender, MessageEventArgs e)
         {
+#if DEBUG
+            logger.LogInfo($"Received message"); 
+#endif
+
             if (e == null)
             {
+                logger.LogWarning("WebSocket_OnMessage:: EventArgs was null");
                 return;
             }
 
             if (string.IsNullOrEmpty(e.Data))
             {
+                logger.LogWarning("WebSocket_OnMessage:: Data was null");
                 return;
             }
 
             JObject jsonObject = JObject.Parse(e.Data);
 
-            if (!jsonObject.ContainsKey("type"))
+            if (!jsonObject.ContainsKey("Type"))
             {
+                logger.LogWarning("WebSocket_OnMessage:: There was no type in the data");
                 return;
             }
 
-            EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("type"));
+            EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("Type"));
 
             switch (type)
             {
