@@ -38,7 +38,6 @@ namespace Fika.Headless.Patches.GameMode
         {
 #if DEBUG
             Logger.LogInfo("TarkovApplication_LocalGameCreator_Patch:Prefix");
-
 #endif
             __result = CreateFikaGame(__instance, timeAndWeather, timeHasComeScreenController, ____raidSettings,
                 ____inputTree, ____localGameDateTime, ____fixedDeltaTime, ____backendUrl,
