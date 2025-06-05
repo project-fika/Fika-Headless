@@ -90,45 +90,6 @@ namespace Fika.Headless
             PatchManager manager = new(this, true);
             manager.EnablePatches();
 
-            /*new DLSSPatch1().Enable();
-            new DLSSPatch2().Enable();
-            new DLSSPatch3().Enable();
-            new DLSSPatch4().Enable();
-            new VRAMPatch1().Enable();
-            new VRAMPatch2().Enable();
-            new VRAMPatch3().Enable();
-            new VRAMPatch4().Enable();
-            new SettingsPatch().Enable();
-            new SessionResultExitStatusPatch().Enable();
-            new MessageWindow_Show_Patch().Enable();
-            new HealthTreatmentScreen_IsAvailable_Patch().Enable();
-            new CoopPlayer_CreateMovementContext_Patch().Enable();
-            new Player_Init_Patch().Enable();
-            new ValidateFormatPatch1().Enable();
-            new ValidateFormatPatch2().Enable();
-            new ValidateFormatPatch3().Enable();
-            new GameWorld_OnGameStarted_Patch().Enable();
-            new MainMenuControllerClass_method_51_Patch().Enable();
-            new ConsoleScreen_OnProfileReceive_Patch().Enable();
-            new Class438_Run_Patch().Enable();
-            new Player_VisualPass_Patch().Enable();
-            new IsReflexAvailablePatch().Enable();
-
-            new AudioSource_Play_Transpiler().Enable();
-            new LevelSettings_ApplySettings_Transpiler().Enable();
-            new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
-            new MainMenuControllerClass_method_47_Patch().Enable();
-            new MainMenuControllerClass_method_48_Patch().Enable();
-            new MainMenuControllerClass_method_75_Patch().Enable();
-            new MainMenuControllerClass_method_76_Patch().Enable();
-            new LocaleManagerClass_String_0_Patch().Enable();
-            new TarkovApplication_method_39_Patch().Enable();
-            new ProceduralWeaponAnimation_StartFovCoroutine_Transpiler().Enable();
-            new SkipRaidSettingsOnlinePvePatch().Enable();
-            new WindowBreaker_method_11_Transpiler().Enable();
-            new GClass3645_HasItems_Patch().Enable();
-            new HeadlessPatch().Enable();*/
-
             if (!ShouldBotsSleep.Value)
             {
                 PatchManager botManager = new(this);
