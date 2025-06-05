@@ -57,7 +57,7 @@ namespace Fika.Headless
         }
         public bool CanHost { get; internal set; }
 
-        private static HeadlessWebSocket FikaHeadlessWebSocket;
+        private HeadlessWebSocket FikaHeadlessWebSocket;
         private float gcCounter;
         private float gcPoint;
         private Coroutine verifyConnectionsRoutine;
@@ -245,9 +245,9 @@ namespace Fika.Headless
         /// <returns></returns>
         private async Task RunPluginValidation()
         {
-            Logger.LogInfo("Running plugin validation");
             await Task.Delay(5000);
-            //await VerifyPlugins();
+            Logger.LogInfo("Running plugin validation");
+            await VerifyPlugins();
             while (FikaPlugin.OfficialVersion == null)
             {
                 await Task.Delay(100);
