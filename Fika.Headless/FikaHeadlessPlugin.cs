@@ -81,34 +81,8 @@ namespace Fika.Headless
             GetHeadlessRestartAfterRaidAmount();
             SetupConfig();
 
-            gcPoint = RAMCleanInterval.Value * 60f;
+            gcPoint = RAMCleanInterval.Value * 60f;     
             
-            new AudioSource_Play_Transpiler().Enable();
-            new LevelSettings_ApplySettings_Transpiler().Enable();
-            new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
-            new MainMenuControllerClass_method_47_Patch().Enable();
-            new MainMenuControllerClass_method_48_Patch().Enable();
-            new MainMenuControllerClass_method_75_Patch().Enable();
-            new MainMenuControllerClass_method_76_Patch().Enable();
-            new LocaleManagerClass_String_0_Patch().Enable();
-            new TarkovApplication_method_39_Patch().Enable();
-            new ProceduralWeaponAnimation_StartFovCoroutine_Transpiler().Enable();
-            new SkipRaidSettingsOnlinePvePatch().Enable();
-            new WindowBreaker_method_11_Transpiler().Enable();
-            new GClass3645_HasItems_Patch().Enable();
-            new HeadlessPatch().Enable();
-
-            if (!ShouldBotsSleep.Value)
-            {
-                new BotStandBy_Update_Transpiler().Enable();
-            }
-
-            if (ShouldDestroyGraphics.Value)
-            {
-                HeadlessAutoPatcher.EnableDestroyGraphicsPatches();
-            }
-
-            //HeadlessAutoPatcher.EnableDisableAudioPatches();
             DisableFikaCorePatches();
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
@@ -136,6 +110,33 @@ namespace Fika.Headless
             new Class438_Run_Patch().Enable();
             new Player_VisualPass_Patch().Enable();
             new IsReflexAvailablePatch().Enable();
+
+            new AudioSource_Play_Transpiler().Enable();
+            new LevelSettings_ApplySettings_Transpiler().Enable();
+            new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
+            new MainMenuControllerClass_method_47_Patch().Enable();
+            new MainMenuControllerClass_method_48_Patch().Enable();
+            new MainMenuControllerClass_method_75_Patch().Enable();
+            new MainMenuControllerClass_method_76_Patch().Enable();
+            new LocaleManagerClass_String_0_Patch().Enable();
+            new TarkovApplication_method_39_Patch().Enable();
+            new ProceduralWeaponAnimation_StartFovCoroutine_Transpiler().Enable();
+            new SkipRaidSettingsOnlinePvePatch().Enable();
+            new WindowBreaker_method_11_Transpiler().Enable();
+            new GClass3645_HasItems_Patch().Enable();
+            new HeadlessPatch().Enable();
+
+            if (!ShouldBotsSleep.Value)
+            {
+                new BotStandBy_Update_Transpiler().Enable();
+            }
+
+            if (ShouldDestroyGraphics.Value)
+            {
+                HeadlessAutoPatcher.EnableDestroyGraphicsPatches();
+            }
+
+            HeadlessAutoPatcher.EnableDisableAudioPatches();
 
             Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
             if (!IsRunningWindows)
