@@ -13,7 +13,8 @@ namespace Fika.Headless.Patches.Audio
         protected override MethodBase GetTargetMethod()
         {
             return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPoint),
-                [typeof(Vector3), typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(int), typeof(float), typeof(EOcclusionTest), typeof(AudioMixerGroup), typeof(bool), typeof(bool)]);
+                [typeof(Vector3), typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(int),
+                typeof(float), typeof(EOcclusionTest), typeof(AudioMixerGroup), typeof(bool), typeof(bool), typeof(bool), typeof(bool)]);
         }
 
         [PatchTranspiler]

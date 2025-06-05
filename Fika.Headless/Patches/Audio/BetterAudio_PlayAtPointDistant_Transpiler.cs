@@ -19,6 +19,7 @@ namespace Fika.Headless.Patches.Audio
             // Create a new set of instructions
             List<CodeInstruction> instructionsList =
             [
+                new CodeInstruction(OpCodes.Ldnull),
                 new CodeInstruction(OpCodes.Ret) // Return immediately
             ];
 
