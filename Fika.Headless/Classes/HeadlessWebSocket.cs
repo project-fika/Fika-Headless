@@ -93,16 +93,19 @@ namespace Fika.Core.Networking
                 return;
             }
 
+            logger.LogInfo(JsonConvert.SerializeObject(e.Data));
+
             EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("Type"));
 
             switch (type)
             {
                 case EFikaHeadlessWSMessageTypes.HeadlessStartRaid:
-                    StartRaid data = e.Data.ParseJsonTo<StartRaid>();
+                    StartRaid data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
+                    logger.LogInfo(JsonConvert.SerializeObject(data));
 
                     AsyncWorker.RunInMainTread(() =>
                     {
-                        FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartRequest);
+                        FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartHeadlessRequest);
                     });
                     break;
             }

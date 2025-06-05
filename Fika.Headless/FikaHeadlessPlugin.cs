@@ -215,7 +215,6 @@ namespace Fika.Headless
         {
             try
             {
-                Logger.LogInfo("Hello");
                 if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
                 {
                     Logger.LogError("OnFikaStartRaid: Could not find TarkovApplication");
