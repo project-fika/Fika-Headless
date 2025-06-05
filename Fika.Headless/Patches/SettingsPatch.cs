@@ -27,6 +27,7 @@ namespace Fika.Headless.Patches
 
         internal static async Task Initalize()
         {
+            await Class1709.smethod_5("LoadUserSettings", false);
             await SetSettings(await SharedGameSettingsClass.InstantiateSingleton());
             await GClass896.InstantiateSingleton();
             await Task.Yield();

@@ -82,7 +82,7 @@ namespace Fika.Headless
             SetupConfig();
 
             gcPoint = RAMCleanInterval.Value * 60f;
-
+            
             new AudioSource_Play_Transpiler().Enable();
             new LevelSettings_ApplySettings_Transpiler().Enable();
             new LevelSettings_ApplyTreeWindSettings_Transpiler().Enable();
@@ -136,7 +136,6 @@ namespace Fika.Headless
             new Class438_Run_Patch().Enable();
             new Player_VisualPass_Patch().Enable();
             new IsReflexAvailablePatch().Enable();
-            
 
             Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
             if (!IsRunningWindows)
@@ -288,7 +287,7 @@ namespace Fika.Headless
         {
             Logger.LogInfo("Running plugin validation");
             await Task.Delay(5000);
-            await VerifyPlugins();
+            //await VerifyPlugins();
             while (FikaPlugin.OfficialVersion == null)
             {
                 await Task.Delay(100);

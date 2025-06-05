@@ -1,14 +1,18 @@
 ﻿using SPT.Reflection.Patching;
-using System.Linq;
 using System.Reflection;
 
 namespace Fika.Headless.Patches
 {
+    /// <summary>
+    /// Target the IsReflexAvailable() method with no parameters
+    /// </summary>
     public class IsReflexAvailablePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3408).GetMethods().Where(x => x.ReturnType == typeof(bool)).FirstOrDefault();
+            return typeof(GClass3456).GetMethod(nameof(GClass3456.IsReflexAvailable),
+                BindingFlags.Public | BindingFlags.Static,
+                null, [], null);
         }
 
         [PatchPrefix]
