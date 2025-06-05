@@ -5,6 +5,7 @@ using SPT.Custom.Utils;
 using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches
 {
@@ -38,6 +39,8 @@ namespace Fika.Headless.Patches
                 ValidationUtil._crashHandler = "FikaHeadless";
                 FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Profile verified");
                 FikaHeadlessPlugin.Instance.CanHost = true;
+
+                _ = Task.Run(FikaHeadlessPlugin.Instance.RunPluginValidation);
             }
         }
     }

@@ -106,9 +106,7 @@ namespace Fika.Headless
                 CleanupLogFiles();
             }
 
-            FikaBackendUtils.IsHeadless = true;
-
-            _ = Task.Run(RunPluginValidation);
+            FikaBackendUtils.IsHeadless = true;            
         }
 
         /// <summary>
@@ -215,48 +213,61 @@ namespace Fika.Headless
         /// <exception cref="InvalidOperationException"></exception>
         public void OnFikaStartRaid(StartHeadlessRequest request)
         {
-            if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+            try
             {
-                throw new NullReferenceException("OnFikaStartRaid: Could not find TarkovApplication!");
-            }
+                Logger.LogInfo("Hello");
+                if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+                {
+                    Logger.LogError("OnFikaStartRaid: Could not find TarkovApplication");
+                    return;
+                }
 
-            if (!CanHost)
-            {
-                throw new InvalidOperationException("The headless client was not ready to host yet");
-            }
+                if (!CanHost)
+                {
+                    Logger.LogError("The headless client was not ready to host yet");
+                    return;
+                }
 
-            ISession session = tarkovApplication.GetClientBackEndSession();
-            if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out LocationSettingsClass.Location location))
+                ISession session = tarkovApplication.Session;
+                if (session == null)
+                {
+                    Logger.LogError("Session was null when starting the raid");
+                    return;
+                }
+
+                if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out LocationSettingsClass.Location location))
+                {
+                    Logger.LogError($"Failed to find location {request.LocationId}");
+                    return;
+                }
+
+                OfflineRaidSettingsMenuPatch_Override.UseCustomWeather = request.CustomWeather;
+
+                Logger.LogInfo($"Starting on location {location.Name}");
+                CanHost = false;
+                _ = BeginFikaStartRaid(request, session, tarkovApplication);
+            }
+            catch (Exception ex)
             {
-                Logger.LogError($"Failed to find location {request.LocationId}");
+                Logger.LogError(ex.Message);
                 return;
             }
-
-            OfflineRaidSettingsMenuPatch_Override.UseCustomWeather = request.CustomWeather;
-
-            Logger.LogInfo($"Starting on location {location.Name}");
-            CanHost = false;
-            _ = BeginFikaStartRaid(request, session, tarkovApplication);
         }
 
         /// <summary>
         /// Verifies that this headless client is valid for hosting
         /// </summary>
         /// <returns></returns>
-        private async Task RunPluginValidation()
+        public async Task RunPluginValidation()
         {
-            await Task.Delay(5000);
             Logger.LogInfo("Running plugin validation");
-            await VerifyPlugins();
-            while (FikaPlugin.OfficialVersion == null)
+            while (!FikaPlugin.Instance.LocalesLoaded)
             {
                 await Task.Delay(100);
             }
+            await VerifyPlugins();            
 
-            while (!CanHost)
-            {
-                await Task.Delay(1000);
-            }
+            await Task.Delay(1000);
 
             FikaPlugin.AutoExtract.Value = true;
             FikaPlugin.QuestTypesToShareAndReceive.Value = 0;
@@ -299,7 +310,7 @@ namespace Fika.Headless
         /// <summary>
         /// Verifies that no invalid plugins are loaded
         /// </summary>
-        private async Task VerifyPlugins()
+        private Task VerifyPlugins()
         {
             Logger.LogInfo("Verifying plugins");
 
@@ -336,31 +347,14 @@ namespace Fika.Headless
                         "HEADLESS ERROR", MessageBoxHelper.MessageBoxType.OK);
                 }
                 Thread.Sleep(-1);
-                return;
+                return Task.CompletedTask;
             }
 
             invalidPluginsFound = false;
 
             Logger.LogInfo("Plugins verified successfully");
 
-            if (!FikaPlugin.Instance.LocalesLoaded)
-            {
-                await VerifyLocalesLoaded();
-            }
-        }
-
-        /// <summary>
-        /// Verifies that all locales are fully loaded
-        /// </summary>
-        /// <returns></returns>
-        private async Task VerifyLocalesLoaded()
-        {
-            Logger.LogInfo("Waiting for core locales to be loaded");
-            TimeSpan delay = TimeSpan.FromSeconds(1);
-            while (!FikaPlugin.Instance.LocalesLoaded)
-            {
-                await Task.Delay(delay);
-            }
+            return Task.CompletedTask;
         }
 
         /// <summary>
