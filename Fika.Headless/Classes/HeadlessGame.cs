@@ -1,15 +1,23 @@
 ﻿using Comfort.Common;
+using CommonAssets.Scripts.Game;
 using Dissonance.Networking.Client;
 using EFT;
 using EFT.Bots;
+using EFT.InputSystem;
 using EFT.Interactive;
 using EFT.UI;
 using EFT.Weather;
+using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
+using Fika.Core.Coop.Patches;
+using Fika.Core.Coop.Utils;
+using Fika.Core.Modding.Events;
+using Fika.Core.Modding;
 using JsonType;
 using System;
 using System.Collections.Generic;
 using static BackendConfigSettingsClass;
+using BepInEx.Logging;
 
 namespace Fika.Headless.Classes
 {
@@ -99,6 +107,8 @@ namespace Fika.Headless.Classes
             }
         }
 
+        private ManualLogSource Logger { get; set; }
+
         public ISession BackendSession { get; set; }
 
         public BaseGameController GameController { get; set; }
@@ -110,6 +120,7 @@ namespace Fika.Headless.Classes
         private LocationSettingsClass.Location _location;
         private EDateTime _tarkovDateTime;
         private DateTime _dateTime;
+        private float _voipDistance;
         private readonly Dictionary<string, DateTime> _factoryTimes = new()
         {
             {
@@ -129,6 +140,7 @@ namespace Fika.Headless.Classes
             RaidSettings raidSettings)
         {
             HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
+            game.Logger = new(nameof(HeadlessGame));
             game.GameWorld = gameWorld;
 
             float num = 1.5f;
@@ -153,6 +165,35 @@ namespace Fika.Headless.Classes
             game._localRaidSettings = localRaidSettings;
             game.DoWeatherThings(timeAndWeather.IsRandomTime, timeAndWeather.IsRandomWeather);
             WorldInteractiveObject.InteractionShouldBeConfirmed = false;
+
+            float hearingDistance = FikaGlobals.VOIPHandler.PushToTalkSettings.HearingDistance;
+            game._voipDistance = hearingDistance * hearingDistance + 9;
+
+            ClientHearingTable.Instance = game;
+
+            if (game.GameController.IsServer)
+            {
+                gameWorld.World_0.method_0();
+            }
+
+            if (timeAndWeather.TimeFlowType != ETimeFlowType.x1)
+            {
+                float newFlow = timeAndWeather.TimeFlowType.ToTimeFlow();
+                gameWorld.GameDateTime.TimeFactor = newFlow;
+                game.Logger.LogInfo($"Using custom time flow: {newFlow}");
+            }
+
+            if (OfflineRaidSettingsMenuPatch_Override.UseCustomWeather && game.GameController.IsServer)
+            {
+                game.Logger.LogInfo("Custom weather enabled, initializing curves");
+                (game.GameController as HostGameController).SetupCustomWeather(timeAndWeather);
+            }
+
+            Singleton<IFikaGame>.Create(game);
+            FikaEventDispatcher.DispatchEvent(new FikaGameCreatedEvent(game));
+
+            game.GameController.RaidSettings = raidSettings;
+            game.GameController.ThrownGrenades = [];
 
             return game;
 
