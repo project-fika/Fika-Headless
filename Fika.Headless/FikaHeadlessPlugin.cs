@@ -19,10 +19,6 @@ using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
 using Fika.Headless.Patches;
-using Fika.Headless.Patches.Audio;
-using Fika.Headless.Patches.DLSS;
-using Fika.Headless.Patches.TextureValidateFormat;
-using Fika.Headless.Patches.VRAM;
 using HarmonyLib;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
@@ -82,8 +78,8 @@ namespace Fika.Headless
             GetHeadlessRestartAfterRaidAmount();
             SetupConfig();
 
-            gcPoint = RAMCleanInterval.Value * 60f;     
-            
+            gcPoint = RAMCleanInterval.Value * 60f;
+
             DisableFikaCorePatches();
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
@@ -107,7 +103,7 @@ namespace Fika.Headless
                 CleanupLogFiles();
             }
 
-            FikaBackendUtils.IsHeadless = true;            
+            FikaBackendUtils.IsHeadless = true;
         }
 
         /// <summary>
@@ -122,13 +118,15 @@ namespace Fika.Headless
             manager.DisablePatches();
         }
 
+#if DEBUG
         private void StartDebugGame()
         {
             string rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
             StartRaid data = JsonConvert.DeserializeObject<StartRaid>(rawData);
 
             OnFikaStartRaid(data.StartHeadlessRequest);
-        }
+        } 
+#endif
 
         /// <summary>
         /// Gets all quest templates from the server
@@ -273,7 +271,7 @@ namespace Fika.Headless
             {
                 await Task.Delay(100);
             }
-            await VerifyPlugins();            
+            await VerifyPlugins();
 
             await Task.Delay(1000);
 
