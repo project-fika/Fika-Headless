@@ -93,8 +93,6 @@ namespace Fika.Core.Networking
                 return;
             }
 
-            logger.LogInfo(JsonConvert.SerializeObject(e.Data));
-
             EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("Type"));
 
             switch (type)

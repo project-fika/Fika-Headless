@@ -14,6 +14,7 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
+using Fika.Core.Networking.Websocket.Headless;
 using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
@@ -119,6 +120,14 @@ namespace Fika.Headless
             manager.AddPatch(new MenuScreen_Awake_Patch());
             manager.AddPatch(new TarkovApplication_LocalGameCreator_Patch());
             manager.DisablePatches();
+        }
+
+        private void StartDebugGame()
+        {
+            string rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
+            StartRaid data = JsonConvert.DeserializeObject<StartRaid>(rawData);
+
+            OnFikaStartRaid(data.StartHeadlessRequest);
         }
 
         /// <summary>
