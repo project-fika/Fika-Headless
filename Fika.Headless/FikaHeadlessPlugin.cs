@@ -44,7 +44,6 @@ namespace Fika.Headless
 
         public static FikaHeadlessPlugin Instance { get; private set; }
         public static ManualLogSource FikaHeadlessLogger;
-        public static HeadlessRaidController raidController;
         public static bool IsRunningWindows
         {
             get
@@ -67,6 +66,24 @@ namespace Fika.Headless
         public static ConfigEntry<bool> ShouldBotsSleep { get; private set; }
         public static ConfigEntry<bool> ShouldDestroyGraphics { get; private set; }
         public static ConfigEntry<bool> DestroyRenderersOnSceneLoad { get; private set; }
+
+#if DEBUG
+        public BetterAudio BetterAudio
+        {
+            get
+            {
+                return Singleton<BetterAudio>.Instance;
+            }
+        }
+
+        public GUISounds GUISounds
+        {
+            get
+            {
+                return Singleton<GUISounds>.Instance;
+            }
+        } 
+#endif
 
         protected void Awake()
         {
@@ -384,11 +401,12 @@ namespace Fika.Headless
                     }
                 }
 
-                CoopGame coopGame = (CoopGame)Singleton<IFikaGame>.Instance;
+                // TODO: Fix
+                /*CoopGame coopGame = (CoopGame)Singleton<IFikaGame>.Instance;
                 if (coopGame != null)
                 {
                     coopGame.StopFromCancel(FikaBackendUtils.Profile.ProfileId, ExitStatus.Runner);
-                }
+                }*/
                 Logger.LogWarning("The were no connections after 5 minutes, attempting to terminate session...");
             }
         }

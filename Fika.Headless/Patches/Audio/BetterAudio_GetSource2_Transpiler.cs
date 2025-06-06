@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 using HarmonyLib;
 using Fika.Core.Patching;
 using System.Collections.Generic;
@@ -11,7 +11,8 @@ namespace Fika.Headless.Patches.Audio
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BetterAudio).GetMethod(nameof(BetterAudio.GetSource), [typeof(BetterAudio.AudioSourceGroupType), typeof(bool)]);
+            return typeof(BetterAudio).GetMethod(nameof(BetterAudio.GetSource),
+                [typeof(BetterAudio.AudioSourceGroupType), typeof(bool)]);
         }
 
         [PatchTranspiler]
@@ -28,3 +29,4 @@ namespace Fika.Headless.Patches.Audio
         }
     }
 }
+*/

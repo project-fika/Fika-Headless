@@ -1,4 +1,4 @@
-﻿using Comfort.Common;
+﻿/*using Comfort.Common;
 using EFT;
 using Fika.Core.Coop.Players;
 using Fika.Headless.Classes;
@@ -32,3 +32,4 @@ namespace Fika.Headless.Patches
         }
     }
 }
+*/

@@ -7,11 +7,11 @@ using System.Reflection;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class TarkovApplication_method_39_Patch : FikaPatch
+    internal class TarkovApplication_method_43_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(TarkovApplication).GetMethod(nameof(TarkovApplication.method_39));
+            return typeof(TarkovApplication).GetMethod(nameof(TarkovApplication.method_43));
         }
 
         [PatchPrefix]

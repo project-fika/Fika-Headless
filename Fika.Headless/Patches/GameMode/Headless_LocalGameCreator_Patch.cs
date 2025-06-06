@@ -147,6 +147,7 @@ namespace Fika.Headless.Patches.GameMode
             }
             GameObject.DestroyImmediate(MonoBehaviourSingleton<MenuUI>.Instance.gameObject);
             ___mainMenuController?.Unsubscribe();
+            bundleLock.MaxConcurrentOperations = 1;
             gameWorld.OnGameStarted();
         }
 

@@ -239,16 +239,6 @@ namespace Fika.Headless.Classes.GameMode
             Logger.LogInfo("Unloading unused resources");
             await Resources.UnloadUnusedAssets().Await();
 
-            /*BetterAudio betterAudio = GClass867.FindUnityObjectOfType<BetterAudio>();
-            if (betterAudio == null)
-            {
-                GameObject gameObject = new("Audio");
-                gameObject.transform.SetParent(GameWorld.gameObject.transform);
-                betterAudio = gameObject.AddComponent<BetterAudio>();
-            }
-            Singleton<BetterAudio>.Create(betterAudio);
-            await betterAudio.PreloadCoroutine();*/
-
             Status = GameStatus.Running;
             UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
 
@@ -282,16 +272,6 @@ namespace Fika.Headless.Classes.GameMode
 
             GameController.CreateSpawnSystem(null);
 
-            /*try
-            {
-                CameraClass.Instance.SetOcclusionCullingEnabled(_location.OcculsionCullingEnabled);
-                CameraClass.Instance.IsActive = false;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"InitPlayer: {ex.Message}");
-                throw;
-            }*/
             await GameController.WaitForHostToStart();
 
             LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
@@ -312,6 +292,11 @@ namespace Fika.Headless.Classes.GameMode
             GameWorld.SynchronizableObjectLogicProcessor.Ginterface257_0 = Singleton<FikaServer>.Instance;
 
             await RunMemoryCleanup();
+
+            Singleton<SharedGameSettingsClass>.Instance.Graphics.Controller.ChangeFramerate(true);
+            MonoBehaviourSingleton<EnvironmentUI>.Instance.ShowEnvironment(false);
+            MonoBehaviourSingleton<PreloaderUI>.Instance.SetMenuTaskBarVisibility(false);
+
             FikaEventDispatcher.DispatchEvent(new GameWorldStartedEvent(GameWorld));
         }
 
