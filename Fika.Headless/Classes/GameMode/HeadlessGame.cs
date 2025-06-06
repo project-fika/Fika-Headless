@@ -24,12 +24,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
-using static LocationSettingsClass;
 
 namespace Fika.Headless.Classes.GameMode
 {
@@ -180,6 +178,7 @@ namespace Fika.Headless.Classes.GameMode
 
             game.GameController.RaidSettings = raidSettings;
             game.GameController.ThrownGrenades = [];
+            game.gameObject.AddComponent<HeadlessRaidController>();
 
             return game;
         }
@@ -308,7 +307,7 @@ namespace Fika.Headless.Classes.GameMode
             Singleton<SharedGameSettingsClass>.Instance.Graphics.Controller.ChangeFramerate(true);
             MonoBehaviourSingleton<EnvironmentUI>.Instance.ShowEnvironment(false);
             MonoBehaviourSingleton<PreloaderUI>.Instance.SetMenuTaskBarVisibility(false);
-            
+
             FikaEventDispatcher.DispatchEvent(new FikaRaidStartedEvent(true));
 
             _ = Task.Run(GameController.CreateStashes);
