@@ -1,18 +1,17 @@
 ﻿using HarmonyLib;
 using Fika.Core.Patching;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEngine;
+using EFT.Interactive;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches.Audio
 {
-    public class AudioSource_Play_Transpiler : FikaPatch
+    internal class WindowBreaker_method_23_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(AudioSource).GetMethods().Where(x => x.Name == "Play" && x.GetParameters().Length == 0).SingleOrDefault();
+            return typeof(WindowBreaker).GetMethod(nameof(WindowBreaker.method_23));
         }
 
         [PatchTranspiler]

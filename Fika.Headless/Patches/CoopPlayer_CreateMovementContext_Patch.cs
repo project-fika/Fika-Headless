@@ -21,8 +21,8 @@ namespace Fika.Headless.Patches
             if (__instance.IsYourPlayer)
             {
                 LayerMask localMask = EFTHardSettings.Instance.MOVEMENT_MASK;
-                __instance.MovementContext = HeadlessClientMovementContext.Create(__instance, new Func<IAnimator>(__instance.GetBodyAnimatorCommon),
-                    new Func<ICharacterController>(__instance.GetCharacterControllerCommon), localMask);
+                __instance.MovementContext = HeadlessClientMovementContext.Create(__instance, __instance.GetBodyAnimatorCommon,
+                    __instance.GetCharacterControllerCommon, localMask);
 
                 return false;
             }

@@ -280,14 +280,13 @@ namespace Fika.Headless.Classes.GameMode
             await GameController.WaitForHostToStart();
 
             LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
-
-            await GameController.InitializeLoot(_location);
+            await GameController.InitializeLoot(location);
             await LoadLoot(location);
 
             GameController.CoopHandler.ShouldSync = true;
             await StartBotSystemsAndCountdown(botsSettings);
 
-            Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(_location.Loot, LocationScene.GetAllObjects<LootableContainer>(false));
+            Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot, LocationScene.GetAllObjects<LootableContainer>(false));
             AirdropEventClass airdropEventClass = new()
             {
                 AirdropParameters = _location.airdropParameters
@@ -323,7 +322,7 @@ namespace Fika.Headless.Classes.GameMode
             {
                 CoopPlayer player = GameController.CoopHandler.HumanPlayers[0];
                 CameraClass.Instance.Camera.transform.SetParent(player.gameObject.transform, false);
-                CameraClass.Instance.Camera.transform.localPosition = new(1.345f, 1.7f, 0f);
+                CameraClass.Instance.Camera.transform.localPosition = new(0f, 1.7f, 0f);
                 CameraClass.Instance.Camera.transform.rotation = Quaternion.identity;
             }
         }
