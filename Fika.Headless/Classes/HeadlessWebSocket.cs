@@ -101,7 +101,6 @@ namespace Fika.Core.Networking
             {
                 case EFikaHeadlessWSMessageTypes.HeadlessStartRaid:
                     StartRaid data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
-                    logger.LogInfo(JsonConvert.SerializeObject(data));
 
                     AsyncWorker.RunInMainTread(() =>
                     {

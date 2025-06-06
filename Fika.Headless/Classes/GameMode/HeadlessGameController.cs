@@ -1,9 +1,14 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
+using EFT.Game.Spawning;
 using EFT.Interactive;
 using EFT.Interactive.SecretExfiltrations;
 using EFT.UI;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.HostClasses;
+using Fika.Core.Coop.Utils;
+using Fika.Core.Networking;
+using System;
 
 namespace Fika.Headless.Classes.GameMode
 {
@@ -26,11 +31,24 @@ namespace Fika.Headless.Classes.GameMode
                 // TODO: Sync to clients!!!
             }
 
-            ExfilManager.Run(exfilPoints, secretExfilPoints);
             _abstractGame.Status = GameStatus.Started;
             _botsController.Bots.CheckActivation();
 
             ConsoleScreen.ApplyStartCommands();
+        }
+
+        public override void CreateSpawnSystem(Profile profile)
+        {
+            _spawnPoints = SpawnPointManagerClass.CreateFromScene(new DateTime?(EFTDateTimeClass.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
+                                    Location.SpawnPointParams);
+            int spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
+            SpawnSettingsStruct settings = new(Location.MinDistToFreePoint,
+                Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
+                Location.NoGroupSpawn, Location.OneTimeSpawn);
+            SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
+            _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, Singleton<IFikaNetworkManager>.Instance.RaidSide,
+                null, null, null, null, null);
+            InfiltrationPoint = string.IsNullOrEmpty(_spawnPoint.Infiltration) ? "MissingInfiltration" : _spawnPoint.Infiltration;
         }
     }
 }

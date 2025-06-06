@@ -73,7 +73,6 @@ namespace Fika.Headless.Patches.GameMode
             }
 
             ISession session = instance.Session;
-
             if (session == null)
             {
                 throw new NullReferenceException("Backend session was null when initializing game!");
@@ -137,7 +136,15 @@ namespace Fika.Headless.Patches.GameMode
 
             headlessGame.SetMatchmakerStatus("Coop game created");
 
-            await headlessGame.Init(raidSettings.BotSettings, backendUrl);
+            try
+            {
+                await headlessGame.Init(raidSettings.BotSettings, backendUrl);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                throw;
+            }
             GameObject.DestroyImmediate(MonoBehaviourSingleton<MenuUI>.Instance.gameObject);
             ___mainMenuController?.Unsubscribe();
             gameWorld.OnGameStarted();

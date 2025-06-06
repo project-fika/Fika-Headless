@@ -3,9 +3,8 @@ using Comfort.Common;
 using Dissonance.Networking.Client;
 using EFT;
 using EFT.Bots;
-using EFT.CameraControl;
-using EFT.HealthSystem;
 using EFT.Interactive;
+using EFT.InventoryLogic;
 using EFT.UI;
 using EFT.Weather;
 using Fika.Core;
@@ -17,20 +16,15 @@ using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using JsonType;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
-using static LocationSettingsClass;
-using UnityEngine.Profiling;
-using EFT.InventoryLogic;
-using System.Linq;
-using System.Threading;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
-using System.Diagnostics;
-using System.Collections;
-using EFT.UI.Matchmaker;
-using EFT.UI.Screens;
 
 namespace Fika.Headless.Classes.GameMode
 {
@@ -40,7 +34,7 @@ namespace Fika.Headless.Classes.GameMode
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -48,7 +42,7 @@ namespace Fika.Headless.Classes.GameMode
         {
             get
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
 
@@ -56,54 +50,25 @@ namespace Fika.Headless.Classes.GameMode
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
-        public List<int> ExtractedPlayers
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public List<int> ExtractedPlayers { get; } = [];
 
-        public ExitStatus ExitStatus
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
+        public ExitStatus ExitStatus { get; set; } = ExitStatus.Survived;
 
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string ExitLocation
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public string ExitLocation { get; set; }
 
         public ESeason Season
         {
             get
             {
-                throw new NotImplementedException();
+                return GameController.Season;
             }
-
             set
             {
-                throw new NotImplementedException();
+                GameController.Season = value;
             }
         }
 
@@ -111,12 +76,12 @@ namespace Fika.Headless.Classes.GameMode
         {
             get
             {
-                throw new NotImplementedException();
+                return GameController.SeasonsSettings;
             }
 
             set
             {
-                throw new NotImplementedException();
+                GameController.SeasonsSettings = value;
             }
         }
 
@@ -175,6 +140,7 @@ namespace Fika.Headless.Classes.GameMode
             }
 
             HeadlessGameController headlessGameController = new(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime);
+            headlessGameController.Location = location;
             game.GameDateTime = backendDateTime;
             game.GameController = headlessGameController;
             game._localRaidSettings = localRaidSettings;
@@ -273,7 +239,15 @@ namespace Fika.Headless.Classes.GameMode
             Logger.LogInfo("Unloading unused resources");
             await Resources.UnloadUnusedAssets().Await();
 
-            Status = GameStatus.Running;
+            /*BetterAudio betterAudio = GClass867.FindUnityObjectOfType<BetterAudio>();
+            if (betterAudio == null)
+            {
+                GameObject gameObject = new("Audio");
+                gameObject.transform.SetParent(GameWorld.gameObject.transform);
+                betterAudio = gameObject.AddComponent<BetterAudio>();
+            }
+            Singleton<BetterAudio>.Create(betterAudio);
+            await betterAudio.PreloadCoroutine();*/
 
             Status = GameStatus.Running;
             UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
@@ -306,7 +280,9 @@ namespace Fika.Headless.Classes.GameMode
                 FixedDeltaTime = 1f / config.FixedFrameRate;
             }
 
-            try
+            GameController.CreateSpawnSystem(null);
+
+            /*try
             {
                 CameraClass.Instance.SetOcclusionCullingEnabled(_location.OcculsionCullingEnabled);
                 CameraClass.Instance.IsActive = false;
@@ -315,7 +291,7 @@ namespace Fika.Headless.Classes.GameMode
             {
                 Logger.LogError($"InitPlayer: {ex.Message}");
                 throw;
-            }
+            }*/
             await GameController.WaitForHostToStart();
 
             LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
@@ -349,6 +325,7 @@ namespace Fika.Headless.Classes.GameMode
             }
             MemoryControllerClass.GCEnabled = false;
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            CameraClass.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
             CameraClass.Instance.IsActive = true;
             TaskCompletionSource taskCompletionSource = new();
             StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
@@ -442,7 +419,7 @@ namespace Fika.Headless.Classes.GameMode
 
         private void StaticUpdateFunction()
         {
-            
+
         }
 
         private class UpdateType()

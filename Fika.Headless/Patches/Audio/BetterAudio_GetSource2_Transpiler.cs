@@ -7,11 +7,11 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio
 {
-    internal class BetterAudio_GetSource_Transpiler : FikaPatch
+    internal class BetterAudio_GetSource2_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BetterAudio).GetMethod(nameof(BetterAudio.GetSource), [typeof(SoundBank), typeof(bool)]);
+            return typeof(BetterAudio).GetMethod(nameof(BetterAudio.GetSource), [typeof(BetterAudio.AudioSourceGroupType), typeof(bool)]);
         }
 
         [PatchTranspiler]
