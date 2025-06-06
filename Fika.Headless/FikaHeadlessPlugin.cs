@@ -387,6 +387,7 @@ namespace Fika.Headless
         /// <returns></returns>
         private IEnumerator VerifyPlayersRoutine(TarkovApplication tarkovApplication)
         {
+            yield break;
             yield return new WaitForSeconds(300);
             if (Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount < 1)
             {
