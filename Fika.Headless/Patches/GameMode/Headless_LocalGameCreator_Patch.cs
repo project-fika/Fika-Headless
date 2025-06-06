@@ -173,6 +173,7 @@ namespace Fika.Headless.Patches.GameMode
             public void ReleaseSingleton()
             {
                 Singleton<AbstractGame>.Release(HeadlessGame);
+                Singleton<IFikaGame>.Release(HeadlessGame);
             }
         }
     }

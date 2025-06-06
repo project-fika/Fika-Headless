@@ -23,6 +23,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
 using SPT.Custom.Utils;
+using SPT.SinglePlayer.Patches.ScavMode;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -98,8 +99,7 @@ namespace Fika.Headless
             gcPoint = RAMCleanInterval.Value * 60f;
 
             DisableFikaCorePatches();
-            new MemoryCollectionPatch().Disable();
-            new SetPreRaidSettingsScreenDefaultsPatch().Disable();
+            DisableSPTPatches();
 
             PatchManager manager = new(this, true);
             manager.EnablePatches();
@@ -121,6 +121,13 @@ namespace Fika.Headless
             }
 
             FikaBackendUtils.IsHeadless = true;
+        }
+
+        private void DisableSPTPatches()
+        {
+            new MemoryCollectionPatch().Disable();
+            new SetPreRaidSettingsScreenDefaultsPatch().Disable();
+            new DisablePMCExtractsForScavsPatch().Disable();
         }
 
         /// <summary>

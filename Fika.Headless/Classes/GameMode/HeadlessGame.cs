@@ -2,7 +2,9 @@
 using Comfort.Common;
 using Dissonance.Networking.Client;
 using EFT;
+using EFT.AssetsManager;
 using EFT.Bots;
+using EFT.EnvironmentEffect;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.UI;
@@ -10,6 +12,7 @@ using EFT.Weather;
 using Fika.Core;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Patches;
+using Fika.Core.Coop.Players;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
@@ -25,6 +28,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
+using static LocationSettingsClass;
 
 namespace Fika.Headless.Classes.GameMode
 {
@@ -434,17 +438,94 @@ namespace Fika.Headless.Classes.GameMode
 
         public bool IsHeard()
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         public void ReportAbuse()
         {
-            throw new NotImplementedException();
+            // Do nothing
         }
 
         public void Stop(string profileId, ExitStatus exitStatus, string exitName, float delay = 0)
         {
-            throw new NotImplementedException();
+            FikaEventDispatcher.DispatchEvent(new FikaGameEndedEvent(GameController.IsServer, exitStatus, exitName));
+
+            if (exitStatus < ExitStatus.Transit)
+            {
+                FikaBackendUtils.IsTransit = false;
+            }
+
+            if (FikaBackendUtils.IsTransit)
+            {
+                RaidTransitionInfoClass data = FikaBackendUtils.TransitData;
+                data.transitionType = ELocationTransition.Common;
+                data.transitionCount++;
+                data.visitedLocations = [.. data.visitedLocations, GameController.Location.Id];
+                FikaBackendUtils.TransitData = data;
+            }
+            else
+            {
+                FikaBackendUtils.ResetTransitData();
+            }
+
+            Logger.LogDebug("Stop");
+
+            GameController.DestroyDebugComponent();
+
+            (GameController as HostGameController).StopBotsSystem(false);
+
+            if (GameController.CoopHandler != null)
+            {
+                // Create a copy to prevent errors when the dictionary is being modified (which happens when using spawn mods)
+                CoopPlayer[] players = [.. GameController.CoopHandler.Players.Values];
+                foreach (CoopPlayer player in players)
+                {
+                    if (player == null)
+                    {
+                        continue;
+                    }
+
+                    player.Dispose();
+                    AssetPoolObject.ReturnToPool(player.gameObject, true);
+                }
+            }
+            else
+            {
+                Logger.LogError("Stop: Could not find CoopHandler!");
+            }
+
+            if (!FikaBackendUtils.IsTransit)
+            {
+                Destroy(GameController.CoopHandler);
+            }
+
+            GameUI gameUI = GameUI.Instance;
+
+            Status = GameStatus.Stopping;
+            GameTimer.TryStop();
+            if (gameUI.TimerPanel.isActiveAndEnabled)
+            {
+                gameUI.TimerPanel.Close();
+            }
+            if (EnvironmentManager.Instance != null)
+            {
+                EnvironmentManager.Instance.Stop();
+            }
+            BackendConfigAbstractClass.Config.UseSpiritPlayer = false;
+
+            CurrentScreenSingletonClass.Instance.CloseAllScreensForced();
+
+            CleanUp();
+
+            _exitCallback(new(exitStatus, new(), null));
+            UIEventSystem.Instance.Enable();
+        }
+
+        private void CleanUp()
+        {
+            GameController.CleanUp();
+            FikaBackendUtils.CleanUpVariables();
+            BTRSide_Patches.Passengers.Clear();
         }
     }
 }
