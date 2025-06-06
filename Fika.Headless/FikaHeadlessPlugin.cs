@@ -54,13 +54,14 @@ namespace Fika.Headless
         }
         public bool CanHost { get; internal set; }
 
-        private HeadlessWebSocket FikaHeadlessWebSocket;
-        private float gcCounter;
-        private float gcPoint;
-        private Coroutine verifyConnectionsRoutine;
-        private bool invalidPluginsFound;
-        private int currentRaidCount = 0;
-        private int restartAfterAmountOfRaids = 0;
+        private HeadlessWebSocket _fikaHeadlessWebSocket;
+        private float _gcCounter;
+        private float _gcPoint;
+        private Coroutine _verifyConnectionsRoutine;
+        private bool _invalidPluginsFound;
+        private int _currentRaidCount = 0;
+        private int _restartAfterAmountOfRaids = 0;
+        private bool _hasVerified;
 
         public static ConfigEntry<int> UpdateRate { get; private set; }
         public static ConfigEntry<int> RAMCleanInterval { get; private set; }
@@ -89,14 +90,14 @@ namespace Fika.Headless
         protected void Awake()
         {
             Instance = this;
-            gcCounter = 0;
+            _gcCounter = 0;
 
             FikaHeadlessLogger = Logger;
 
             GetHeadlessRestartAfterRaidAmount();
             SetupConfig();
 
-            gcPoint = RAMCleanInterval.Value * 60f;
+            _gcPoint = RAMCleanInterval.Value * 60f;
 
             DisableFikaCorePatches();
             DisableSPTPatches();
@@ -225,12 +226,12 @@ namespace Fika.Headless
 
         protected void Update()
         {
-            gcCounter += Time.unscaledDeltaTime;
+            _gcCounter += Time.unscaledDeltaTime;
 
-            if (gcCounter > (gcPoint) && !FikaGlobals.IsInRaid())
+            if (_gcCounter > (_gcPoint) && !FikaGlobals.IsInRaid())
             {
                 Logger.LogDebug("Clearing memory");
-                gcCounter -= gcPoint;
+                _gcCounter -= _gcPoint;
                 Resources.UnloadUnusedAssets().Await();
                 MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
             }
@@ -290,6 +291,11 @@ namespace Fika.Headless
         /// <returns></returns>
         public async Task RunPluginValidation()
         {
+            if (_hasVerified)
+            {
+                return;
+            }
+
             Logger.LogInfo("Running plugin validation");
             while (!FikaPlugin.Instance.LocalesLoaded)
             {
@@ -323,6 +329,7 @@ namespace Fika.Headless
             await Task.Delay(TimeSpan.FromSeconds(5));
 
             AsyncWorker.RunInMainTread(CreateHeadlessWebsocket);
+            _hasVerified = true;
         }
 
         /// <summary>
@@ -330,10 +337,10 @@ namespace Fika.Headless
         /// </summary>
         private void CreateHeadlessWebsocket()
         {
-            FikaHeadlessWebSocket = new();
-            if (!invalidPluginsFound)
+            _fikaHeadlessWebSocket = new();
+            if (!_invalidPluginsFound)
             {
-                FikaHeadlessWebSocket.Connect();
+                _fikaHeadlessWebSocket.Connect();
             }
         }
 
@@ -370,7 +377,7 @@ namespace Fika.Headless
             {
                 string modsString = string.Join("; ", unsupportedMods);
                 Logger.LogFatal($"{unsupportedMods.Count} invalid plugins found, this headless host will not be available for hosting! Remove these mods: {modsString}");
-                invalidPluginsFound = true;
+                _invalidPluginsFound = true;
                 if (IsRunningWindows)
                 {
                     MessageBoxHelper.Show($"{unsupportedMods.Count} invalid plugins found, this headless host will not be available for hosting! Check your log files for more information.",
@@ -380,7 +387,7 @@ namespace Fika.Headless
                 return Task.CompletedTask;
             }
 
-            invalidPluginsFound = false;
+            _invalidPluginsFound = false;
 
             Logger.LogInfo("Plugins verified successfully");
 
@@ -490,7 +497,7 @@ namespace Fika.Headless
 
             FikaBackendUtils.IsHeadlessGame = true;
 
-            verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
+            _verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
 
             try
             {
@@ -510,10 +517,10 @@ namespace Fika.Headless
 
         public void OnSessionResultExitStatus_Show()
         {
-            currentRaidCount++;
-            if (restartAfterAmountOfRaids != 0)
+            _currentRaidCount++;
+            if (_restartAfterAmountOfRaids != 0)
             {
-                if (currentRaidCount >= restartAfterAmountOfRaids)
+                if (_currentRaidCount >= _restartAfterAmountOfRaids)
                 {
                     Application.Quit();
                 }
@@ -523,7 +530,7 @@ namespace Fika.Headless
         private void GetHeadlessRestartAfterRaidAmount()
         {
             RestartAfterRaidAmountModel headlessConfig = FikaRequestHandler.GetHeadlessRestartAfterRaidAmount();
-            restartAfterAmountOfRaids = headlessConfig.Amount;
+            _restartAfterAmountOfRaids = headlessConfig.Amount;
         }
     }
 }
