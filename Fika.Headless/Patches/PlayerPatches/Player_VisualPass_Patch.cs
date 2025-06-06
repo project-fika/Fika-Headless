@@ -3,7 +3,7 @@ using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches.PlayerPatches
 {
     /// <summary>
     /// This patch aims to decrease the amount of CPU cycles spent updating data the headless does not see

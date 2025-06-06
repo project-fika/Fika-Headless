@@ -8,7 +8,9 @@ using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.HostClasses;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
+using LiteNetLib;
 using System;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.Classes.GameMode
 {
@@ -49,6 +51,36 @@ namespace Fika.Headless.Classes.GameMode
             _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, Singleton<IFikaNetworkManager>.Instance.RaidSide,
                 null, null, null, null, null);
             InfiltrationPoint = string.IsNullOrEmpty(_spawnPoint.Infiltration) ? "MissingInfiltration" : _spawnPoint.Infiltration;
+        }
+
+        public Task WaitForHeadlessInit(float timeBeforeDeployLocal)
+        {
+            if (_fikaGame is not AbstractGame abstractGame)
+            {
+                throw new NullReferenceException("AbstractGame was missing");
+            }
+
+            FikaServer server = Singleton<FikaServer>.Instance;
+            server.HostReady = true;
+
+            DateTime startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
+            GameTime = startTime;
+            server.GameStartTime = startTime;
+            SessionTime = abstractGame.GameTimer.SessionTime;
+
+            InformationPacket packet = new()
+            {
+                RaidStarted = RaidStarted,
+                ReadyPlayers = server.ReadyClients,
+                HostReady = server.HostReady,
+                GameTime = GameTime.Value,
+                SessionTime = SessionTime.Value
+            };
+
+            server.SendDataToAll(ref packet, DeliveryMethod.ReliableOrdered);
+            LootData = null;
+
+            return Task.CompletedTask;
         }
     }
 }

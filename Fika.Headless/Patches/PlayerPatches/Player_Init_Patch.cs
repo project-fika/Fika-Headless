@@ -4,7 +4,7 @@ using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches.PlayerPatches
 {
     public class Player_Init_Patch : FikaPatch
     {

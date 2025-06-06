@@ -149,6 +149,8 @@ namespace Fika.Headless.Patches.GameMode
             ___mainMenuController?.Unsubscribe();
             bundleLock.MaxConcurrentOperations = 1;
             gameWorld.OnGameStarted();
+
+            FikaEventDispatcher.DispatchEvent(new GameWorldStartedEvent(gameWorld));
         }
 
         private static TimeSpan GetRaidMinutes(int defaultMinutes)

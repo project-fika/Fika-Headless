@@ -1,20 +1,17 @@
-﻿using Fika.Core.Patching;
+﻿using EFT;
+using Fika.Core.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches.PlayerPatches
 {
-    /// <summary>
-    /// The purpose of this patch is to disable bot sleeping on the headless host
-    /// </summary>
-    [IgnoreAutoPatch]
-    public class BotStandBy_Update_Transpiler : FikaPatch
+    internal class Player_method_60_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BotStandBy).GetMethod(nameof(BotStandBy.Update));
+            return typeof(Player).GetMethod(nameof(Player.method_60));
         }
 
         [PatchTranspiler]

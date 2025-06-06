@@ -10,6 +10,7 @@ using EFT.InventoryLogic;
 using EFT.UI;
 using EFT.Weather;
 using Fika.Core;
+using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Patches;
 using Fika.Core.Coop.Players;
@@ -246,7 +247,7 @@ namespace Fika.Headless.Classes.GameMode
             Status = GameStatus.Running;
             UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
 
-            await GameController.SetupCoopHandler();
+            await GameController.SetupCoopHandler(this);
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             gameWorld.LocationId = _location.Id;
             ExfiltrationControllerClass.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
@@ -297,11 +298,34 @@ namespace Fika.Headless.Classes.GameMode
 
             await RunMemoryCleanup();
 
+            int timeBeforeDeployLocal = FikaBackendUtils.IsReconnect ? 3 : Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
+#if DEBUG
+            timeBeforeDeployLocal = 3;
+#endif
+            await (GameController as HeadlessGameController).WaitForHeadlessInit(timeBeforeDeployLocal);
+
+            FikaBackendUtils.GroupPlayers.Clear();
+
             Singleton<SharedGameSettingsClass>.Instance.Graphics.Controller.ChangeFramerate(true);
             MonoBehaviourSingleton<EnvironmentUI>.Instance.ShowEnvironment(false);
             MonoBehaviourSingleton<PreloaderUI>.Instance.SetMenuTaskBarVisibility(false);
+            
+            FikaEventDispatcher.DispatchEvent(new FikaRaidStartedEvent(true));
 
-            FikaEventDispatcher.DispatchEvent(new GameWorldStartedEvent(GameWorld));
+            _ = Task.Run(GameController.CreateStashes);
+
+            if (FikaPlugin.UseFikaGC.Value)
+            {
+                NetManagerUtils.FikaGameObject.AddComponent<GCManager>();
+            }
+
+            if (GameController.CoopHandler.HumanPlayers.Count > 0)
+            {
+                CoopPlayer player = GameController.CoopHandler.HumanPlayers[0];
+                CameraClass.Instance.Camera.transform.SetParent(player.gameObject.transform, false);
+                CameraClass.Instance.Camera.transform.localPosition = new(1.345f, 1.7f, 0f);
+                CameraClass.Instance.Camera.transform.rotation = Quaternion.identity;
+            }
         }
 
         private Task RunMemoryCleanup()
