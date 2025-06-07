@@ -228,7 +228,7 @@ namespace Fika.Headless
         {
             _gcCounter += Time.unscaledDeltaTime;
 
-            if (_gcCounter > (_gcPoint) && !FikaGlobals.IsInRaid())
+            if (_gcCounter > _gcPoint && !FikaGlobals.IsInRaid())
             {
                 Logger.LogDebug("Clearing memory");
                 _gcCounter -= _gcPoint;
