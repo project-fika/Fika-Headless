@@ -1,10 +1,10 @@
-﻿using SPT.Reflection.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
 using UnityEngine;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    internal class SingleFlareController_OnEnable_Patch : ModulePatch
+    internal class SingleFlareController_OnEnable_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
