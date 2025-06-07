@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches.Lighting
 {
     internal class LampController_TurnLights_Transpiler : FikaPatch
     {

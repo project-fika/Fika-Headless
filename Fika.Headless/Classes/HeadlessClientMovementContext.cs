@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Fika.Core.Coop.ObservedClasses
+namespace Fika.Headless.Classes
 {
     public class HeadlessClientMovementContext : MovementContext
     {

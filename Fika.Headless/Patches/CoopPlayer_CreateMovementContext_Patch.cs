@@ -1,7 +1,7 @@
 ﻿using EFT;
-using Fika.Core.Coop.ObservedClasses;
 using Fika.Core.Coop.Players;
 using Fika.Core.Patching;
+using Fika.Headless.Classes;
 using System;
 using System.Reflection;
 using UnityEngine;

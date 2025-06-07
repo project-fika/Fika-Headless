@@ -12,7 +12,7 @@ using System;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace Fika.Core.Networking
+namespace Fika.Headless.Classes
 {
     public class HeadlessWebSocket
     {
