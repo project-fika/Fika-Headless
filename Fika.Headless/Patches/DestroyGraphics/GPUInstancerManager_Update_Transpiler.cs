@@ -17,13 +17,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
         [PatchTranspiler]
         public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
         {
-            // Create a new set of instructions
-            List<CodeInstruction> instructionsList =
-            [
-                new CodeInstruction(OpCodes.Ret) // Return immediately
-            ];
-
-            return instructionsList;
+            yield return new(OpCodes.Ret);
         }
     }
 }
