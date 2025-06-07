@@ -120,6 +120,8 @@ namespace Fika.Headless.Classes.GameMode
             EUpdateQueue updateQueue, ISession backEndSession, TimeSpan sessionTime, LocalRaidSettings localRaidSettings,
             RaidSettings raidSettings)
         {
+            Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;
+
             HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
             game.Logger = new(nameof(HeadlessGame));
             game.GameWorld = gameWorld;

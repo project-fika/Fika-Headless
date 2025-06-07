@@ -48,7 +48,10 @@ namespace Fika.Headless.Classes.GameMode
                 Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
                 Location.NoGroupSpawn, Location.OneTimeSpawn);
             SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
-            _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, Singleton<IFikaNetworkManager>.Instance.RaidSide,
+
+            EPlayerSide side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
+
+            _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, side,
                 null, null, null, null, null);
             InfiltrationPoint = string.IsNullOrEmpty(_spawnPoint.Infiltration) ? "MissingInfiltration" : _spawnPoint.Infiltration;
         }
