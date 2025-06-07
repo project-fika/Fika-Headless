@@ -18,6 +18,7 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
+using Fika.Core.Networking.Http;
 using JsonType;
 using System;
 using System.Collections;
@@ -540,6 +541,9 @@ namespace Fika.Headless.Classes.GameMode
             CurrentScreenSingletonClass.Instance.CloseAllScreensForced();
 
             CleanUp();
+
+            PlayerLeftRequest body = new(FikaBackendUtils.Profile.ProfileId);
+            FikaRequestHandler.RaidLeave(body);
 
             _exitCallback(new(exitStatus, new(), null));
             UIEventSystem.Instance.Enable();
