@@ -7,13 +7,13 @@ namespace Fika.Core.Coop.ObservedClasses
 {
     public class HeadlessMovementContext : MovementContext
     {
-        private Action<CollisionFlags> OnMotion;
+        private Action<CollisionFlags> _onMotion;
 
         public new static HeadlessMovementContext Create(Player player, Func<IAnimator> animatorGetter, Func<ICharacterController> characterControllerGetter, LayerMask groundMask)
         {
             HeadlessMovementContext movementContext = Create<HeadlessMovementContext>(player, animatorGetter, characterControllerGetter, groundMask);
-            movementContext.OnMotion = Traverse.Create(movementContext).Field<Action<CollisionFlags>>("OnMotionApplied").Value;
-            if (movementContext.OnMotion == null)
+            movementContext._onMotion = Traverse.Create(movementContext).Field<Action<CollisionFlags>>("OnMotionApplied").Value;
+            if (movementContext._onMotion == null)
             {
                 throw new NullReferenceException("Could not find OnMotionApplied event");
             }
@@ -24,7 +24,7 @@ namespace Fika.Core.Coop.ObservedClasses
         {
             CollisionFlags collisionFlags = CharacterController.Move(motion + PlatformMotion, deltaTime);
             method_1(motion);
-            OnMotion?.Invoke(collisionFlags);
+            _onMotion?.Invoke(collisionFlags);
         }
     }
 }
