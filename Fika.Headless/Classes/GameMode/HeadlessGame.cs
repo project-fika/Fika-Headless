@@ -181,7 +181,7 @@ namespace Fika.Headless.Classes.GameMode
 
             game.GameController.RaidSettings = raidSettings;
             game.GameController.ThrownGrenades = [];
-            //game.gameObject.AddComponent<HeadlessRaidController>();
+            game.gameObject.AddComponent<HeadlessRaidController>();
 
             return game;
         }
@@ -264,7 +264,7 @@ namespace Fika.Headless.Classes.GameMode
 
             if ((FikaBackendUtils.IsHeadless || FikaBackendUtils.IsHeadlessGame) && FikaPlugin.Instance.EnableTransits)
             {
-                //GameController.InitializeTransitSystem(gameWorld, instance, Profile_0, localRaidSettings_0, _location);
+                GameController.InitializeTransitSystem(gameWorld, instance, null, _localRaidSettings, _location);
             }
 
             GameController.InitializeRunddans(instance, gameWorld, _location);

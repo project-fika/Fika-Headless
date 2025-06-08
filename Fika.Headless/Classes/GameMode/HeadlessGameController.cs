@@ -28,7 +28,7 @@ namespace Fika.Headless.Classes.GameMode
             ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
             SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];
 
-            if (TransitControllerAbstractClass.Exist(out FikaHostTransitController transitController))
+            if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
             {
                 transitController.Init();
                 // TODO: Sync to clients!!!

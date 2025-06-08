@@ -8,6 +8,7 @@ using Fika.Core.Coop.Players;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using LiteNetLib;
+using SPT.SinglePlayer.Patches.RaidFix;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,16 +47,16 @@ namespace Fika.Headless.Classes
 
         private void HeadlessOnPlayerEnter(TransitPoint point, Player player)
         {
+#if DEBUG
+            FikaGlobals.LogInfo($"{player.Profile.Info.Nickname} entered transit point {point.Description}");
+#endif
+
             if (!method_11(player, point.parameters.id, out string _))
             {
-
-            }
-            else
-            {
-                if (!method_11(player, point.parameters.id, out string _))
-                {
-                    return;
-                }
+#if DEBUG
+                FikaGlobals.LogWarning("Player is not eligible for this transit point"); 
+#endif
+                return;
             }
 
             if (!_playersInTransitZone.ContainsKey(player))
@@ -129,6 +130,10 @@ namespace Fika.Headless.Classes
 
         private void HeadlessOnPlayerExit(TransitPoint point, Player player)
         {
+#if DEBUG
+            FikaGlobals.LogInfo($"{player.Profile.Info.Nickname} left transit point {point.Description}");
+#endif
+
             if (_playersInTransitZone.TryGetValue(player, out int value))
             {
                 if (value == point.parameters.id)
@@ -310,6 +315,17 @@ namespace Fika.Headless.Classes
 
             FikaBackendUtils.IsTransit = true;
             Singleton<IFikaGame>.Instance.Stop(string.Empty, ExitStatus.Transit, point.parameters.name);
+        }
+
+        public override void Dispose()
+        {
+            OnPlayerEnter -= HeadlessOnPlayerEnter;
+            OnPlayerExit -= HeadlessOnPlayerExit;
+        }
+
+        public void Init()
+        {
+            EnablePoints(true);
         }
     }
 }
