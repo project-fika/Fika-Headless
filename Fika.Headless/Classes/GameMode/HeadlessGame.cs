@@ -89,7 +89,7 @@ namespace Fika.Headless.Classes.GameMode
             }
         }
 
-        private ManualLogSource Logger { get; set; }
+        private ManualLogSource _logger { get; set; }
 
         public ISession BackendSession { get; set; }
 
@@ -124,7 +124,7 @@ namespace Fika.Headless.Classes.GameMode
             Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;
 
             HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
-            game.Logger = new(nameof(HeadlessGame));
+            game._logger = BepInEx.Logging.Logger.CreateLogSource(nameof(HeadlessGame));
             game.GameWorld = gameWorld;
 
             float num = 1.5f;
@@ -167,12 +167,12 @@ namespace Fika.Headless.Classes.GameMode
             {
                 float newFlow = timeAndWeather.TimeFlowType.ToTimeFlow();
                 gameWorld.GameDateTime.TimeFactor = newFlow;
-                game.Logger.LogInfo($"Using custom time flow: {newFlow}");
+                game._logger.LogInfo($"Using custom time flow: {newFlow}");
             }
 
             if (OfflineRaidSettingsMenuPatch_Override.UseCustomWeather && game.GameController.IsServer)
             {
-                game.Logger.LogInfo("Custom weather enabled, initializing curves");
+                game._logger.LogInfo("Custom weather enabled, initializing curves");
                 (game.GameController as HostGameController).SetupCustomWeather(timeAndWeather);
             }
 
@@ -243,7 +243,7 @@ namespace Fika.Headless.Classes.GameMode
 
         public async Task Init(BotControllerSettings botsSettings, string backendUrl)
         {
-            Logger.LogInfo("Unloading unused resources");
+            _logger.LogInfo("Unloading unused resources");
             await Resources.UnloadUnusedAssets().Await();
 
             Status = GameStatus.Running;
@@ -255,7 +255,7 @@ namespace Fika.Headless.Classes.GameMode
             ExfiltrationControllerClass.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
             !GameController.IsServer, _location.DisabledScavExits);
 
-            Logger.LogInfo($"Location: {_location.Name}");
+            _logger.LogInfo($"Location: {_location.Name}");
             BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
 
             GameController.InitShellingController(instance, gameWorld, _location);
@@ -493,7 +493,7 @@ namespace Fika.Headless.Classes.GameMode
                 FikaBackendUtils.ResetTransitData();
             }
 
-            Logger.LogDebug("Stop");
+            _logger.LogDebug("Stop");
 
             GameController.DestroyDebugComponent();
 
@@ -516,7 +516,7 @@ namespace Fika.Headless.Classes.GameMode
             }
             else
             {
-                Logger.LogError("Stop: Could not find CoopHandler!");
+                _logger.LogError("Stop: Could not find CoopHandler!");
             }
 
             if (!FikaBackendUtils.IsTransit)
