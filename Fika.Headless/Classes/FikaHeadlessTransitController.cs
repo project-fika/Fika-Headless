@@ -308,6 +308,7 @@ namespace Fika.Headless.Classes
                 tarkovApplication.transitionStatus = new(location, false, _localRaidSettings.playerSide, ERaidMode.Local, _localRaidSettings.timeVariant);
             }
 
+            FikaBackendUtils.IsTransit = true;
             Singleton<IFikaGame>.Instance.Stop(string.Empty, ExitStatus.Transit, point.parameters.name);
         }
     }

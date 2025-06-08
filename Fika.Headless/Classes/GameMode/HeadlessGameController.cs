@@ -4,6 +4,7 @@ using EFT.Game.Spawning;
 using EFT.Interactive;
 using EFT.Interactive.SecretExfiltrations;
 using EFT.UI;
+using Fika.Core.Coop.ClientClasses;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.HostClasses;
 using Fika.Core.Coop.Utils;
@@ -84,6 +85,29 @@ namespace Fika.Headless.Classes.GameMode
             LootData = null;
 
             return Task.CompletedTask;
+        }
+
+        public override void InitializeTransitSystem(GameWorld gameWorld, BackendConfigSettingsClass instance, Profile profile, LocalRaidSettings localRaidSettings, LocationSettingsClass.Location location)
+        {
+            bool transitActive;
+            if (instance == null)
+            {
+                transitActive = false;
+            }
+            else
+            {
+                BackendConfigSettingsClass.TransitSettingsClass transitSettings = instance.transitSettings;
+                transitActive = transitSettings != null && transitSettings.active;
+            }
+            if (transitActive)
+            {
+                gameWorld.TransitController = new FikaHeadlessTransitController(instance.transitSettings, location.transitParameters, localRaidSettings);
+            }
+            else
+            {
+                Logger.LogInfo("Transits are disabled");
+                TransitControllerAbstractClass.DisableTransitPoints();
+            }
         }
     }
 }
