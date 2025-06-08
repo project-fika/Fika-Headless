@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Diz.Utils;
 using EFT;
 using EFT.GlobalEvents;
 using EFT.Interactive;
@@ -8,10 +9,10 @@ using Fika.Core.Coop.Players;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using LiteNetLib;
-using SPT.SinglePlayer.Patches.RaidFix;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.Classes
 {
@@ -27,6 +28,7 @@ namespace Fika.Headless.Classes
         {
             _localRaidSettings = localRaidSettings;
 
+            TransferItemsController.InitItemControllerServer(FikaGlobals.TransitTraderId, FikaGlobals.TransitTraderName);
             OnPlayerEnter += HeadlessOnPlayerEnter;
             OnPlayerExit += HeadlessOnPlayerExit;
         }
@@ -36,6 +38,7 @@ namespace Fika.Headless.Classes
         private readonly Dictionary<Player, int> _playersInTransitZone = [];
         private bool _headlessTransit;
         private readonly List<int> _transittedPlayers = [];
+        private string _usedPoint;
 
         public int AliveTransitPlayers
         {
@@ -54,7 +57,7 @@ namespace Fika.Headless.Classes
             if (!method_11(player, point.parameters.id, out string _))
             {
 #if DEBUG
-                FikaGlobals.LogWarning("Player is not eligible for this transit point"); 
+                FikaGlobals.LogWarning("Player is not eligible for this transit point");
 #endif
                 return;
             }
@@ -297,7 +300,7 @@ namespace Fika.Headless.Classes
 
             _server.SendDataToAll(ref packet, DeliveryMethod.ReliableOrdered);
 
-            if (FikaBackendUtils.IsHeadless && !_headlessTransit)
+            if (!_headlessTransit)
             {
                 ExtractHeadlessClient(point);
             }
@@ -306,6 +309,7 @@ namespace Fika.Headless.Classes
         private void ExtractHeadlessClient(TransitPoint point)
         {
             _headlessTransit = true;
+            _usedPoint = point.parameters.name;
 
             string location = point.parameters.location;
             if (TarkovApplication.Exist(out TarkovApplication tarkovApplication))
@@ -314,7 +318,18 @@ namespace Fika.Headless.Classes
             }
 
             FikaBackendUtils.IsTransit = true;
-            Singleton<IFikaGame>.Instance.Stop(string.Empty, ExitStatus.Transit, point.parameters.name);
+            _ = Task.Run(DelayHeadlessExtract);
+        }
+
+        private async Task DelayHeadlessExtract()
+        {
+            await Task.Delay(3000);
+            AsyncWorker.RunInMainTread(StopHeadlessGameFromTransit);
+        }
+
+        private void StopHeadlessGameFromTransit()
+        {
+            Singleton<IFikaGame>.Instance.Stop(string.Empty, ExitStatus.Transit, _usedPoint);
         }
 
         public override void Dispose()
