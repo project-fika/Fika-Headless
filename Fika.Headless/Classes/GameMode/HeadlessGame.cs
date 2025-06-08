@@ -542,8 +542,11 @@ namespace Fika.Headless.Classes.GameMode
 
             CleanUp();
 
-            PlayerLeftRequest body = new(FikaBackendUtils.Profile.ProfileId);
-            FikaRequestHandler.RaidLeave(body);
+            if (!FikaBackendUtils.IsTransit)
+            {
+                PlayerLeftRequest body = new(FikaBackendUtils.Profile.ProfileId);
+                FikaRequestHandler.RaidLeave(body); 
+            }
 
             _exitCallback(new(exitStatus, new(), null));
             UIEventSystem.Instance.Enable();
