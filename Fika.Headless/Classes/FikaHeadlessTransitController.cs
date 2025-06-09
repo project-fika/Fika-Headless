@@ -4,6 +4,7 @@ using EFT;
 using EFT.GlobalEvents;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Players;
 using Fika.Core.Coop.Utils;
@@ -310,7 +311,19 @@ namespace Fika.Headless.Classes
 
         private async Task DelayHeadlessExtract()
         {
-            await Task.Delay(3000);
+            CoopHandler coopHandler = Singleton<IFikaNetworkManager>.Instance.CoopHandler;
+            if (coopHandler == null)
+            {
+                FikaGlobals.LogError("CoopHandler was null, quitting after 3 seconds");
+                await Task.Delay(3000);
+            }
+            else
+            {
+                while (coopHandler.AmountOfHumans > 0)
+                {
+                    await Task.Delay(1000);
+                }
+            }
             AsyncWorker.RunInMainTread(StopHeadlessGameFromTransit);
         }
 
