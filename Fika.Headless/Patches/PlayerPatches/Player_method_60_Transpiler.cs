@@ -15,7 +15,7 @@ namespace Fika.Headless.Patches.PlayerPatches
         }
 
         [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> Transpile()
         {
             yield return new(OpCodes.Ret);
         }

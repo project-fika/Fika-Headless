@@ -94,8 +94,8 @@ namespace Fika.Headless.Patches
             await gameSettings.Game.Save();
 
             EFTHardSettings hardSettings = EFTHardSettings.Instance;
-            hardSettings.CULL_GROUNDER = 1000f;
-            hardSettings.AnimatorCullDistance = 1000f;
+            hardSettings.CULL_GROUNDER = 2000f;
+            hardSettings.AnimatorCullDistance = 2000f;
             hardSettings.DEFERRED_DECALS_ENABLED = false;
             hardSettings.DRAW_DEFERRED_DECALS = false;
             hardSettings.PLAYER_HIT_DECALS_ENEBLED = false;
