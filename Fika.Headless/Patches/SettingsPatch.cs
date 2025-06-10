@@ -23,7 +23,7 @@ namespace Fika.Headless.Patches
 
     public static class FikaHeadlessSettingsManager
     {
-        private static bool HasSet = false;
+        private static bool _hasSet;
 
         internal static async Task Initalize()
         {
@@ -35,7 +35,7 @@ namespace Fika.Headless.Patches
 
         internal static async Task SetSettings(SharedGameSettingsClass gameSettings)
         {
-            if (HasSet)
+            if (_hasSet)
             {
                 return;
             }
@@ -101,7 +101,7 @@ namespace Fika.Headless.Patches
             hardSettings.PLAYER_HIT_DECALS_ENEBLED = false;
             hardSettings.STATIC_DEFERRED_DECALS_ENABLED = false;
 
-            HasSet = true;
+            _hasSet = true;
         }
     }
 }
