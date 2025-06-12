@@ -96,10 +96,18 @@ namespace Fika.Headless.Patches
             EFTHardSettings hardSettings = EFTHardSettings.Instance;
             hardSettings.CULL_GROUNDER = 2000f;
             hardSettings.AnimatorCullDistance = 2000f;
-            hardSettings.DEFERRED_DECALS_ENABLED = false;
             hardSettings.DRAW_DEFERRED_DECALS = false;
+
             hardSettings.PLAYER_HIT_DECALS_ENEBLED = false;
+            hardSettings.HIT_EFFECTS_ENABLED = false;
+            hardSettings.HEAT_EMITTER_ENABLED = false;
+            hardSettings.SHOT_EFFECTS_ENABLED = false;
+            hardSettings.DEFERRED_DECALS_ENABLED = false;
             hardSettings.STATIC_DEFERRED_DECALS_ENABLED = false;
+
+            hardSettings.TriggersCastLayerMask = hardSettings.ServerTriggersCastLayerMask;
+            hardSettings.WEAPON_OCCLUSION_LAYERS = hardSettings.WEAPON_OCCLUSION_SERVER_LAYERS;
+            hardSettings.LootVolumeForHighQuallityPhysicsClient = hardSettings.LootVolumeForHighQuallityPhysicsServer;
 
             _hasSet = true;
         }
