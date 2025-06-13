@@ -145,8 +145,10 @@ namespace Fika.Headless.Classes.GameMode
                 Singleton<BotEventHandler>.Create(new BotEventHandler());
             }
 
-            HeadlessGameController headlessGameController = new(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime);
-            headlessGameController.Location = location;
+            HeadlessGameController headlessGameController = new(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime)
+            {
+                Location = location
+            };
             game.GameDateTime = backendDateTime;
             game.GameController = headlessGameController;
             game._localRaidSettings = localRaidSettings;
@@ -545,7 +547,7 @@ namespace Fika.Headless.Classes.GameMode
             if (!FikaBackendUtils.IsTransit)
             {
                 PlayerLeftRequest body = new(FikaBackendUtils.Profile.ProfileId);
-                FikaRequestHandler.RaidLeave(body); 
+                FikaRequestHandler.RaidLeave(body);
             }
 
             _exitCallback(new(exitStatus, new(), null));
