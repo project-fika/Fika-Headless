@@ -22,6 +22,7 @@ namespace Fika.Headless.Classes.GameMode
         public override void SetupEventsAndExfils(Player player)
         {
             Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
+            _abstractGame.GameTimer.Start();
 
             ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;
 
