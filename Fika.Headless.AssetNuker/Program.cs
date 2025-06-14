@@ -5,7 +5,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.AssetNuker
 {
@@ -17,11 +19,14 @@ namespace Fika.Headless.AssetNuker
     internal class Program
     {
         private static readonly int _signatureLength = 7;
-        private static readonly IImageEncoder _pngEncoder = new PngEncoder();
         private static readonly Lock _fileLock = new();
         private static readonly DirectoryInfo _runningDirectory = new(Directory.GetCurrentDirectory());
+        private static readonly ParallelOptions _parallelOptions = new()
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount
+        };
 
-        private static Image<Bgra32> _replacementImage;
+        public static Image<Bgra32> _replacementImage { get; private set; }
 
         static async Task Main(string[] args)
         {
@@ -51,7 +56,7 @@ namespace Fika.Headless.AssetNuker
         }
 
         private static Task<bool> RunPreChecks()
-        {
+        {   
             if (!Directory.Exists(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data"))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -118,12 +123,7 @@ namespace Fika.Headless.AssetNuker
 
         private static async Task ProcessFiles(List<FileInfo> files)
         {
-            ParallelOptions parallelOptions = new()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
-            };
-
-            await Parallel.ForEachAsync(files, parallelOptions, ProcessFile);
+            await Parallel.ForEachAsync(files, _parallelOptions, ProcessFile);
         }
 
         private static ValueTask ProcessFile(FileInfo fileInfo, CancellationToken ct)
@@ -131,132 +131,14 @@ namespace Fika.Headless.AssetNuker
             AssetsManager manager = new();
             if (fileInfo.FullName.EndsWith(".assets"))
             {
-                HandleAssetsFile(manager, fileInfo);
+                FileHandler.HandleAssetsFile(manager, fileInfo);
             }
             else
             {
-                HandleBundleFile(manager, fileInfo);
+                FileHandler.HandleBundleFile(manager, fileInfo);
             }
 
             return ValueTask.CompletedTask;
-        }
-
-        private static async void HandleBundleFile(AssetsManager manager, FileInfo fileInfo)
-        {
-            Console.WriteLine($"Opening bundle {fileInfo.FullName}");
-
-            BundleFileInstance bundle = manager.LoadBundleFile(fileInfo.FullName);
-            if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count < 1)
-            {
-                return;
-            }
-
-            AssetsFileInstance assets = manager.LoadAssetsFileFromBundle(bundle, 0);
-            if (!assets.file.Metadata.TypeTreeEnabled)
-            {
-                manager.LoadClassDatabaseFromPackage(assets.file.Metadata.UnityVersion);
-            }
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = assembly
-                .GetManifestResourceNames()
-                .Where(x => x.Contains("emptyTexture.png"))
-                .First();
-
-            if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count > 1)
-            {
-                List<AssetBundleDirectoryInfo> dirInfos = bundle.file.BlockAndDirInfo.DirectoryInfos
-                    .Where(x => x.Name.EndsWith(".resS") || x.Name.EndsWith(".resource"))
-                    .ToList();
-                foreach (AssetBundleDirectoryInfo dirInfo in dirInfos)
-                {
-                    dirInfo.Replacer = new ContentRemover();
-                }
-            }
-
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
-            {
-                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
-                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
-                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
-
-                await using (MemoryStream ms = new())
-                {
-                    await _replacementImage.SaveAsync(ms, _pngEncoder);
-                    texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
-                    texture.WriteTo(textureBase);
-                }
-
-                asset.SetNewData(textureBase);
-            }
-
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
-            {
-                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
-                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
-
-                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
-                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
-                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
-
-                asset.SetNewData(audioBase);
-            }
-
-            bundle.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assets.file);
-
-            await using (AssetsFileWriter writer = new(fileInfo.FullName + ".mod"))
-            {
-                bundle.file.Write(writer);
-            }
-
-            manager.UnloadAll();
-        }
-
-        private static async void HandleAssetsFile(AssetsManager manager, FileInfo fileInfo)
-        {
-            Console.WriteLine($"Opening assets {fileInfo.FullName}");
-
-            manager.LoadClassPackage("uncompressed.tpk");
-            AssetsFileInstance assets = manager.LoadAssetsFile(fileInfo.FullName, true);
-            if (!assets.file.Metadata.TypeTreeEnabled)
-            {
-                manager.LoadClassDatabaseFromPackage(new UnityVersion(assets.file.Metadata.UnityVersion));
-            }
-
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
-            {
-                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
-                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
-                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
-
-                await using (MemoryStream ms = new())
-                {
-                    await _replacementImage.SaveAsync(ms, _pngEncoder);
-                    texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
-                    texture.WriteTo(textureBase);
-                }
-
-                asset.SetNewData(textureBase);
-            }
-
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
-            {
-                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
-                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
-
-                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
-                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
-                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
-
-                asset.SetNewData(audioBase);
-            }
-
-            await using (AssetsFileWriter writer = new(fileInfo.FullName + ".mod"))
-            {
-                assets.file.Write(writer);
-            }
-
-            manager.UnloadAll();
         }
 
         private static bool IsValidFile(FileInfo fileInfo)
@@ -289,26 +171,27 @@ namespace Fika.Headless.AssetNuker
             }
         }
 
-        private static Task<List<FileInfo>> GetAllFiles()
+        private async static Task<List<FileInfo>> GetAllFiles()
         {
             Console.WriteLine("Getting all files from the Data directory, this can take some time...");
-            return Task.Run(() =>
-            {
-                List<FileInfo> fileInfos = [];
-                string[] files = Directory.GetFiles(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data", "*.*", SearchOption.AllDirectories);
-                foreach (string item in files)
-                {
-                    FileInfo fileInfo = new(item);
-                    if (!IsValidFile(fileInfo))
-                    {
-                        continue;
-                    }
 
-                    fileInfos.Add(new(item));
+            ConcurrentBag<FileInfo> fileInfos = [];
+
+            string[] files = Directory.GetFiles(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data", "*.*", SearchOption.AllDirectories);
+
+            await Parallel.ForEachAsync(files, _parallelOptions, (item, cancellationToken) =>
+            {
+                FileInfo fileInfo = new(item);
+
+                if (IsValidFile(fileInfo))
+                {
+                    fileInfos.Add(fileInfo);
                 }
 
-                return fileInfos;
+                return ValueTask.CompletedTask;
             });
+
+            return fileInfos.ToList();
         }
     }
 }
