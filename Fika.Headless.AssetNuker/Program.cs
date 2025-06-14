@@ -99,12 +99,7 @@ namespace Fika.Headless.AssetNuker
 
         private static async Task RenameModFiles(List<FileInfo> files)
         {
-            ParallelOptions parallelOptions = new()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
-            };
-
-            await Parallel.ForEachAsync(files, parallelOptions, RenameAndDeleteFiles);
+            await Parallel.ForEachAsync(files, _parallelOptions, RenameAndDeleteFiles);
         }
 
         private static ValueTask RenameAndDeleteFiles(FileInfo fileInfo, CancellationToken token)
