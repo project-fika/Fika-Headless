@@ -19,11 +19,21 @@ namespace Fika.Headless.AssetNuker
         private static readonly int _signatureLength = 7;
         private static readonly IImageEncoder _pngEncoder = new PngEncoder();
         private static readonly Lock _fileLock = new();
+        private static readonly DirectoryInfo _runningDirectory = new(Directory.GetCurrentDirectory());
 
         private static Image<Bgra32> _replacementImage;
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("Running prechecks");
+            if (!await RunPreChecks())
+            {
+                Console.ResetColor();
+                Console.WriteLine("Failed to run prechecks. Press any key to exit.");
+                Console.ReadKey();
+                return;
+            }
+
             Console.WriteLine("Caching assets to inject");
 
             await CacheReplacements();
@@ -40,15 +50,34 @@ namespace Fika.Headless.AssetNuker
             Console.ReadKey();
         }
 
+        private static Task<bool> RunPreChecks()
+        {
+            if (!Directory.Exists(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data"))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Could not find the 'EscapeFromTarkov_Data' folder! Make sure the application is in your Headless installation folder.");
+                return Task.FromResult(false);
+            }
+
+            if (!File.Exists(@$"{_runningDirectory.FullName}\BepInEx\plugins\Fika.Headless.dll"))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Could not find the 'Fika.Headless.dll' file! Make sure the application is in your Headless installation folder and that the headless plugin is installed.");
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
+        }
+
         private static async Task CacheReplacements()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = assembly
-                .GetManifestResourceNames()
+            string[] resources = assembly.GetManifestResourceNames();
+            string textureName = resources
                 .Where(x => x.Contains("emptyTexture.png"))
                 .First();
 
-            Stream? emptyStream = assembly.GetManifestResourceStream(resourceName)
+            Stream emptyStream = assembly.GetManifestResourceStream(textureName)
                 ?? throw new NullReferenceException("Could not find emptyTexture stream");
 
             await using MemoryStream memoryStream = new();
@@ -73,18 +102,8 @@ namespace Fika.Headless.AssetNuker
 
         private static ValueTask RenameAndDeleteFiles(FileInfo fileInfo, CancellationToken token)
         {
-            bool isAsset = fileInfo.Name.EndsWith(".assets");
-            Console.WriteLine($"Replacing {fileInfo.Name} with .mod");
+            Console.WriteLine($"Replacing {fileInfo.Name} with modified file");
             File.Delete(fileInfo.FullName);
-            if (isAsset)
-            {
-                string ressFile = $"{fileInfo.FullName}.resS";
-                if (File.Exists(ressFile))
-                {
-                    Console.WriteLine($"Removing {ressFile}");
-                    File.Delete(ressFile);
-                }
-            }
             File.Move(fileInfo.FullName + ".mod", fileInfo.FullName);
 
             return ValueTask.CompletedTask;
@@ -140,7 +159,7 @@ namespace Fika.Headless.AssetNuker
             if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count > 1)
             {
                 List<AssetBundleDirectoryInfo> dirInfos = bundle.file.BlockAndDirInfo.DirectoryInfos
-                    .Where(x => x.Name.EndsWith(".resS"))
+                    .Where(x => x.Name.EndsWith(".resS") || x.Name.EndsWith(".resource"))
                     .ToList();
                 foreach (AssetBundleDirectoryInfo dirInfo in dirInfos)
                 {
@@ -148,20 +167,32 @@ namespace Fika.Headless.AssetNuker
                 }
             }
 
-            foreach (AssetFileInfo? asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
+            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
             {
-                AssetTypeValueField texBase = manager.GetBaseField(assets, asset);
-                TextureFile texture = TextureFile.ReadTextureFile(texBase);
+                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
+                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
+                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
 
                 await using (MemoryStream ms = new())
                 {
                     await _replacementImage.SaveAsync(ms, _pngEncoder);
                     texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
-                    texture.WriteTo(texBase);
+                    texture.WriteTo(textureBase);
                 }
-                asset.SetNewData(texBase);
 
-                Console.WriteLine($"Texture2D: {texture.m_Name}");
+                asset.SetNewData(textureBase);
+            }
+
+            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
+            {
+                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
+                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
+
+                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
+                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
+                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
+
+                asset.SetNewData(audioBase);
             }
 
             bundle.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assets.file);
@@ -185,20 +216,32 @@ namespace Fika.Headless.AssetNuker
                 manager.LoadClassDatabaseFromPackage(new UnityVersion(assets.file.Metadata.UnityVersion));
             }
 
-            foreach (AssetFileInfo? asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
+            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
             {
-                AssetTypeValueField texBase = manager.GetBaseField(assets, asset.PathId);
-                TextureFile texture = TextureFile.ReadTextureFile(texBase);
+                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
+                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
+                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
 
                 await using (MemoryStream ms = new())
                 {
                     await _replacementImage.SaveAsync(ms, _pngEncoder);
                     texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
-                    texture.WriteTo(texBase);
+                    texture.WriteTo(textureBase);
                 }
-                asset.SetNewData(texBase);
 
-                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
+                asset.SetNewData(textureBase);
+            }
+
+            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
+            {
+                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
+                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
+
+                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
+                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
+                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
+
+                asset.SetNewData(audioBase);
             }
 
             await using (AssetsFileWriter writer = new(fileInfo.FullName + ".mod"))
@@ -241,10 +284,11 @@ namespace Fika.Headless.AssetNuker
 
         private static Task<List<FileInfo>> GetAllFiles()
         {
+            Console.WriteLine("Getting all files from the Data directory, this can take some time...");
             return Task.Run(() =>
             {
                 List<FileInfo> fileInfos = [];
-                string[] files = Directory.GetFiles(@"SOMETHING", "*.*", SearchOption.AllDirectories);
+                string[] files = Directory.GetFiles(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data", "*.*", SearchOption.AllDirectories);
                 foreach (string item in files)
                 {
                     FileInfo fileInfo = new(item);
