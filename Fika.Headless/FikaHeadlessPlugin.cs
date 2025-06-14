@@ -14,7 +14,6 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
-using Fika.Core.Networking.Websocket.Headless;
 using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
@@ -34,6 +33,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Fika.Headless
 {
@@ -85,7 +85,7 @@ namespace Fika.Headless
             {
                 return Singleton<GUISounds>.Instance;
             }
-        } 
+        }
 #endif
 
         protected void Awake()
@@ -125,6 +125,26 @@ namespace Fika.Headless
             FikaBackendUtils.IsHeadless = true;
         }
 
+        protected void Update()
+        {
+            _gcCounter += Time.unscaledDeltaTime;
+            if (_gcCounter > _gcPoint)
+            {
+                _gcCounter -= _gcPoint;
+                if (FikaGlobals.IsInRaid())
+                {
+                    GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+                    GarbageCollector.CollectIncremental(500000000);
+                    GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+                }
+                else
+                {
+                    Resources.UnloadUnusedAssets().Await();
+                    MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
+                }
+            }
+        }
+
         private void DisableSPTPatches()
         {
             new MemoryCollectionPatch().Disable();
@@ -153,7 +173,7 @@ namespace Fika.Headless
             StartRaid data = JsonConvert.DeserializeObject<StartRaid>(rawData);
 
             OnFikaStartRaid(data.StartHeadlessRequest);
-        } 
+        }
 #endif
 
         /// <summary>
@@ -215,7 +235,7 @@ namespace Fika.Headless
 
             RAMCleanInterval = Config.Bind("Headless", "RAM Clean Interval", 15,
                 new ConfigDescription("How often in minutes the RAM cleaner should run outside of raids",
-                new AcceptableValueRange<int>(5, 30)));
+                new AcceptableValueRange<int>(2, 30)));
 
             ShouldBotsSleep = Config.Bind("Headless", "Bot sleeping", false,
                 new ConfigDescription("Should the headless host allow bots to sleep? (BSG bot sleeping logic)"));
@@ -225,19 +245,6 @@ namespace Fika.Headless
 
             DestroyRenderersOnSceneLoad = Config.Bind("Headless", "Destroy Renderers", true,
                 new ConfigDescription("If the headless plugin should hook scene loading to disable unnecessary renderers as well as unloading all materials (Requires 'Destroy Graphics' to be enabled)"));
-        }
-
-        protected void Update()
-        {
-            _gcCounter += Time.unscaledDeltaTime;
-
-            if (_gcCounter > _gcPoint && !FikaGlobals.IsInRaid())
-            {
-                Logger.LogDebug("Clearing memory");
-                _gcCounter -= _gcPoint;
-                Resources.UnloadUnusedAssets().Await();
-                MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
-            }
         }
 
         /// <summary>

@@ -321,11 +321,6 @@ namespace Fika.Headless.Classes.GameMode
 
             _ = Task.Run(GameController.CreateStashes);
 
-            if (FikaPlugin.UseFikaGC.Value)
-            {
-                NetManagerUtils.FikaGameObject.AddComponent<GCManager>();
-            }
-
             if (GameController.CoopHandler.HumanPlayers.Count > 0)
             {
                 CoopPlayer player = GameController.CoopHandler.HumanPlayers[0];
@@ -337,12 +332,12 @@ namespace Fika.Headless.Classes.GameMode
 
         private Task RunMemoryCleanup()
         {
+            _logger.LogInfo("Running memory cleanup and asset unloading");
+
             MemoryControllerClass.RunHeapPreAllocation();
             MemoryControllerClass.Collect(true);
-            if (MemoryControllerClass.Settings.OverrideRamCleanerSettings ? MemoryControllerClass.Settings.RamCleanerEnabled : Singleton<SharedGameSettingsClass>.Instance.Game.Settings.AutoEmptyWorkingSet)
-            {
-                MemoryControllerClass.EmptyWorkingSet();
-            }
+            MemoryControllerClass.EmptyWorkingSet();           
+            
             MemoryControllerClass.GCEnabled = false;
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
             InitializeCameraAndUnloadAssets();
