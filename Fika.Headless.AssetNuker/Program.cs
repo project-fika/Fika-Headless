@@ -1,13 +1,8 @@
-﻿using AssetsTools.NET;
-using AssetsTools.NET.Extra;
-using AssetsTools.NET.Texture;
+﻿using AssetsTools.NET.Extra;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Concurrent;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.AssetNuker
 {
@@ -56,7 +51,7 @@ namespace Fika.Headless.AssetNuker
         }
 
         private static Task<bool> RunPreChecks()
-        {   
+        {
             if (!Directory.Exists(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data"))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
