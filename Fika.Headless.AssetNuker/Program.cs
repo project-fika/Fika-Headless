@@ -66,6 +66,13 @@ namespace Fika.Headless.AssetNuker
                 return Task.FromResult(false);
             }
 
+            if (!File.Exists(@$"{_runningDirectory.FullName}\uncompressed.tpk"))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Could not find the 'uncompressed.tpk' file! Make sure that you extracted it properly.");
+                return Task.FromResult(false);
+            }
+
             return Task.FromResult(true);
         }
 
