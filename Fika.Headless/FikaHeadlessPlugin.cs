@@ -129,6 +129,7 @@ namespace Fika.Headless
             new MemoryCollectionPatch().Disable();
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
             new DisablePMCExtractsForScavsPatch().Disable();
+            new AddTraitorScavsPatch().Disable();
         }
 
         /// <summary>
