@@ -1,4 +1,5 @@
-﻿using BepInEx.Logging;
+﻿using Audio.SpatialSystem;
+using BepInEx.Logging;
 using Comfort.Common;
 using Dissonance.Networking.Client;
 using EFT;
@@ -19,7 +20,10 @@ using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
+using HarmonyLib;
 using JsonType;
+using Koenigz.PerfectCulling;
+using Koenigz.PerfectCulling.EFT;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -341,11 +345,66 @@ namespace Fika.Headless.Classes.GameMode
             }
             MemoryControllerClass.GCEnabled = false;
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-            CameraClass.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
-            CameraClass.Instance.IsActive = true;
+            InitializeCameraAndUnloadAssets();
             TaskCompletionSource taskCompletionSource = new();
             StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
             return taskCompletionSource.Task;
+        }
+
+        private void InitializeCameraAndUnloadAssets()
+        {
+            CameraClass.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
+            CameraClass.Instance.IsActive = true;
+
+            PerfectCullingAdaptiveGrid instance = PerfectCullingAdaptiveGrid.Instance;
+            if (instance != null)
+            {
+                GameObject.Destroy(instance);
+            }
+
+            PerfectCullingCrossSceneSampler cameraInstance = PerfectCullingCrossSceneSampler.Instance;
+            if (cameraInstance != null)
+            {
+                PerfectCullingCrossSceneSampler pCCS = cameraInstance.GetComponent<PerfectCullingCrossSceneSampler>();
+                if (pCCS != null)
+                {
+                    GameObject.Destroy(pCCS);
+                }
+
+                PerfectCullingCamera pCC = cameraInstance.GetComponent<PerfectCullingCamera>();
+                if (pCC != null)
+                {
+                    GameObject.Destroy(pCC);
+                }
+            }
+
+            if (Singleton<SpatialAudioSystem>.Instantiated)
+            {
+                SpatialAudioSystem sAS = Singleton<SpatialAudioSystem>.Instance;
+                GClass1113 sASManager = Traverse.Create(sAS).Field<GClass1113>("gclass1113_0").Value;
+                if (sASManager != null)
+                {
+                    _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
+                    foreach ((ISpatialAudioRoom room, List<ISpatialAudioRoom> roomList) in sASManager.Dictionary_0)
+                    {
+                        foreach (ISpatialAudioRoom rooms in roomList)
+                        {
+                            List<ISpatialPortal> portals = rooms.GetPortals();
+                            foreach (ISpatialPortal portal in portals)
+                            {
+                                GameObject.Destroy((MonoBehaviour)portal);
+                            }
+                        }
+
+                        if (room != null)
+                        {
+                            GameObject.Destroy((MonoBehaviour)room);
+                        }
+                    }
+                }
+                // This calls the Dispose() method
+                GameObject.Destroy(sAS);
+            }
         }
 
         private IEnumerator FinishRaidSetup(Action complete)

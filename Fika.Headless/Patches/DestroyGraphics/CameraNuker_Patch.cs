@@ -11,7 +11,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
     public class CameraNuker : FikaPatch
     {
         // Whitelisted types we can delete out of the camera that will not cause it to throw exceptions.
-        private static List<string> DeleteTypes = [
+        private static List<string> _deleteTypes = [
             "HBAO",
             "TOD_Scattering",
             "MBOIT_Scattering",
@@ -69,7 +69,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
             {
                 string type = component.GetType().Name;
 
-                if (DeleteTypes.Contains(type))
+                if (_deleteTypes.Contains(type))
                 {
                     Object.Destroy(component);
                 }

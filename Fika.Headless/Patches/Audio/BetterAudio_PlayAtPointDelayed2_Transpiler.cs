@@ -19,7 +19,7 @@ namespace Fika.Headless.Patches.Audio
         }
 
         [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> Transpile()
         {
             yield return new(OpCodes.Ldnull);
             yield return new(OpCodes.Ret);
