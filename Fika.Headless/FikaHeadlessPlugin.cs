@@ -23,6 +23,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
 using SPT.Custom.Utils;
+using SPT.SinglePlayer.Patches.RaidFix;
 using SPT.SinglePlayer.Patches.ScavMode;
 using System;
 using System.Collections;
@@ -130,6 +131,7 @@ namespace Fika.Headless
             new SetPreRaidSettingsScreenDefaultsPatch().Disable();
             new DisablePMCExtractsForScavsPatch().Disable();
             new AddTraitorScavsPatch().Disable();
+            new TinnitusFixPatch().Disable();
         }
 
         /// <summary>
