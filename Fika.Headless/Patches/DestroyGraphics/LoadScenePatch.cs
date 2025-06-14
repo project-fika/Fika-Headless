@@ -57,7 +57,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
             }
         }
 
-        private static readonly Type[] ProtectedComponents = [
+        private static readonly Type[] _protectedComponents = [
             typeof(WindowBreaker),
             typeof(AmbientLight),
             typeof(AreaLight),
@@ -89,7 +89,7 @@ namespace Fika.Headless.Patches.DestroyGraphics
             {
                 // Check for protected components we absolutely cannot unload, these would break the game someway or another.
                 bool hasProtectedRenderer = false;
-                foreach (Type componentType in ProtectedComponents)
+                foreach (Type componentType in _protectedComponents)
                 {
                     if (renderer.gameObject.GetComponent(componentType) != null || renderer.gameObject.name.ToLower().Contains("door") || renderer.gameObject.name.ToLower().Contains("glass"))
                     {
