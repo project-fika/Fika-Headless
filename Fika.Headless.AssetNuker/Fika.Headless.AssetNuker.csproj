@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\emptyTexture.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\emptyTexture.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AssetsTools.NET" Version="3.0.0" />
+    <PackageReference Include="AssetsTools.NET.Texture" Version="1.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.9" />
+  </ItemGroup>
+
+</Project>
