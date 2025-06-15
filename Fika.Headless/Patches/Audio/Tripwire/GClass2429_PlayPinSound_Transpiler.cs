@@ -1,17 +1,16 @@
-﻿using Audio.AmbientSubsystem;
+﻿using Fika.Core.Patching;
 using HarmonyLib;
-using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches.Audio
+namespace Fika.Headless.Patches.Audio.Tripwire
 {
-    internal class BaseAmbientSoundPlayer_Stop_Transpiler : FikaPatch
+    internal class GClass2429_PlayPinSound_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BaseAmbientSoundPlayer).GetMethod(nameof(BaseAmbientSoundPlayer.Stop));
+            return typeof(GClass2429).GetMethod(nameof(GClass2429.PlayPinSound));
         }
 
         [PatchTranspiler]
