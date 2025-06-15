@@ -188,7 +188,6 @@ namespace Fika.Headless.Classes.GameMode
             game.GameController.RaidSettings = raidSettings;
             game.GameController.ThrownGrenades = [];
             game.gameObject.AddComponent<HeadlessRaidController>();
-            game.gameObject.AddComponent<GCManager>();
 
             return game;
         }
