@@ -616,5 +616,10 @@ namespace Fika.Headless.Classes.GameMode
             FikaBackendUtils.CleanUpVariables();
             BTRSide_Patches.Passengers.Clear();
         }
+
+        public override void FixedUpdate()
+        {
+            // Do nothing
+        }
     }
 }
