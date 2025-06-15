@@ -8,6 +8,7 @@ using Diz.Utils;
 using EFT;
 using EFT.UI;
 using Fika.Core;
+using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Patches;
 using Fika.Core.Coop.Utils;
@@ -128,11 +129,20 @@ namespace Fika.Headless
         protected void Update()
         {
             _gcCounter += Time.unscaledDeltaTime;
-            if (_gcCounter > _gcPoint && !FikaGlobals.IsInRaid)
+            if (_gcCounter > _gcPoint)
             {
                 _gcCounter -= _gcPoint;
-                Resources.UnloadUnusedAssets().Await();
-                MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
+                if (FikaGlobals.IsInRaid)
+                {
+                    GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+                    GarbageCollector.CollectIncremental(1000000);
+                    GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+                }
+                else
+                {                    
+                    Resources.UnloadUnusedAssets().Await();
+                    MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
+                }
             }
         }
 
