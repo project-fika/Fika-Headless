@@ -188,6 +188,7 @@ namespace Fika.Headless.Classes.GameMode
             game.GameController.RaidSettings = raidSettings;
             game.GameController.ThrownGrenades = [];
             game.gameObject.AddComponent<HeadlessRaidController>();
+            game.gameObject.AddComponent<GCManager>();
 
             return game;
         }
@@ -324,9 +325,10 @@ namespace Fika.Headless.Classes.GameMode
             if (GameController.CoopHandler.HumanPlayers.Count > 0)
             {
                 CoopPlayer player = GameController.CoopHandler.HumanPlayers[0];
-                CameraClass.Instance.Camera.transform.SetParent(player.gameObject.transform, false);
-                CameraClass.Instance.Camera.transform.localPosition = new(0f, 1.7f, 0f);
-                CameraClass.Instance.Camera.transform.rotation = Quaternion.identity;
+                Transform cameraTransform = CameraClass.Instance.Camera.transform;
+                cameraTransform.SetParent(player.gameObject.transform, false);
+                cameraTransform.localPosition = new(0f, 1.7f, 0f);
+                cameraTransform.rotation = Quaternion.identity;
             }
         }
 

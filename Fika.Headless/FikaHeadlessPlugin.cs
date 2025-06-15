@@ -128,20 +128,11 @@ namespace Fika.Headless
         protected void Update()
         {
             _gcCounter += Time.unscaledDeltaTime;
-            if (_gcCounter > _gcPoint)
+            if (_gcCounter > _gcPoint && !FikaGlobals.IsInRaid)
             {
                 _gcCounter -= _gcPoint;
-                if (FikaGlobals.IsInRaid())
-                {
-                    GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-                    GarbageCollector.CollectIncremental(500000000);
-                    GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
-                }
-                else
-                {
-                    Resources.UnloadUnusedAssets().Await();
-                    MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
-                }
+                Resources.UnloadUnusedAssets().Await();
+                MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
             }
         }
 
