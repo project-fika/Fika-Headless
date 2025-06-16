@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using Fika.Core.Patching;
+﻿using Fika.Core.Patching;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;

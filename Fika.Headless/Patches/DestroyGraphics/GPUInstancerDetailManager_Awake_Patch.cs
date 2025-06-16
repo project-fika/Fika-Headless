@@ -1,5 +1,5 @@
-﻿using GPUInstancer;
-using Fika.Core.Patching;
+﻿using Fika.Core.Patching;
+using GPUInstancer;
 using System.Reflection;
 using UnityEngine;
 

@@ -1,9 +1,9 @@
-﻿using HarmonyLib;
+﻿using EFT.Interactive;
 using Fika.Core.Patching;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using EFT.Interactive;
 
 namespace Fika.Headless.Patches.Audio
 {

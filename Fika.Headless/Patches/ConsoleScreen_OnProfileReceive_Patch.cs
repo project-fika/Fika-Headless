@@ -1,11 +1,11 @@
 ﻿using EFT;
 using EFT.UI;
+using Fika.Core.Patching;
 using SPT.Core.Utils;
 using SPT.Custom.Utils;
-using Fika.Core.Patching;
 using System.Reflection;
-using UnityEngine;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Fika.Headless.Patches
 {

@@ -1,6 +1,6 @@
 ﻿using Fika.Core.Patching;
-using UnityEngine;
 using System.Reflection;
+using UnityEngine;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {

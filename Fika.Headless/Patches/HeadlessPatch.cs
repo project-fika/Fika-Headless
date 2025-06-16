@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
+﻿using Fika.Core.Patching;
+using HarmonyLib;
 using SPT.Core.Utils;
-using Fika.Core.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches

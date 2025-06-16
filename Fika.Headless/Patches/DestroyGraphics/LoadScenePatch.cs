@@ -1,7 +1,7 @@
 ﻿using BSG.Unity.Wires;
 using EFT.Interactive;
-using HarmonyLib;
 using Fika.Core.Patching;
+using HarmonyLib;
 using System;
 using System.Collections;
 using System.Reflection;

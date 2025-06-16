@@ -11,7 +11,6 @@ using EFT.InventoryLogic;
 using EFT.UI;
 using EFT.Weather;
 using Fika.Core;
-using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Patches;
 using Fika.Core.Coop.Players;
@@ -337,8 +336,8 @@ namespace Fika.Headless.Classes.GameMode
 
             MemoryControllerClass.RunHeapPreAllocation();
             MemoryControllerClass.Collect(true);
-            MemoryControllerClass.EmptyWorkingSet();           
-            
+            MemoryControllerClass.EmptyWorkingSet();
+
             MemoryControllerClass.GCEnabled = false;
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
             InitializeCameraAndUnloadAssets();

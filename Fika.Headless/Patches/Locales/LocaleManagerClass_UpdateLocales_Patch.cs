@@ -1,7 +1,5 @@
-﻿using EFT;
-using Fika.Core.Patching;
+﻿using Fika.Core.Patching;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.Locales
 {

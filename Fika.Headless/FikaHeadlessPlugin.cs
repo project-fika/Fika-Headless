@@ -8,7 +8,6 @@ using Diz.Utils;
 using EFT;
 using EFT.UI;
 using Fika.Core;
-using Fika.Core.Coop.Components;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Patches;
 using Fika.Core.Coop.Utils;
@@ -139,7 +138,7 @@ namespace Fika.Headless
                     GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
                 }
                 else
-                {                    
+                {
                     Resources.UnloadUnusedAssets().Await();
                     MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
                 }

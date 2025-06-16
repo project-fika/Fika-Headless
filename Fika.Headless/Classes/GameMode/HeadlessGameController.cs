@@ -2,11 +2,8 @@
 using EFT;
 using EFT.Game.Spawning;
 using EFT.Interactive;
-using EFT.Interactive.SecretExfiltrations;
 using EFT.UI;
-using Fika.Core.Coop.ClientClasses;
 using Fika.Core.Coop.GameMode;
-using Fika.Core.Coop.HostClasses;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using LiteNetLib;

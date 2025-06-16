@@ -1,6 +1,6 @@
-﻿using GPUInstancer;
+﻿using Fika.Core.Patching;
+using GPUInstancer;
 using HarmonyLib;
-using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;

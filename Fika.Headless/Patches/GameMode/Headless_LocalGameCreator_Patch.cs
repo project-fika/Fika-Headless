@@ -1,26 +1,21 @@
 ﻿using Comfort.Common;
-using EFT.InputSystem;
-using EFT.UI.Matchmaker;
-using EFT.UI;
 using EFT;
+using EFT.InputSystem;
+using EFT.UI;
+using EFT.UI.Matchmaker;
 using Fika.Core.Coop.GameMode;
 using Fika.Core.Coop.Utils;
-using Fika.Core.Modding.Events;
 using Fika.Core.Modding;
-using Fika.Core.Networking.Http;
+using Fika.Core.Modding.Events;
 using Fika.Core.Patching;
-using Fika.Core.UI.Custom;
+using Fika.Headless.Classes.GameMode;
 using HarmonyLib;
 using JsonType;
 using SPT.SinglePlayer.Utils.InRaid;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Fika.Headless.Classes.GameMode;
 
 namespace Fika.Headless.Patches.GameMode
 {

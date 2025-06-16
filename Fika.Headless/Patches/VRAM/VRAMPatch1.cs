@@ -1,6 +1,6 @@
 ﻿using EFT.UI;
-using HarmonyLib;
 using Fika.Core.Patching;
+using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
 

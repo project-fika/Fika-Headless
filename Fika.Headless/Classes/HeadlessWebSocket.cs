@@ -1,13 +1,10 @@
 ﻿using BepInEx.Logging;
 using Diz.Utils;
-using EFT;
 using Fika.Core.Networking.Websocket;
 using Fika.Core.Networking.Websocket.Headless;
-using Fika.Headless;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SPT.Common.Http;
-using SPT.Common.Utils;
 using System;
 using System.Threading.Tasks;
 using WebSocketSharp;

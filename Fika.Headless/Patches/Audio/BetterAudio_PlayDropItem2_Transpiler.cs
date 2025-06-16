@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
+﻿using Fika.Core.Patching;
+using HarmonyLib;
 using JsonType;
-using Fika.Core.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
