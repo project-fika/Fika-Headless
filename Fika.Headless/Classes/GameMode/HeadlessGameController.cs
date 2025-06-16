@@ -26,8 +26,8 @@ namespace Fika.Headless.Classes.GameMode
 
             ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;
 
-            ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
-            SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];
+            /*ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
+            SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];*/
 
             if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
             {
