@@ -6,11 +6,12 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// This patch skips checking for keys (e.g. Labs)
     /// </summary>
-    public class MainMenuControllerClass_method_51_Patch : FikaPatch
+    public class MainMenuControllerClass_method_53_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MainMenuControllerClass).GetMethod(nameof(MainMenuControllerClass.method_51));
+            return typeof(MainMenuControllerClass)
+                .GetMethod(nameof(MainMenuControllerClass.method_53));
         }
 
         [PatchPrefix]

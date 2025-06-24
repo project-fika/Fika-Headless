@@ -7,11 +7,11 @@ namespace Fika.Headless.Patches
     /// <summary>
     /// This patch ensures that the raid settings are skipped if you are playing as a scav
     /// </summary>
-    internal class MainMenuControllerClass_method_76_Patch : FikaPatch
+    internal class MainMenuControllerClass_method_78_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MainMenuControllerClass).GetMethod(nameof(MainMenuControllerClass.method_76));
+            return typeof(MainMenuControllerClass).GetMethod(nameof(MainMenuControllerClass.method_78));
         }
 
         [PatchPostfix]
@@ -19,7 +19,7 @@ namespace Fika.Headless.Patches
         {
             if (___RaidSettings_0.IsScav)
             {
-                __instance.method_49();
+                __instance.method_51();
             }
         }
     }

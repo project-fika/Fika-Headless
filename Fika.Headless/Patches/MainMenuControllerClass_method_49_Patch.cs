@@ -7,17 +7,18 @@ namespace Fika.Headless.Patches
     /// This patch simulates clicking "Next" by calling the method bound to the event of the button <br/>
     /// <see cref="EFT.UI.Matchmaker.MatchmakerOfflineRaidScreen.CreateRaidSettingsForProfileClass"/>
     /// </summary>
-    internal class MainMenuControllerClass_method_47_Patch : FikaPatch
+    internal class MainMenuControllerClass_method_49_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MainMenuControllerClass).GetMethod(nameof(MainMenuControllerClass.method_47));
+            return typeof(MainMenuControllerClass)
+                .GetMethod(nameof(MainMenuControllerClass.method_49));
         }
 
         [PatchPrefix]
         public static bool Prefix(MainMenuControllerClass __instance)
         {
-            __instance.method_79();
+            __instance.method_81();
             return false;
         }
     }
