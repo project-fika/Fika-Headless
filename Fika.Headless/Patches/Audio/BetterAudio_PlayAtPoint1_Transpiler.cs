@@ -13,12 +13,14 @@ namespace Fika.Headless.Patches.Audio
         protected override MethodBase GetTargetMethod()
         {
             return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPoint),
-                [typeof(Vector3), typeof(SoundBank), typeof(float), typeof(float), typeof(float), typeof(EnvironmentType), typeof(EOcclusionTest), typeof(bool)]);
+                [typeof(Vector3), typeof(SoundBank), typeof(float), typeof(float), typeof(float),
+                typeof(EnvironmentType), typeof(EOcclusionTest), typeof(bool), typeof(bool)]);
         }
 
         [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> Transpile()
         {
+            yield return new(OpCodes.Ldnull);
             yield return new(OpCodes.Ret);
         }
     }

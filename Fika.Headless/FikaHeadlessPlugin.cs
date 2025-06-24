@@ -14,7 +14,6 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
-using Fika.Core.Networking.Websocket.Headless;
 using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
@@ -161,7 +160,7 @@ namespace Fika.Headless
         private static void DisableFikaCorePatches()
         {
             PatchManager manager = new("com.fika.core", "Fika.Core");
-            manager.AddPatch(new TarkovApplication_method_18_Patch());
+            manager.AddPatch(new TarkovApplication_method_16_Patch());
             manager.AddPatch(new MenuScreen_Awake_Patch());
             manager.AddPatch(new TarkovApplication_LocalGameCreator_Patch());
             manager.DisablePatches();

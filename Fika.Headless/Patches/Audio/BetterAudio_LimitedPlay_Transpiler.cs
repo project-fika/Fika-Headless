@@ -13,13 +13,14 @@ namespace Fika.Headless.Patches.Audio
         {
             return typeof(BetterAudio)
                 .GetMethods()
-                .Where(x => x.Name == "LimitedPlay" && x.ReturnType == null)
+                .Where(x => x.Name == "LimitedPlay" && x.ReturnType == typeof(bool))
                 .First();
         }
 
         [PatchTranspiler]
         public static IEnumerable<CodeInstruction> Transpile()
         {
+            yield return new CodeInstruction(OpCodes.Ldc_I4_0);
             yield return new CodeInstruction(OpCodes.Ret);
         }
     }
