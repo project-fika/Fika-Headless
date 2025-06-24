@@ -93,7 +93,7 @@ namespace Fika.Headless.Classes
 
         private bool method_11(Player player, int pointId, out string keyId)
         {
-            GClass1709.Class1068 @class = new()
+            GClass1737.Class1083 @class = new()
             {
                 player = player
             };

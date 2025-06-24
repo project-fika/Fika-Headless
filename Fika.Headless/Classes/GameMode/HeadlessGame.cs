@@ -300,7 +300,7 @@ namespace Fika.Headless.Classes.GameMode
             };
             airdropEventClass.Init(true);
             (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
-            GameWorld.SynchronizableObjectLogicProcessor.Ginterface257_0 = Singleton<FikaServer>.Instance;
+            GameWorld.SynchronizableObjectLogicProcessor.Ginterface262_0 = Singleton<FikaServer>.Instance;
 
             await RunMemoryCleanup();
 
@@ -376,7 +376,7 @@ namespace Fika.Headless.Classes.GameMode
             if (Singleton<SpatialAudioSystem>.Instantiated)
             {
                 SpatialAudioSystem sAS = Singleton<SpatialAudioSystem>.Instance;
-                GClass1113 sASManager = Traverse.Create(sAS).Field<GClass1113>("gclass1113_0").Value;
+                GClass1118 sASManager = Traverse.Create(sAS).Field<GClass1118>("gclass1118_0").Value;
                 if (sASManager != null)
                 {
                     _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
@@ -444,7 +444,7 @@ namespace Fika.Headless.Classes.GameMode
             }
 
             Item[] array = [.. location.Loot.Select(ItemFromPositionClass)];
-            ResourceKey[] array2 = [.. array.OfType<GClass3090>().GetAllItemsFromCollections()
+            ResourceKey[] array2 = [.. array.OfType<GClass3118>().GetAllItemsFromCollections()
                 .Concat(array
                     .Where((IsItemSpecialContainer))
                 )
@@ -452,7 +452,7 @@ namespace Fika.Headless.Classes.GameMode
             if (array2.Length != 0)
             {
                 PlayerLoopSystem playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
-                GClass655.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
+                GClass657.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
                 PlayerLoopSystem[] array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
                 if (num != -1)
                 {
@@ -467,7 +467,7 @@ namespace Fika.Headless.Classes.GameMode
                 }
                 await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid,
                     PoolManagerClass.AssemblyType.Local, array2, JobPriorityClass.General,
-                    new GClass3824<LoadingProgressStruct>(HandleProgress, default),
+                    new GClass3858<LoadingProgressStruct>(HandleProgress, default),
                     default);
                 if (num != -1)
                 {
@@ -478,7 +478,7 @@ namespace Fika.Headless.Classes.GameMode
                 playerLoopSystem2 = default;
                 array3 = null;
             }
-            GClass1370 gclass = GameWorld.method_4(location.Loot);
+            GClass1398 gclass = GameWorld.method_4(location.Loot);
             GameWorld.method_5(gclass, true);
         }
 
@@ -504,7 +504,7 @@ namespace Fika.Headless.Classes.GameMode
 
         private bool IsItemSpecialContainer(Item item)
         {
-            return item is not GClass3090;
+            return item is not GClass3118;
         }
 
         public bool IsLootItemContainer(LootItemPositionClass x)

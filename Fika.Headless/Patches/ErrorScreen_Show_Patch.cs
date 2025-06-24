@@ -13,7 +13,7 @@ namespace Fika.Headless.Patches
         }
 
         [PatchPrefix]
-        public static bool Prefix(string message, ref GClass3595 __result)
+        public static bool Prefix(string message, ref GClass3629 __result)
         {
             if (!string.IsNullOrEmpty(message))
             {
@@ -24,7 +24,7 @@ namespace Fika.Headless.Patches
                 Logger.LogWarning("Received an empty error");
             }
 
-            __result = new GClass3595();
+            __result = new GClass3629();
             return false;
         }
     }

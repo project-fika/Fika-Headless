@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2105).GetMethod(nameof(GClass2105.smethod_2));
+            return typeof(GClass2133).GetMethod(nameof(GClass2133.smethod_2));
         }
 
         [PatchPrefix]
@@ -27,7 +27,7 @@ namespace Fika.Headless.Patches
 
         internal static async Task Initalize()
         {
-            await Class1709.smethod_5("LoadUserSettings", false);
+            await Class1725.smethod_5("LoadUserSettings", false);
             await SetSettings(await SharedGameSettingsClass.InstantiateSingleton());
             await GClass896.InstantiateSingleton();
             await Task.Yield();
@@ -83,7 +83,7 @@ namespace Fika.Headless.Patches
 
             await gameSettings.Graphics.Settings.DisplaySettings.SetValue(new()
             {
-                AspectRatio = Class1707.smethod_0(new(1024, 768)),
+                AspectRatio = Class1723.smethod_0(new(1024, 768)),
                 Display = 0,
                 FullScreenMode = FullScreenMode.Windowed,
                 Resolution = new(1024, 768)

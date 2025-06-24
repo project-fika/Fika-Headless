@@ -6,11 +6,11 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio.Tripwire
 {
-    internal class GClass2429_PlayCollisionSound_Transpiler : FikaPatch
+    internal class GClass2457_PlayCollisionSound_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2429).GetMethod(nameof(GClass2429.PlayCollisionSound));
+            return typeof(GClass2457).GetMethod(nameof(GClass2457.PlayCollisionSound));
         }
 
         [PatchTranspiler]
