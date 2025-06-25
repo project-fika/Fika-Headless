@@ -32,6 +32,10 @@ namespace Fika.Headless.Classes.GameMode
                 // TODO: Sync to clients!!!
             }
 
+            if (Location.EventTrapsData != null)
+            {
+                GClass1458.InitLabyrinthSyncableTraps(Location.EventTrapsData);
+            }
             _abstractGame.Status = GameStatus.Started;
             _botsController.Bots.CheckActivation();
 

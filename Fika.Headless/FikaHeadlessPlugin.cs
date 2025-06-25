@@ -14,6 +14,9 @@ using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
+#if DEBUG
+using Fika.Core.Networking.Websocket.Headless;
+#endif
 using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Headless.Classes;
