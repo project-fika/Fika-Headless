@@ -1,5 +1,5 @@
 ﻿using Comfort.Common;
-using Fika.Core.Coop.GameMode;
+using EFT;
 using Fika.Core.Patching;
 using SPT.Custom.Patches;
 using System.Reflection;
@@ -16,7 +16,7 @@ namespace Fika.Headless.Patches.SPTFixes
         [PatchPrefix]
         public static bool Prefix(ref string __result)
         {
-            __result = Singleton<IFikaGame>.Instance.GameController.Location.Id;
+            __result = Singleton<GameWorld>.Instance.LocationId;
             return false;
         }
     }
