@@ -10,7 +10,8 @@ namespace Fika.Headless.Patches.SPTFixes
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(CustomAiPatch).GetMethod("GetCurrentMap", BindingFlags.NonPublic | BindingFlags.Static);
+            return typeof(CustomAiPatch)
+                .GetMethod("GetCurrentMap", BindingFlags.NonPublic | BindingFlags.Static);
         }
 
         [PatchPrefix]

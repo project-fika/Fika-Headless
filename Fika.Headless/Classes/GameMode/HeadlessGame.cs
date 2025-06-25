@@ -328,6 +328,8 @@ namespace Fika.Headless.Classes.GameMode
                 cameraTransform.localPosition = new(0f, 1.7f, 0f);
                 cameraTransform.rotation = Quaternion.identity;
             }
+
+            (GameController as HeadlessGameController).SyncTraps();
         }
 
         private Task RunMemoryCleanup()
