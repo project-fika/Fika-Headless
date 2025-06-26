@@ -105,7 +105,7 @@ namespace Fika.Headless.Patches.GameMode
             raidSettingsToUpdate.selectedLocation.EscapeTimeLimit = escapeTimeLimit;
             raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
-            GClass1390 profileInsurance = localSettings.profileInsurance;
+            ProfileInsuranceClass profileInsurance = localSettings.profileInsurance;
             if ((profileInsurance?.insuredItems) != null)
             {
                 profile.InsuredItems = localSettings.profileInsurance.insuredItems;

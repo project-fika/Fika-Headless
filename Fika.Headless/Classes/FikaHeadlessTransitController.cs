@@ -10,7 +10,6 @@ using Fika.Core.Coop.Players;
 using Fika.Core.Coop.Utils;
 using Fika.Core.Networking;
 using LiteNetLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,21 +92,19 @@ namespace Fika.Headless.Classes
 
         private bool method_11(Player player, int pointId, out string keyId)
         {
-            GClass1737.Class1083 @class = new()
-            {
-                player = player
-            };
             keyId = string.Empty;
-            if (!method_10(pointId, out @class.accessKeys))
+            if (!method_10(pointId, out var accessKeys))
             {
                 return true;
             }
-            if (@class.player.Side == EPlayerSide.Savage)
+            if (player.Side == EPlayerSide.Savage)
             {
                 return false;
             }
-            IEnumerable<Item> playerItems = @class.player.InventoryController.Inventory.GetPlayerItems(EPlayerItems.Equipment);
-            Item item = playerItems?.FirstOrDefault(new Func<Item, bool>(@class.method_0));
+            IEnumerable<Item> playerItems = player.InventoryController.Inventory.GetPlayerItems(EPlayerItems.Equipment);
+            Item item = playerItems?
+                .Where(item => player.InventoryController.Examined(item) && accessKeys.Contains(item.StringTemplateId))
+                .FirstOrDefault();
             if (item == null)
             {
                 return false;
