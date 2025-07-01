@@ -1,4 +1,5 @@
-﻿using Fika.Core.Patching;
+﻿using EFT;
+using Fika.Core.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,15 +7,12 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches
 {
-    public class LevelSettings_ApplyTreeWindSettings_Transpiler : FikaPatch
+    internal class BaseGrenadeHansController_vmethod_0_Transpiler : FikaPatch
     {
-        /// <summary>
-        /// Prevents unneccesary code from running
-        /// </summary>
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(LevelSettings)
-                .GetMethod(nameof(LevelSettings.ApplyTreeWindSettings));
+            return typeof(Player.BaseGrenadeHandsController)
+                .GetMethod(nameof(Player.BaseGrenadeHandsController.vmethod_0));
         }
 
         [PatchTranspiler]

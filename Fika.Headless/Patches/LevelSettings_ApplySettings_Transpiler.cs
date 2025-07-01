@@ -13,11 +13,12 @@ namespace Fika.Headless.Patches
         /// </summary>
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(LevelSettings).GetMethod(nameof(LevelSettings.ApplySettings));
+            return typeof(LevelSettings)
+                .GetMethod(nameof(LevelSettings.ApplySettings));
         }
 
         [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> Transpile()
         {
             yield return new(OpCodes.Ret);
         }
