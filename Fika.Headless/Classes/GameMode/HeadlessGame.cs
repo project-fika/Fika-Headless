@@ -413,6 +413,7 @@ namespace Fika.Headless.Classes.GameMode
         private IEnumerator FinishHeadlessRaidSetup(Action complete)
         {
             yield return new WaitForSeconds(Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal);
+            (GameController as HeadlessGameController).ActivateBots();
             GameController.SetupEventsAndExfils(null);
             complete?.Invoke();
         }

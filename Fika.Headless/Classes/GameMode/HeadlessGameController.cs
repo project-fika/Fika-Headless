@@ -21,7 +21,7 @@ namespace Fika.Headless.Classes.GameMode
             Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
             _abstractGame.GameTimer.Start();
 
-            ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;
+            /*ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;*/
 
             /*ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
             SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];*/
@@ -38,9 +38,13 @@ namespace Fika.Headless.Classes.GameMode
                 _gameWorld.SyncModule = new();
             }
             _abstractGame.Status = GameStatus.Started;
-            _botsController.Bots.CheckActivation();
 
             ConsoleScreen.ApplyStartCommands();
+        }
+
+        public void ActivateBots()
+        {
+            _botsController.Bots.CheckActivation();
         }
 
         public override void CreateSpawnSystem(Profile profile)
