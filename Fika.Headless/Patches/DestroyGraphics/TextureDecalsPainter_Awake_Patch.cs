@@ -8,13 +8,14 @@ namespace Fika.Headless.Patches.DestroyGraphics
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(TextureDecalsPainter).GetMethod(nameof(TextureDecalsPainter.Awake));
+            return typeof(TextureDecalsPainter)
+                .GetMethod(nameof(TextureDecalsPainter.Awake));
         }
 
         [PatchPrefix]
-        public static bool Prefix(TextureDecalsPainter __instance, ref GClass832<RenderTexture> ___gclass832_0)
+        public static bool Prefix(TextureDecalsPainter __instance, ref GClass833<RenderTexture> ___gclass833_0)
         {
-            ___gclass832_0 = new(0, FakeClassFunc);
+            ___gclass833_0 = new(0, FakeClassFunc);
             Object.Destroy(__instance);
             return false;
         }

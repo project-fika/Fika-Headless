@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3488).GetMethod(nameof(GClass3488.IsReflexAvailable),
+            return typeof(GClass3489).GetMethod(nameof(GClass3489.IsReflexAvailable),
                 BindingFlags.Public | BindingFlags.Static,
                 null, [], null);
         }

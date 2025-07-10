@@ -378,7 +378,7 @@ namespace Fika.Headless.Classes.GameMode
             if (Singleton<SpatialAudioSystem>.Instantiated)
             {
                 SpatialAudioSystem sAS = Singleton<SpatialAudioSystem>.Instance;
-                GClass1118 sASManager = Traverse.Create(sAS).Field<GClass1118>("gclass1118_0").Value;
+                GClass1119 sASManager = Traverse.Create(sAS).Field<GClass1119>("gclass1119_0").Value;
                 if (sASManager != null)
                 {
                     _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
@@ -447,7 +447,7 @@ namespace Fika.Headless.Classes.GameMode
             }
 
             Item[] array = [.. location.Loot.Select(ItemFromPositionClass)];
-            ResourceKey[] array2 = [.. array.OfType<GClass3118>().GetAllItemsFromCollections()
+            ResourceKey[] array2 = [.. array.OfType<GClass3119>().GetAllItemsFromCollections()
                 .Concat(array
                     .Where((IsItemSpecialContainer))
                 )
@@ -470,7 +470,7 @@ namespace Fika.Headless.Classes.GameMode
                 }
                 await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid,
                     PoolManagerClass.AssemblyType.Local, array2, JobPriorityClass.General,
-                    new GClass3858<LoadingProgressStruct>(HandleProgress, default),
+                    new GClass3859<LoadingProgressStruct>(HandleProgress, default),
                     default);
                 if (num != -1)
                 {
@@ -481,7 +481,7 @@ namespace Fika.Headless.Classes.GameMode
                 playerLoopSystem2 = default;
                 array3 = null;
             }
-            GClass1398 gclass = GameWorld.method_4(location.Loot);
+            GClass1399 gclass = GameWorld.method_4(location.Loot);
             GameWorld.method_5(gclass, true);
         }
 
@@ -507,7 +507,7 @@ namespace Fika.Headless.Classes.GameMode
 
         private bool IsItemSpecialContainer(Item item)
         {
-            return item is not GClass3118;
+            return item is not GClass3119;
         }
 
         public bool IsLootItemContainer(LootItemPositionClass x)

@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.Locales
 {
-    public class Class1417_LoadMainMenuLocale_Patch : FikaPatch
+    public class LocaleClass_LoadMainMenuLocale_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Class1417).GetMethod(nameof(Class1417.LoadMainMenuLocale));
+            return typeof(LocaleClass)
+                .GetMethod(nameof(LocaleClass.LoadMainMenuLocale));
         }
 
         [PatchPrefix]

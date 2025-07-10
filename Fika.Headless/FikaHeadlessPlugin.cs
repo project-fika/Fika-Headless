@@ -187,19 +187,19 @@ namespace Fika.Headless
         /// </remarks>
         /// <param name="session"></param>
         /// <returns></returns>
-        private async Task GetQuestTemplates(Class310 session)
+        private async Task GetQuestTemplates(Class309 session)
         {
             Logger.LogInfo("Getting quest templates");
             List<RawQuestClass> list = await session.method_3<List<RawQuestClass>>(new()
             {
-                Url = session.Gclass1386_0.Main + "/fika/headless/questtemplates",
+                Url = session.Gclass1387_0.Main + "/fika/headless/questtemplates",
                 ParseInBackground = true,
-                Params = new Class60<bool>(true),
+                Params = new Class59<bool>(true),
                 Retries = new byte?(LegacyParamsStruct.DefaultRetries)
             });
             Logger.LogInfo($"Received {list.Count} quest templates");
 
-            GClass3806.Instance.GlobalQuestTemplates.AddRange(list);
+            GClass3807.Instance.GlobalQuestTemplates.AddRange(list);
         }
 
         /// <summary>

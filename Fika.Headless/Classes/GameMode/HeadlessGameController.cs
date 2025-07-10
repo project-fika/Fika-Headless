@@ -34,7 +34,7 @@ namespace Fika.Headless.Classes.GameMode
 
             if (Location.EventTrapsData != null)
             {
-                GClass1458.InitLabyrinthSyncableTraps(Location.EventTrapsData);
+                LabyrinthSyncableTrapClass.InitLabyrinthSyncableTraps(Location.EventTrapsData);
                 _gameWorld.SyncModule = new();
             }
             _abstractGame.Status = GameStatus.Started;

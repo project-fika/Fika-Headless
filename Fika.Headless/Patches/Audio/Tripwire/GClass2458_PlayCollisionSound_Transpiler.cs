@@ -6,11 +6,11 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio.Tripwire
 {
-    internal class GClass2457_PlayFuzeSound_Transpiler : FikaPatch
+    internal class GClass2458_PlayCollisionSound_Transpiler : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2457).GetMethod(nameof(GClass2457.PlayFuzeSound));
+            return typeof(GClass2458).GetMethod(nameof(GClass2458.PlayCollisionSound));
         }
 
         [PatchTranspiler]

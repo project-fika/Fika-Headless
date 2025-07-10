@@ -3,11 +3,11 @@ using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics
 {
-    public class GClass3483_SetResolution_Patch : FikaPatch
+    public class GClass3484_SetResolution_Patch : FikaPatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3483).GetMethod(nameof(GClass3483.SetResolution));
+            return typeof(GClass3484).GetMethod(nameof(GClass3484.SetResolution));
         }
 
         [PatchPrefix]
