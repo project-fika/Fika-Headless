@@ -156,15 +156,15 @@ namespace Fika.Headless.Patches.GameMode
         private class StartHandler(TarkovApplication tarkovApplication, Profile pmcProfile, Profile scavProfile,
             LocationSettingsClass.Location location)
         {
-            private readonly TarkovApplication tarkovApplication = tarkovApplication;
-            private readonly Profile pmcProfile = pmcProfile;
-            private readonly Profile scavProfile = scavProfile;
-            private readonly LocationSettingsClass.Location location = location;
+            private readonly TarkovApplication _tarkovApplication = tarkovApplication;
+            private readonly Profile _pmcProfile = pmcProfile;
+            private readonly Profile _scavProfile = scavProfile;
+            private readonly LocationSettingsClass.Location _location = location;
             public HeadlessGame HeadlessGame;
 
             public void HandleStop(Result<ExitStatus, TimeSpan, MetricsClass> result)
             {
-                tarkovApplication.method_52(pmcProfile.Id, scavProfile, location, result);
+                _tarkovApplication.method_52(_pmcProfile.Id, _scavProfile, _location, result);
             }
 
             public void ReleaseSingleton()

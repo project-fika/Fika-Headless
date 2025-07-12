@@ -8,14 +8,16 @@ namespace Fika.Headless.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MessageWindow).GetMethod(nameof(MessageWindow.Show), [typeof(string),
+            return typeof(MessageWindow)
+                .GetMethod(nameof(MessageWindow.Show),
+                [typeof(string),
                 typeof(string),
                 typeof(bool),
                 typeof(float)]);
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(GClass3629 __result, MessageWindow __instance)
+        public static void PatchPostfix(GClass3629 __result)
         {
             __result.AcceptAndClose();
             /*__instance.Close(ECloseState.Accept);
