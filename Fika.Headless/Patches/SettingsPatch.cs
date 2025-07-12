@@ -52,6 +52,7 @@ namespace Fika.Headless.Patches
             await gameSettings.Sound.Settings.BinauralSound.SetValue(false);
             await gameSettings.Sound.Settings.VoipEnabled.SetValue(false);
 
+            await gameSettings.Graphics.Settings.VSync.SetValue(false);
             await gameSettings.Graphics.Settings.ShadowsQuality.SetValue(0);
             await gameSettings.Graphics.Settings.TextureQuality.SetValue(0);
             await gameSettings.Graphics.Settings.SuperSampling.SetValue(ESamplingMode.DownX05);
