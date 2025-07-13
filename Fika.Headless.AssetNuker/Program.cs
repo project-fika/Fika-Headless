@@ -135,14 +135,11 @@ namespace Fika.Headless.AssetNuker
 
         private static bool IsValidFile(FileInfo fileInfo)
         {
-            if (fileInfo.Name.EndsWith(".assets"))
+            switch (fileInfo.Extension)
             {
-                return true;
-            }
-
-            if (fileInfo.Name.EndsWith(".mod"))
-            {
-                return true;
+                case ".assets":
+                case ".mod":
+                    return true;
             }
 
             if (fileInfo.Length < _signatureLength)
@@ -151,15 +148,15 @@ namespace Fika.Headless.AssetNuker
             }
 
             Span<byte> buffer = stackalloc byte[_signatureLength];
-            using (FileStream fileStream = new(fileInfo.FullName, FileMode.Open))
+            using (FileStream fileStream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 fileStream.ReadExactly(buffer);
 
-                string signature = System.Text.Encoding.ASCII.GetString(buffer);
-                StringComparison comparison = StringComparison.Ordinal;
-                return signature.StartsWith("UnityFS", comparison)
-                    || signature.StartsWith("UnityWeb", comparison)
-                    || signature.StartsWith("UnityRaw", comparison);
+                ReadOnlySpan<byte> signature = buffer[..7];
+
+                return signature.SequenceEqual("UnityFS"u8)
+                    || signature.SequenceEqual("UnityWeb"u8)
+                    || signature.SequenceEqual("UnityRaw"u8);
             }
         }
 
