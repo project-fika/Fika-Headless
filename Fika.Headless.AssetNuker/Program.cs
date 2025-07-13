@@ -97,6 +97,8 @@ namespace Fika.Headless.AssetNuker
             {
                 throw new NullReferenceException("Image was not loaded");
             }
+
+            await FileHandler.CreatePictureStream();
         }
 
         private static async Task RenameModFiles(List<FileInfo> files)

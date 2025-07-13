@@ -10,6 +10,16 @@ namespace Fika.Headless.AssetNuker
     internal static class FileHandler
     {
         private static readonly IImageEncoder _pngEncoder = new PngEncoder();
+        private static byte[] _pictureData;
+
+        internal static async Task CreatePictureStream()
+        {
+            await using (MemoryStream ms = new())
+            {
+                await Program._replacementImage.SaveAsync(ms, _pngEncoder);
+                _pictureData = ms.ToArray();
+            }
+        }
 
         public static async void HandleBundleFile(AssetsManager manager, FileInfo fileInfo)
         {
@@ -27,49 +37,36 @@ namespace Fika.Headless.AssetNuker
                 manager.LoadClassDatabaseFromPackage(assets.file.Metadata.UnityVersion);
             }
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = assembly
-                .GetManifestResourceNames()
-                .Where(x => x.Contains("emptyTexture.png"))
-                .First();
-
-            /*if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count > 1)
+            foreach (AssetFileInfo asset in assets.file.AssetInfos)
             {
-                List<AssetBundleDirectoryInfo> dirInfos = bundle.file.BlockAndDirInfo.DirectoryInfos
-                    .Where(x => x.Name.EndsWith(".resS") || x.Name.EndsWith(".resource"))
-                    .ToList();
-                foreach (AssetBundleDirectoryInfo dirInfo in dirInfos)
-                {
-                    dirInfo.Replacer = new ContentRemover();
-                }
-            }*/
+                AssetClassID acid = (AssetClassID)asset.TypeId;
 
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
-            {
-                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
-                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
-                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
-
-                await using (MemoryStream ms = new())
+                if (acid is AssetClassID.Texture2D)
                 {
-                    await Program._replacementImage.SaveAsync(ms, _pngEncoder);
-                    texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
+                    AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
+                    TextureFile texture = TextureFile.ReadTextureFile(textureBase);
+                    Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
+
+                    texture.SetTextureDataRaw(_pictureData, 4, 4);
                     texture.WriteTo(textureBase);
+
+                    asset.SetNewData(textureBase);
+                    continue;
                 }
 
-                asset.SetNewData(textureBase);
-            }
 
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
-            {
-                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
-                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
+                if (acid is AssetClassID.AudioClip)
+                {
+                    AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
+                    Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
 
-                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
-                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
-                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
+                    audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
+                    audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
+                    audioBase["m_Resource"]["m_Size"].AsUInt = 128;
 
-                asset.SetNewData(audioBase);
+                    asset.SetNewData(audioBase);
+                    continue;
+                }
             }
 
             bundle.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assets.file);
@@ -93,32 +90,36 @@ namespace Fika.Headless.AssetNuker
                 manager.LoadClassDatabaseFromPackage(new UnityVersion(assets.file.Metadata.UnityVersion));
             }
 
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
+            foreach (AssetFileInfo asset in assets.file.AssetInfos)
             {
-                AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
-                TextureFile texture = TextureFile.ReadTextureFile(textureBase);
-                Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
+                AssetClassID acid = (AssetClassID)asset.TypeId;
 
-                await using (MemoryStream ms = new())
+                if (acid is AssetClassID.Texture2D)
                 {
-                    await Program._replacementImage.SaveAsync(ms, _pngEncoder);
-                    texture.SetTextureDataRaw(ms.ToArray(), 4, 4);
+                    AssetTypeValueField textureBase = manager.GetBaseField(assets, asset.PathId);
+                    TextureFile texture = TextureFile.ReadTextureFile(textureBase);
+                    Console.WriteLine($"Replacing Texture2D: {texture.m_Name}");
+
+                    texture.SetTextureDataRaw(_pictureData, 4, 4);
                     texture.WriteTo(textureBase);
+
+                    asset.SetNewData(textureBase);
+                    continue;
                 }
 
-                asset.SetNewData(textureBase);
-            }
 
-            foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.AudioClip))
-            {
-                AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
-                Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
+                if (acid is AssetClassID.AudioClip)
+                {
+                    AssetTypeValueField audioBase = manager.GetBaseField(assets, asset);
+                    Console.WriteLine($"Replacing Audio: {audioBase["m_Name"].AsString}");
 
-                audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
-                audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
-                audioBase["m_Resource"]["m_Size"].AsUInt = 128;
+                    audioBase["m_Resource"]["m_Source"].Value.AsString = "resources.resource";
+                    audioBase["m_Resource"]["m_Offset"].AsULong = 95203392;
+                    audioBase["m_Resource"]["m_Size"].AsUInt = 128;
 
-                asset.SetNewData(audioBase);
+                    asset.SetNewData(audioBase);
+                    continue;
+                }
             }
 
             await using (AssetsFileWriter writer = new(fileInfo.FullName + ".mod"))
