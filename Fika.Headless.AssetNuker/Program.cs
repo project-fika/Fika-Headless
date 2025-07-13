@@ -181,7 +181,7 @@ namespace Fika.Headless.AssetNuker
                 return ValueTask.CompletedTask;
             });
 
-            return fileInfos.ToList();
+            return [.. fileInfos];
         }
     }
 }
