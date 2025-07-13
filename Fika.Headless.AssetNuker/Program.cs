@@ -59,12 +59,14 @@ namespace Fika.Headless.AssetNuker
                 return Task.FromResult(false);
             }
 
+#if RELEASE
             if (!File.Exists(@$"{_runningDirectory.FullName}\BepInEx\plugins\Fika.Headless.dll"))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Could not find the 'Fika.Headless.dll' file! Make sure the application is in your Headless installation folder and that the headless plugin is installed.");
                 return Task.FromResult(false);
-            }
+            } 
+#endif
 
             if (!File.Exists(@$"{_runningDirectory.FullName}\uncompressed.tpk"))
             {
@@ -167,9 +169,10 @@ namespace Fika.Headless.AssetNuker
 
             ConcurrentBag<FileInfo> fileInfos = [];
 
-            string[] files = Directory.GetFiles(@$"{_runningDirectory.FullName}\EscapeFromTarkov_Data", "*.*", SearchOption.AllDirectories);
+            string rootPath = Path.Combine(_runningDirectory.FullName, "EscapeFromTarkov_Data");
+            IEnumerable<string> filePaths = Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories);
 
-            await Parallel.ForEachAsync(files, _parallelOptions, (item, cancellationToken) =>
+            await Parallel.ForEachAsync(filePaths, _parallelOptions, (item, cancellationToken) =>
             {
                 FileInfo fileInfo = new(item);
 

@@ -33,7 +33,7 @@ namespace Fika.Headless.AssetNuker
                 .Where(x => x.Contains("emptyTexture.png"))
                 .First();
 
-            if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count > 1)
+            /*if (bundle.file.BlockAndDirInfo.DirectoryInfos.Count > 1)
             {
                 List<AssetBundleDirectoryInfo> dirInfos = bundle.file.BlockAndDirInfo.DirectoryInfos
                     .Where(x => x.Name.EndsWith(".resS") || x.Name.EndsWith(".resource"))
@@ -42,7 +42,7 @@ namespace Fika.Headless.AssetNuker
                 {
                     dirInfo.Replacer = new ContentRemover();
                 }
-            }
+            }*/
 
             foreach (AssetFileInfo asset in assets.file.GetAssetsOfType(AssetClassID.Texture2D))
             {
