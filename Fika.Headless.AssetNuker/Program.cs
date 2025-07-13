@@ -120,19 +120,17 @@ namespace Fika.Headless.AssetNuker
             await Parallel.ForEachAsync(files, _parallelOptions, ProcessFile);
         }
 
-        private static ValueTask ProcessFile(FileInfo fileInfo, CancellationToken ct)
+        private static async ValueTask ProcessFile(FileInfo fileInfo, CancellationToken ct)
         {
             AssetsManager manager = new();
             if (fileInfo.FullName.EndsWith(".assets"))
             {
-                FileHandler.HandleAssetsFile(manager, fileInfo);
+                await FileHandler.HandleAssetsFile(manager, fileInfo);
             }
             else
             {
-                FileHandler.HandleBundleFile(manager, fileInfo);
+                await FileHandler.HandleBundleFile(manager, fileInfo);
             }
-
-            return ValueTask.CompletedTask;
         }
 
         private static bool IsValidFile(FileInfo fileInfo)

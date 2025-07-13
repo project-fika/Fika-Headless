@@ -3,7 +3,6 @@ using AssetsTools.NET.Extra;
 using AssetsTools.NET.Texture;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
-using System.Reflection;
 
 namespace Fika.Headless.AssetNuker
 {
@@ -21,7 +20,7 @@ namespace Fika.Headless.AssetNuker
             }
         }
 
-        public static async void HandleBundleFile(AssetsManager manager, FileInfo fileInfo)
+        public static async Task HandleBundleFile(AssetsManager manager, FileInfo fileInfo)
         {
             Console.WriteLine($"Opening bundle {fileInfo.FullName}");
 
@@ -79,7 +78,7 @@ namespace Fika.Headless.AssetNuker
             manager.UnloadAll();
         }
 
-        public static async void HandleAssetsFile(AssetsManager manager, FileInfo fileInfo)
+        public static async Task HandleAssetsFile(AssetsManager manager, FileInfo fileInfo)
         {
             Console.WriteLine($"Opening assets {fileInfo.FullName}");
 
