@@ -1,5 +1,5 @@
 ﻿using EFT;
-using Fika.Core.Coop.Players;
+using Fika.Core.Main.Players;
 using Fika.Core.Patching;
 using Fika.Headless.Classes;
 using System.Reflection;
@@ -11,7 +11,8 @@ namespace Fika.Headless.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(CoopPlayer).GetMethod(nameof(CoopPlayer.CreateMovementContext));
+            return typeof(FikaPlayer)
+                .GetMethod(nameof(FikaPlayer.CreateMovementContext));
         }
 
         [PatchPrefix]

@@ -11,10 +11,10 @@ using EFT.InventoryLogic;
 using EFT.UI;
 using EFT.Weather;
 using Fika.Core;
-using Fika.Core.Coop.GameMode;
-using Fika.Core.Coop.Patches;
-using Fika.Core.Coop.Players;
-using Fika.Core.Coop.Utils;
+using Fika.Core.Main.GameMode;
+using Fika.Core.Main.Patches;
+using Fika.Core.Main.Players;
+using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
@@ -322,7 +322,7 @@ namespace Fika.Headless.Classes.GameMode
 
             if (GameController.CoopHandler.HumanPlayers.Count > 0)
             {
-                CoopPlayer player = GameController.CoopHandler.HumanPlayers[0];
+                FikaPlayer player = GameController.CoopHandler.HumanPlayers[0];
                 Transform cameraTransform = CameraClass.Instance.Camera.transform;
                 cameraTransform.SetParent(player.gameObject.transform, false);
                 cameraTransform.localPosition = new(0f, 1.7f, 0f);
@@ -561,8 +561,8 @@ namespace Fika.Headless.Classes.GameMode
             if (GameController.CoopHandler != null)
             {
                 // Create a copy to prevent errors when the dictionary is being modified (which happens when using spawn mods)
-                CoopPlayer[] players = [.. GameController.CoopHandler.Players.Values];
-                foreach (CoopPlayer player in players)
+                FikaPlayer[] players = [.. GameController.CoopHandler.Players.Values];
+                foreach (FikaPlayer player in players)
                 {
                     if (player == null)
                     {
