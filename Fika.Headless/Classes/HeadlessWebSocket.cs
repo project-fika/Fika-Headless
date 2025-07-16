@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using SPT.Common.Http;
 using System;
 using System.Threading.Tasks;
+using UnityEngine;
 using WebSocketSharp;
 
 namespace Fika.Headless.Classes
@@ -90,17 +91,23 @@ namespace Fika.Headless.Classes
                 return;
             }
 
-            EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("Type"));
+            EFikaHeadlessWSMessageType type = (EFikaHeadlessWSMessageType)Enum.Parse(typeof(EFikaHeadlessWSMessageType), jsonObject.Value<string>("Type"));
 
             switch (type)
             {
-                case EFikaHeadlessWSMessageTypes.HeadlessStartRaid:
+                case EFikaHeadlessWSMessageType.HeadlessStartRaid:
                     StartRaid data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
 
                     AsyncWorker.RunInMainTread(() =>
                     {
                         FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartHeadlessRequest);
                     });
+                    break;
+                case EFikaHeadlessWSMessageType.ShutdownClient:
+                    AsyncWorker.RunInMainTread(Application.Quit);
+                    break;
+                case EFikaHeadlessWSMessageType.KeepAlive:
+                case EFikaHeadlessWSMessageType.RequesterJoinRaid:
                     break;
             }
         }
