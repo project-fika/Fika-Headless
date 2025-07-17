@@ -118,13 +118,10 @@ namespace Fika.Headless
             Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
             if (!IsRunningWindows)
             {
-                Logger.LogWarning("You are not running an officially supported operating system by Fika. Minimal support will be given. Please cleanup your '/Logs' folder manually.");
-            }
-            else
-            {
-                CleanupLogFiles();
+                Logger.LogWarning("You are not running an officially supported operating system by Fika. Minimal support will be given.");
             }
 
+            CleanupLogFiles();
             FikaBackendUtils.IsHeadless = true;
         }
 
@@ -207,26 +204,43 @@ namespace Fika.Headless
         /// </summary>
         private void CleanupLogFiles()
         {
-            string exePath = AppContext.BaseDirectory;
-            string logsPath = Path.Combine(exePath, "Logs");
-            if (!Directory.Exists(logsPath))
+            try
             {
-                Logger.LogError("CleanupLogFiles: Could not finds '/Logs' folder!");
-                return;
-            }
+                string exePath = AppContext.BaseDirectory;
+                string logsPath = Path.Combine(exePath, "Logs");
 
-            DirectoryInfo logsDir = new(logsPath);
-            foreach (DirectoryInfo dir in logsDir.EnumerateDirectories())
+                if (!Directory.Exists(logsPath))
+                {
+                    Logger.LogError("CleanupLogFiles: '/Logs' folder not found!");
+                    return;
+                }
+
+                DirectoryInfo logsDir = new(logsPath);
+
+                foreach (DirectoryInfo dir in logsDir.EnumerateDirectories())
+                {
+                    try
+                    {
+                        Logger.LogInfo($"CleanupLogFiles: Deleting directory '{dir.FullName}'");
+                        dir.Delete(true);
+                    }
+                    catch (IOException ioEx)
+                    {
+                        Logger.LogWarning($"CleanupLogFiles: I/O error deleting '{dir.FullName}': {ioEx.Message}");
+                    }
+                    catch (UnauthorizedAccessException uaEx)
+                    {
+                        Logger.LogWarning($"CleanupLogFiles: Access denied for '{dir.FullName}': {uaEx.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"CleanupLogFiles: Unexpected error for '{dir.FullName}': {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    Logger.LogInfo($"CleanupLogFiles: Deleting {dir.Name}");
-                    dir.Delete(true);
-                }
-                catch
-                {
-                    Logger.LogWarning($"CleanupLogFiles: Could not delete {dir.Name}, it's probably being used");
-                }
+                Logger.LogError($"CleanupLogFiles: Fatal error: {ex.Message}");
             }
         }
 
