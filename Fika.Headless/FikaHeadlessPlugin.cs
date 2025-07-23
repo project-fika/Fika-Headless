@@ -390,7 +390,8 @@ namespace Fika.Headless
                 "com.mpstark.DynamicMaps",
                 "IhanaMies.LootValue",
                 "com.cactuspie.ramcleanerinterval",
-                "com.TYR.DeClutter"
+                "com.TYR.DeClutter",
+                "SPTVRAMCleaner.UniqueGUID"
             ];
             PluginInfo[] pluginInfos = [.. Chainloader.PluginInfos.Values];
             List<string> unsupportedMods = [];
