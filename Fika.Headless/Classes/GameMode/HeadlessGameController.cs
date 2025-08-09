@@ -89,7 +89,7 @@ namespace Fika.Headless.Classes.GameMode
                 SessionTime = SessionTime.Value
             };
 
-            server.SendDataToAll(ref packet, DeliveryMethod.ReliableOrdered);
+            server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
             LootData = null;
 
             return Task.CompletedTask;
