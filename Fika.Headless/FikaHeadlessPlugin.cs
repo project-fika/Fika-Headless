@@ -500,9 +500,11 @@ namespace Fika.Headless
 
                 if (!IPAddress.TryParse(ip, out _))
                 {
+                    string message = $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.";
                     Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR FORCING IP",
-                        $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.",
+                        message,
                         ErrorScreen.EButtonType.OkButton, 10f);
+                    Logger.LogError(message);
                     return;
                 }
             }
@@ -511,9 +513,11 @@ namespace Fika.Headless
             {
                 if (!IPAddress.TryParse(FikaPlugin.ForceBindIP.Value, out _))
                 {
+                    string message = $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.";
                     Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR BINDING",
-                        $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.",
+                        message,
                         ErrorScreen.EButtonType.OkButton, 10f);
+                    Logger.LogError(message);
                     return;
                 }
             }
