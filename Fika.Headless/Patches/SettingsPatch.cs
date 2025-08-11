@@ -57,7 +57,7 @@ namespace Fika.Headless.Patches
             await gameSettings.Graphics.Settings.TextureQuality.SetValue(0);
             await gameSettings.Graphics.Settings.SuperSampling.SetValue(ESamplingMode.DownX05);
             await gameSettings.Graphics.Settings.AnisotropicFiltering.SetValue(AnisotropicFiltering.Disable);
-            await gameSettings.Graphics.Settings.OverallVisibility.SetValue(4000);
+            await gameSettings.Graphics.Settings.OverallVisibility.SetValue(400f);
             await gameSettings.Graphics.Settings.LodBias.SetValue(2);
             await gameSettings.Graphics.Settings.Ssao.SetValue(ESSAOMode.Off);
             await gameSettings.Graphics.Settings.SSR.SetValue(ESSRMode.Off);
