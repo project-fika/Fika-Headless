@@ -7,7 +7,6 @@ using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Backend;
-using LiteNetLib;
 using System;
 using System.Threading.Tasks;
 
