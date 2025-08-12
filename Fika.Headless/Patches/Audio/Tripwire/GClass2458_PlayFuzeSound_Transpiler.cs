@@ -4,19 +4,18 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches.Audio.Tripwire
-{
-    internal class GClass2458_PlayFuzeSound_Transpiler : FikaPatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass2458).GetMethod(nameof(GClass2458.PlayFuzeSound));
-        }
+namespace Fika.Headless.Patches.Audio.Tripwire;
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile()
-        {
-            yield return new CodeInstruction(OpCodes.Ret);
-        }
+internal class GClass2458_PlayFuzeSound_Transpiler : FikaPatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return typeof(GClass2458).GetMethod(nameof(GClass2458.PlayFuzeSound));
+    }
+
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile()
+    {
+        yield return new CodeInstruction(OpCodes.Ret);
     }
 }

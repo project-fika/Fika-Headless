@@ -1,21 +1,19 @@
 ﻿using Fika.Core.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class DistortRenderer_Start_Patch : FikaPatch
 {
-    public class DistortRenderer_Start_Patch : FikaPatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(DistortRenderer).GetMethod(nameof(DistortRenderer.Start));
-        }
+        return typeof(DistortRenderer).GetMethod(nameof(DistortRenderer.Start));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(DistortRenderer __instance)
-        {
-            Object.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(DistortRenderer __instance)
+    {
+        Object.Destroy(__instance);
+        return false;
     }
 }

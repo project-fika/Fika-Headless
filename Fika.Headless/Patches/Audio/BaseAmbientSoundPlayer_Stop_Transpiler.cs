@@ -5,19 +5,18 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches.Audio
-{
-    internal class BaseAmbientSoundPlayer_Stop_Transpiler : FikaPatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(BaseAmbientSoundPlayer).GetMethod(nameof(BaseAmbientSoundPlayer.Stop));
-        }
+namespace Fika.Headless.Patches.Audio;
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile()
-        {
-            yield return new CodeInstruction(OpCodes.Ret);
-        }
+internal class BaseAmbientSoundPlayer_Stop_Transpiler : FikaPatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return typeof(BaseAmbientSoundPlayer).GetMethod(nameof(BaseAmbientSoundPlayer.Stop));
+    }
+
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile()
+    {
+        yield return new CodeInstruction(OpCodes.Ret);
     }
 }

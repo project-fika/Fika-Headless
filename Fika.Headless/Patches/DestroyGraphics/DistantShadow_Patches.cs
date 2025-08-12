@@ -1,36 +1,34 @@
 ﻿using Fika.Core.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class DistantShadow_Awake_Patch : FikaPatch
 {
-    public class DistantShadow_Awake_Patch : FikaPatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(DistantShadow).GetMethod(nameof(DistantShadow.Awake));
-        }
-
-        [PatchPrefix]
-        public static bool Prefix(DistantShadow __instance, ref RenderTexture[] ___renderTexture_10)
-        {
-            ___renderTexture_10 = [];
-            Object.Destroy(__instance);
-            return false;
-        }
+        return typeof(DistantShadow).GetMethod(nameof(DistantShadow.Awake));
     }
 
-    public class DistantShadow_Update_Patch : FikaPatch
+    [PatchPrefix]
+    public static bool Prefix(DistantShadow __instance, ref RenderTexture[] ___renderTexture_10)
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(DistantShadow).GetMethod(nameof(DistantShadow.Update));
-        }
+        ___renderTexture_10 = [];
+        Object.Destroy(__instance);
+        return false;
+    }
+}
 
-        [PatchPrefix]
-        public static bool Prefix()
-        {
-            return false;
-        }
+public class DistantShadow_Update_Patch : FikaPatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return typeof(DistantShadow).GetMethod(nameof(DistantShadow.Update));
+    }
+
+    [PatchPrefix]
+    public static bool Prefix()
+    {
+        return false;
     }
 }

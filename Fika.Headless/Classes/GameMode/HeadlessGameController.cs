@@ -10,111 +10,110 @@ using Fika.Core.Networking.Packets.Backend;
 using System;
 using System.Threading.Tasks;
 
-namespace Fika.Headless.Classes.GameMode
+namespace Fika.Headless.Classes.GameMode;
+
+internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, ISession session,
+    LocationSettingsClass.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
+    : HostGameController(game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
 {
-    internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, ISession session,
-        LocationSettingsClass.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
-        : HostGameController(game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
+    public override void SetupEventsAndExfils(Player player)
     {
-        public override void SetupEventsAndExfils(Player player)
+        Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
+        _abstractGame.GameTimer.Start();
+
+        /*ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;*/
+
+        /*ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
+        SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];*/
+
+        if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
         {
-            Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
-            _abstractGame.GameTimer.Start();
-
-            /*ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;*/
-
-            /*ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
-            SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];*/
-
-            if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
-            {
-                transitController.Init();
-                // TODO: Sync to clients!!!
-            }
-
-            if (Location.EventTrapsData != null)
-            {
-                LabyrinthSyncableTrapClass.InitLabyrinthSyncableTraps(Location.EventTrapsData);
-                _gameWorld.SyncModule = new();
-            }
-            _abstractGame.Status = GameStatus.Started;
-
-            ConsoleScreen.ApplyStartCommands();
+            transitController.Init();
+            // TODO: Sync to clients!!!
         }
 
-        public void ActivateBots()
+        if (Location.EventTrapsData != null)
         {
-            _botsController.Bots.CheckActivation();
+            LabyrinthSyncableTrapClass.InitLabyrinthSyncableTraps(Location.EventTrapsData);
+            _gameWorld.SyncModule = new();
+        }
+        _abstractGame.Status = GameStatus.Started;
+
+        ConsoleScreen.ApplyStartCommands();
+    }
+
+    public void ActivateBots()
+    {
+        _botsController.Bots.CheckActivation();
+    }
+
+    public override void CreateSpawnSystem(Profile profile)
+    {
+        _spawnPoints = SpawnPointManagerClass.CreateFromScene(new DateTime?(EFTDateTimeClass.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
+                                Location.SpawnPointParams);
+        int spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
+        SpawnSettingsStruct settings = new(Location.MinDistToFreePoint,
+            Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
+            Location.NoGroupSpawn, Location.OneTimeSpawn);
+        SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
+
+        EPlayerSide side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
+
+        _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, side,
+            null, null, null, null, null);
+        InfiltrationPoint = string.IsNullOrEmpty(_spawnPoint.Infiltration) ? "MissingInfiltration" : _spawnPoint.Infiltration;
+    }
+
+    public Task WaitForHeadlessInit(float timeBeforeDeployLocal)
+    {
+        if (_fikaGame is not AbstractGame abstractGame)
+        {
+            throw new NullReferenceException("AbstractGame was missing");
         }
 
-        public override void CreateSpawnSystem(Profile profile)
+        FikaServer server = Singleton<FikaServer>.Instance;
+        server.HostReady = true;
+
+        DateTime startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
+        GameTime = startTime;
+        server.GameStartTime = startTime;
+        SessionTime = abstractGame.GameTimer.SessionTime;
+
+        InformationPacket packet = new()
         {
-            _spawnPoints = SpawnPointManagerClass.CreateFromScene(new DateTime?(EFTDateTimeClass.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
-                                    Location.SpawnPointParams);
-            int spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
-            SpawnSettingsStruct settings = new(Location.MinDistToFreePoint,
-                Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
-                Location.NoGroupSpawn, Location.OneTimeSpawn);
-            SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
+            RaidStarted = RaidStarted,
+            ReadyPlayers = server.ReadyClients,
+            HostReady = server.HostReady,
+            GameTime = GameTime.Value,
+            SessionTime = SessionTime.Value
+        };
 
-            EPlayerSide side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
+        server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
+        LootData = null;
 
-            _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, side,
-                null, null, null, null, null);
-            InfiltrationPoint = string.IsNullOrEmpty(_spawnPoint.Infiltration) ? "MissingInfiltration" : _spawnPoint.Infiltration;
+        return Task.CompletedTask;
+    }
+
+    public override void InitializeTransitSystem(GameWorld gameWorld, BackendConfigSettingsClass instance, Profile profile, LocalRaidSettings localRaidSettings, LocationSettingsClass.Location location)
+    {
+        bool transitActive;
+        if (instance == null)
+        {
+            transitActive = false;
         }
-
-        public Task WaitForHeadlessInit(float timeBeforeDeployLocal)
+        else
         {
-            if (_fikaGame is not AbstractGame abstractGame)
-            {
-                throw new NullReferenceException("AbstractGame was missing");
-            }
-
-            FikaServer server = Singleton<FikaServer>.Instance;
-            server.HostReady = true;
-
-            DateTime startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
-            GameTime = startTime;
-            server.GameStartTime = startTime;
-            SessionTime = abstractGame.GameTimer.SessionTime;
-
-            InformationPacket packet = new()
-            {
-                RaidStarted = RaidStarted,
-                ReadyPlayers = server.ReadyClients,
-                HostReady = server.HostReady,
-                GameTime = GameTime.Value,
-                SessionTime = SessionTime.Value
-            };
-
-            server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
-            LootData = null;
-
-            return Task.CompletedTask;
+            BackendConfigSettingsClass.TransitSettingsClass transitSettings = instance.transitSettings;
+            transitActive = transitSettings != null && transitSettings.active;
         }
-
-        public override void InitializeTransitSystem(GameWorld gameWorld, BackendConfigSettingsClass instance, Profile profile, LocalRaidSettings localRaidSettings, LocationSettingsClass.Location location)
+        if (transitActive)
         {
-            bool transitActive;
-            if (instance == null)
-            {
-                transitActive = false;
-            }
-            else
-            {
-                BackendConfigSettingsClass.TransitSettingsClass transitSettings = instance.transitSettings;
-                transitActive = transitSettings != null && transitSettings.active;
-            }
-            if (transitActive)
-            {
-                gameWorld.TransitController = new FikaHeadlessTransitController(instance.transitSettings, location.transitParameters, localRaidSettings);
-            }
-            else
-            {
-                Logger.LogInfo("Transits are disabled");
-                TransitControllerAbstractClass.DisableTransitPoints();
-            }
+            gameWorld.TransitController = new FikaHeadlessTransitController(instance.transitSettings, location.transitParameters, localRaidSettings);
+        }
+        else
+        {
+            Logger.LogInfo("Transits are disabled");
+            TransitControllerAbstractClass.DisableTransitPoints();
         }
     }
 }

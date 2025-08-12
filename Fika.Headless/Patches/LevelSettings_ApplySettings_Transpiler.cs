@@ -4,23 +4,22 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches
-{
-    public class LevelSettings_ApplySettings_Transpiler : FikaPatch
-    {
-        /// <summary>
-        /// Prevents unneccesary code from running
-        /// </summary>
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(LevelSettings)
-                .GetMethod(nameof(LevelSettings.ApplySettings));
-        }
+namespace Fika.Headless.Patches;
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile()
-        {
-            yield return new(OpCodes.Ret);
-        }
+public class LevelSettings_ApplySettings_Transpiler : FikaPatch
+{
+    /// <summary>
+    /// Prevents unneccesary code from running
+    /// </summary>
+    protected override MethodBase GetTargetMethod()
+    {
+        return typeof(LevelSettings)
+            .GetMethod(nameof(LevelSettings.ApplySettings));
+    }
+
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile()
+    {
+        yield return new(OpCodes.Ret);
     }
 }

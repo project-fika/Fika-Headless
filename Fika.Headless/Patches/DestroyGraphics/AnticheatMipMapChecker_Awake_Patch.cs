@@ -1,22 +1,20 @@
 ﻿using Fika.Core.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class AnticheatMipMapChecker_Awake_Patch : FikaPatch
 {
-    public class AnticheatMipMapChecker_Awake_Patch : FikaPatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(AnticheatMipMapChecker).GetMethod(nameof(AnticheatMipMapChecker.Awake));
-        }
+        return typeof(AnticheatMipMapChecker).GetMethod(nameof(AnticheatMipMapChecker.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(AnticheatMipMapChecker __instance)
-        {
-            Object.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(AnticheatMipMapChecker __instance)
+    {
+        Object.Destroy(__instance);
+        return false;
     }
 }
 

@@ -1,22 +1,20 @@
 ﻿using Audio.AmbientSubsystem;
 using Fika.Core.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.Audio
+namespace Fika.Headless.Patches.Audio;
+
+internal class LoopAmbientSoundPlayer_Awake_Patch : FikaPatch
 {
-    internal class LoopAmbientSoundPlayer_Awake_Patch : FikaPatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(LoopAmbientSoundPlayer).GetMethod(nameof(LoopAmbientSoundPlayer.Awake));
-        }
+        return typeof(LoopAmbientSoundPlayer).GetMethod(nameof(LoopAmbientSoundPlayer.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(LoopAmbientSoundPlayer __instance)
-        {
-            GameObject.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(LoopAmbientSoundPlayer __instance)
+    {
+        GameObject.Destroy(__instance);
+        return false;
     }
 }
