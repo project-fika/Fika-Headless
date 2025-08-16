@@ -285,6 +285,19 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         GameController.CreateSpawnSystem(null);
 
+        if (Singleton<IFikaNetworkManager>.Instance.AllowVOIP)
+        {
+            _logger.LogInfo("VOIP enabled, initializing...");
+            try
+            {
+                await Singleton<IFikaNetworkManager>.Instance.InitializeVOIP();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"There was an error initializing the VOIP module: {ex.Message}");
+            }
+        }
+
         await GameController.WaitForHostToStart();
 
         LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
