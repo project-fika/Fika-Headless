@@ -319,7 +319,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         FikaEventDispatcher.DispatchEvent(new FikaRaidStartedEvent(true));
 
-        _ = Task.Run(GameController.CreateStashes);
+        StartCoroutine(GameController.CreateStashes());
 
         if (GameController.CoopHandler.HumanPlayers.Count > 0)
         {
