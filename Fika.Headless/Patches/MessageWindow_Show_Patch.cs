@@ -17,7 +17,7 @@ public class MessageWindow_Show_Patch : FikaPatch
     }
 
     [PatchPostfix]
-    public static void PatchPostfix(GClass3629 __result)
+    public static void PatchPostfix(GClass3834 __result)
     {
         __result.AcceptAndClose();
         /*__instance.Close(ECloseState.Accept);

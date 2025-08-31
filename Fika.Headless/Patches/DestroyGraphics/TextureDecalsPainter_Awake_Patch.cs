@@ -12,9 +12,9 @@ public class TextureDecalsPainter_Awake_Patch : FikaPatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(TextureDecalsPainter __instance, ref GClass833<RenderTexture> ___gclass833_0)
+    public static bool Prefix(TextureDecalsPainter __instance, ref GClass835<RenderTexture> ___gclass835_0)
     {
-        ___gclass833_0 = new(0, FakeClassFunc);
+        ___gclass835_0 = new(0, FakeClassFunc);
         Object.Destroy(__instance);
         return false;
     }

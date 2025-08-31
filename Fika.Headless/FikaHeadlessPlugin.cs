@@ -183,23 +183,23 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     /// Gets all quest templates from the server
     /// </summary>
     /// <remarks>
-    /// Look for <see cref="Class310.RequestQuestsTemplates"/>
+    /// Look for <see cref="Class308.RequestQuestsTemplates"/>
     /// </remarks>
     /// <param name="session"></param>
     /// <returns></returns>
-    private async Task GetQuestTemplates(Class309 session)
+    private async Task GetQuestTemplates(Class308 session)
     {
         Logger.LogInfo("Getting quest templates");
         List<RawQuestClass> list = await session.method_3<List<RawQuestClass>>(new()
         {
-            Url = session.Gclass1387_0.Main + "/fika/headless/questtemplates",
+            Url = session.Gclass1392_0.Main + "/fika/headless/questtemplates",
             ParseInBackground = true,
             Params = new Class59<bool>(true),
             Retries = new byte?(LegacyParamsStruct.DefaultRetries)
         });
         Logger.LogInfo($"Received {list.Count} quest templates");
 
-        GClass3807.Instance.GlobalQuestTemplates.AddRange(list);
+        GClass4014.Instance.GlobalQuestTemplates.AddRange(list);
     }
 
     /// <summary>

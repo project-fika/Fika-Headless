@@ -4,12 +4,12 @@ using static EFT.UI.ScavengerInventoryScreen;
 
 namespace Fika.Headless.Patches;
 
-public class GClass3680_HasItems_Patch : FikaPatch
+public class GClass3887_HasItems_Patch : FikaPatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(GClass3680)
-            .GetProperty(nameof(GClass3680.HasItems))
+        return typeof(GClass3887)
+            .GetProperty(nameof(GClass3887.HasItems))
             .GetGetMethod();
     }
 

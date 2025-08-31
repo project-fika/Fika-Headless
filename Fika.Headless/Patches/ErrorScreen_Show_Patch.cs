@@ -13,7 +13,7 @@ public class ErrorScreen_Show_Patch : FikaPatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(string message, ref GClass3629 __result)
+    public static bool Prefix(string message, ref GClass3835 __result)
     {
         if (!string.IsNullOrEmpty(message))
         {
@@ -24,7 +24,7 @@ public class ErrorScreen_Show_Patch : FikaPatch
             Logger.LogWarning("Received an empty error");
         }
 
-        __result = new GClass3629();
+        __result = new GClass3835();
         return false;
     }
 }

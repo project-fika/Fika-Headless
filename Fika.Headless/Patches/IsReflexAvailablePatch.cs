@@ -10,8 +10,8 @@ public class IsReflexAvailablePatch : FikaPatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(GClass3489)
-            .GetMethod(nameof(GClass3489.IsReflexAvailable),
+        return typeof(GClass3692)
+            .GetMethod(nameof(GClass3692.IsReflexAvailable),
             BindingFlags.Public | BindingFlags.Static,
             null, [], null);
     }

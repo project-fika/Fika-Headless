@@ -6,11 +6,12 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio.Tripwire;
 
-internal class GClass2458_PlayFuzeSound_Transpiler : FikaPatch
+internal class GClass2581_PlayPlantSound_Transpiler : FikaPatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(GClass2458).GetMethod(nameof(GClass2458.PlayFuzeSound));
+        return typeof(GClass2581)
+            .GetMethod(nameof(GClass2581.PlayPlantSound));
     }
 
     [PatchTranspiler]

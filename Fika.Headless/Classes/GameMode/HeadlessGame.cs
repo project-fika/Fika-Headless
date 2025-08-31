@@ -314,7 +314,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         };
         airdropEventClass.Init(true);
         (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
-        GameWorld.SynchronizableObjectLogicProcessor.Ginterface262_0 = Singleton<FikaServer>.Instance;
+        GameWorld.SynchronizableObjectLogicProcessor.Ginterface279_0 = Singleton<FikaServer>.Instance;
 
         await RunMemoryCleanup();
 
@@ -392,7 +392,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         if (Singleton<SpatialAudioSystem>.Instantiated)
         {
             SpatialAudioSystem sAS = Singleton<SpatialAudioSystem>.Instance;
-            GClass1119 sASManager = Traverse.Create(sAS).Field<GClass1119>("gclass1119_0").Value;
+            GClass1122 sASManager = Traverse.Create(sAS).Field<GClass1122>("gclass1122_0").Value;
             if (sASManager != null)
             {
                 _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
@@ -400,8 +400,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
                 {
                     foreach (ISpatialAudioRoom rooms in roomList)
                     {
-                        List<ISpatialPortal> portals = rooms.GetPortals();
-                        foreach (ISpatialPortal portal in portals)
+                        foreach (ISpatialPortal portal in rooms.GetPortals())
                         {
                             GameObject.Destroy((MonoBehaviour)portal);
                         }
@@ -461,15 +460,15 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         }
 
         Item[] array = [.. location.Loot.Select(ItemFromPositionClass)];
-        ResourceKey[] array2 = [.. array.OfType<GClass3119>().GetAllItemsFromCollections()
+        ResourceKey[] array2 = [.. array.OfType<GClass3248>().GetAllItemsFromCollections()
             .Concat(array
-                .Where((IsItemSpecialContainer))
+                .Where(IsItemSpecialContainer)
             )
             .SelectMany(GetResourceKeys)];
         if (array2.Length != 0)
         {
             PlayerLoopSystem playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
-            GClass657.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
+            GClass660.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
             PlayerLoopSystem[] array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
             if (num != -1)
             {
@@ -484,7 +483,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             }
             await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid,
                 PoolManagerClass.AssemblyType.Local, array2, JobPriorityClass.General,
-                new GClass3859<LoadingProgressStruct>(HandleProgress, default),
+                new GClass1519<LoadingProgressStruct>(HandleProgress, default),
                 default);
             if (num != -1)
             {
@@ -495,7 +494,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             playerLoopSystem2 = default;
             array3 = null;
         }
-        GClass1399 gclass = GameWorld.method_4(location.Loot);
+        GClass1404 gclass = GameWorld.method_4(location.Loot);
         GameWorld.method_5(gclass, true);
     }
 
@@ -521,7 +520,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
     private bool IsItemSpecialContainer(Item item)
     {
-        return item is not GClass3119;
+        return item is not GClass3248;
     }
 
     public bool IsLootItemContainer(LootItemPositionClass x)
