@@ -106,8 +106,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         _gcPoint = RAMCleanInterval.Value * 60f;
 
-        DisableFikaCorePatches();
-        DisableSPTPatches();
+        var patches = ModPatchCache.GetActivePatches();
+        DisableFikaCorePatches(patches);
+        DisableSPTPatches(patches);
 
         PatchManager manager = new(this, true);
         manager.EnablePatches();
@@ -148,25 +149,51 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         }
     }
 
-    private void DisableSPTPatches()
+    private void DisableSPTPatches(IReadOnlyList<ModulePatch> patches)
     {
-        new MemoryCollectionPatch().Disable();
-        new SetPreRaidSettingsScreenDefaultsPatch().Disable();
-        new DisablePMCExtractsForScavsPatch().Disable();
-        new AddTraitorScavsPatch().Disable();
-        new TinnitusFixPatch().Disable();
+        var targets = new HashSet<string>
+        {
+            nameof(MemoryCollectionPatch),
+            nameof(SetPreRaidSettingsScreenDefaultsPatch),
+            nameof(DisablePMCExtractsForScavsPatch),
+            nameof(AddTraitorScavsPatch),
+            nameof(TinnitusFixPatch)
+        };
+
+        for (var i = 0; i < patches.Count; i++)
+        {
+            var patch = patches[i];
+            var name = patch.GetType().Name;
+            if (targets.Contains(name))
+            {
+                FikaHeadlessLogger.LogInfo($"Found {name}, disabling...");
+                patch.Disable();
+            }
+        }
     }
 
     /// <summary>
     /// Disables patches from Fika.Core that the headless does not need
     /// </summary>
-    private static void DisableFikaCorePatches()
+    private static void DisableFikaCorePatches(IReadOnlyList<ModulePatch> patches)
     {
-        PatchManager manager = new("com.fika.core", "Fika.Core");
-        manager.AddPatch(new TarkovApplication_method_16_Patch());
-        manager.AddPatch(new MenuScreen_Awake_Patch());
-        manager.AddPatch(new TarkovApplication_LocalGameCreator_Patch());
-        manager.DisablePatches();
+        var targets = new HashSet<string>
+        {
+            nameof(TarkovApplication_method_16_Patch),
+            nameof(MenuScreen_Awake_Patch),
+            nameof(TarkovApplication_LocalGameCreator_Patch)
+        };
+
+        for (var i = 0; i < patches.Count; i++)
+        {
+            var patch = patches[i];
+            var name = patch.GetType().Name;
+            if (targets.Contains(name))
+            {
+                FikaHeadlessLogger.LogInfo($"Found {name}, disabling...");
+                patch.Disable();
+            }
+        }
     }
 
 #if DEBUG
