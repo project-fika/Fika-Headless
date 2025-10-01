@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
@@ -7,7 +7,7 @@ namespace Fika.Headless.Patches;
 /// This patch simulates clicking "Next" by calling the method bound to the event of the button <br/>
 /// <see cref="EFT.UI.Matchmaker.MatchmakerOfflineRaidScreen.CreateRaidSettingsForProfileClass"/>
 /// </summary>
-internal class MainMenuControllerClass_method_49_Patch : FikaPatch
+internal class MainMenuControllerClass_method_49_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

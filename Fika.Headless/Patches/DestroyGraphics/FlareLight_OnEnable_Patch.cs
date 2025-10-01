@@ -1,10 +1,10 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using MultiFlare;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-internal class FlareLight_OnEnable_Patch : FikaPatch
+internal class FlareLight_OnEnable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

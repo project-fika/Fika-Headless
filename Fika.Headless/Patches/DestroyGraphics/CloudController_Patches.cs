@@ -1,10 +1,10 @@
 ﻿using EFT.Rendering.Clouds;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class CloudController_OnEnable_Patch : FikaPatch
+public class CloudController_OnEnable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
@@ -19,7 +19,7 @@ public class CloudController_OnEnable_Patch : FikaPatch
     }
 }
 
-public class CloudController_UpdateAmbient_Patch : FikaPatch
+public class CloudController_UpdateAmbient_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

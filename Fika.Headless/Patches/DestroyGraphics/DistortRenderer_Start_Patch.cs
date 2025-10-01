@@ -1,9 +1,9 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class DistortRenderer_Start_Patch : FikaPatch
+public class DistortRenderer_Start_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

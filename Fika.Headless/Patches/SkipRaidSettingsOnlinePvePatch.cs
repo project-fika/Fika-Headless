@@ -1,10 +1,10 @@
 ﻿using EFT;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
 
-public class SkipRaidSettingsOnlinePvePatch : FikaPatch
+public class SkipRaidSettingsOnlinePvePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

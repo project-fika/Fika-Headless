@@ -1,6 +1,6 @@
 ﻿using EFT;
 using EFT.UI;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using SPT.Core.Utils;
 using SPT.Custom.Utils;
 using System.Reflection;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches;
 
-public class ConsoleScreen_OnProfileReceive_Patch : FikaPatch
+public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

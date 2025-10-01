@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio;
 
-internal class BetterAudio_LimitedPlay_Transpiler : FikaPatch
+internal class BetterAudio_LimitedPlay_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -7,7 +7,7 @@ namespace Fika.Headless.Patches;
 /// <summary>
 /// This prevents the season controller from running due to no graphics being used
 /// </summary>
-public class Class444_Run_Patch : FikaPatch
+public class Class444_Run_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

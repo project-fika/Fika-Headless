@@ -1,4 +1,4 @@
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.TextureValidateFormat;
@@ -6,7 +6,7 @@ namespace Fika.Headless.Patches.TextureValidateFormat;
 /// <summary>
 /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/77b37cd9f002e27b45be07d6e3667ee53985ec82/Runtime/Export/Graphics/Texture.cs#L696"/>
 /// </summary>
-public class ValidateFormatPatch1 : FikaPatch
+public class ValidateFormatPatch1 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

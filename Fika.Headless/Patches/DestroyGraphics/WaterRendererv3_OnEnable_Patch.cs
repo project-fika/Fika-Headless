@@ -1,10 +1,10 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 using WaterSSR;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class WaterRendererv3_OnEnable_Patch : FikaPatch
+public class WaterRendererv3_OnEnable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

@@ -1,9 +1,9 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class StaticDeferredDecal_OnEnable_Patch : FikaPatch
+public class StaticDeferredDecal_OnEnable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

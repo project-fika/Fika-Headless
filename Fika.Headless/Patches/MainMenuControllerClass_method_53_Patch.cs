@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
@@ -6,7 +6,7 @@ namespace Fika.Headless.Patches;
 /// <summary>
 /// This patch skips checking for keys (e.g. Labs)
 /// </summary>
-public class MainMenuControllerClass_method_53_Patch : FikaPatch
+public class MainMenuControllerClass_method_53_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

@@ -1,5 +1,5 @@
 ﻿using EFT.GameTriggers;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Triggers;
 
-internal class TriggerBallistic_method_2_Transpiler : FikaPatch
+internal class TriggerBallistic_method_2_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

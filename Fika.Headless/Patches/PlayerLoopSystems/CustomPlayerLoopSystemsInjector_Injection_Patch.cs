@@ -1,5 +1,5 @@
 ﻿using CustomPlayerLoopSystem;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches.PlayerLoopSystems;
 /// <summary>
 /// This transpilers skips the usage of the <see cref="CustomPlayerLoopSystemsInjector.Injection"/>
 /// </summary>
-internal class CustomPlayerLoopSystemsInjector_Injection_Patch : FikaPatch
+internal class CustomPlayerLoopSystemsInjector_Injection_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

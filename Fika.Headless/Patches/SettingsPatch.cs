@@ -1,11 +1,11 @@
 ﻿using EFT.Settings.Graphics;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches;
 
-public class SettingsPatch : FikaPatch
+public class SettingsPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
@@ -27,7 +27,7 @@ public static class FikaHeadlessSettingsManager
 
     internal static async Task Initalize()
     {
-        await Class1825.smethod_5("LoadUserSettings", false);
+        await Class1826.smethod_5("LoadUserSettings", false);
         await SetSettings(await SharedGameSettingsClass.InstantiateSingleton());
         await GClass899.InstantiateSingleton();
         await Task.Yield();
@@ -84,7 +84,7 @@ public static class FikaHeadlessSettingsManager
 
         await gameSettings.Graphics.Settings.DisplaySettings.SetValue(new()
         {
-            AspectRatio = Class1823.smethod_0(new(1024, 768)),
+            AspectRatio = Class1824.smethod_0(new(1024, 768)),
             Display = 0,
             FullScreenMode = FullScreenMode.Windowed,
             Resolution = new(1024, 768)

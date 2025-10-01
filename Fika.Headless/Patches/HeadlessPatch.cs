@@ -1,11 +1,11 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using HarmonyLib;
 using SPT.Core.Utils;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
 
-public class HeadlessPatch : FikaPatch
+public class HeadlessPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

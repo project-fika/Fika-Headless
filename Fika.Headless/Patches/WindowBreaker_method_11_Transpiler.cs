@@ -1,5 +1,5 @@
 ﻿using EFT.Interactive;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,7 +10,7 @@ namespace Fika.Headless.Patches;
 /// <summary>
 /// Attempts to fix a nullref due to renders being disabled
 /// </summary>
-public class WindowBreaker_method_11_Transpiler : FikaPatch
+public class WindowBreaker_method_11_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
@@ -6,7 +6,7 @@ namespace Fika.Headless.Patches;
 /// <summary>
 /// This patch skips a bunch of unneccesary methods
 /// </summary>
-internal class MainMenuControllerClass_method_77_Patch : FikaPatch
+internal class MainMenuControllerClass_method_77_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

@@ -1,5 +1,5 @@
 ﻿using EFT.Interactive;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Lighting;
 
-internal class LampController_TurnLights_Transpiler : FikaPatch
+internal class LampController_TurnLights_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

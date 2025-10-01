@@ -20,7 +20,6 @@ using Fika.Core.Networking.Models.Headless;
 #if DEBUG
 using Fika.Core.Networking.Websocket.Headless;
 #endif
-using Fika.Core.Patching;
 using Fika.Core.UI.Patches;
 using Fika.Core.UI.Patches.MainMenuUI;
 using Fika.Headless.Classes;
@@ -29,6 +28,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using SPT.Custom.Patches;
 using SPT.Custom.Utils;
+using SPT.Reflection.Patching;
 using SPT.SinglePlayer.Patches.RaidFix;
 using SPT.SinglePlayer.Patches.ScavMode;
 using System;
@@ -180,29 +180,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 #endif
 
     /// <summary>
-    /// Gets all quest templates from the server
-    /// </summary>
-    /// <remarks>
-    /// Look for <see cref="Class308.RequestQuestsTemplates"/>
-    /// </remarks>
-    /// <param name="session"></param>
-    /// <returns></returns>
-    private async Task GetQuestTemplates(Class308 session)
-    {
-        Logger.LogInfo("Getting quest templates");
-        List<RawQuestClass> list = await session.method_3<List<RawQuestClass>>(new()
-        {
-            Url = session.Gclass1392_0.Main + "/fika/headless/questtemplates",
-            ParseInBackground = true,
-            Params = new Class59<bool>(true),
-            Retries = new byte?(LegacyParamsStruct.DefaultRetries)
-        });
-        Logger.LogInfo($"Received {list.Count} quest templates");
-
-        GClass4014.Instance.GlobalQuestTemplates.AddRange(list);
-    }
-
-    /// <summary>
     /// Cleans up all old log files
     /// </summary>
     private void CleanupLogFiles()
@@ -342,7 +319,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         FikaPlugin.QuestTypesToShareAndReceive.Value = 0;
         FikaPlugin.ConnectionTimeout.Value = 30;
         FikaPlugin.UseNamePlates.Value = false;
-        FikaPlugin.UseFikaGC.Value = false;
 
         FikaPlugin.Instance.AllowFreeCam = true;
         FikaPlugin.Instance.AllowSpectateFreeCam = true;

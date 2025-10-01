@@ -1,6 +1,6 @@
 ﻿using BSG.Unity.Wires;
 using EFT.Interactive;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class LoadScenePatch : FikaPatch
+public class LoadScenePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

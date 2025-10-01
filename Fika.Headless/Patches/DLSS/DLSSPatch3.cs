@@ -1,10 +1,10 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DLSS;
 
 // Token: 0x02000006 RID: 6
-public class DLSSPatch3 : FikaPatch
+public class DLSSPatch3 : ModulePatch
 {
     // Token: 0x06000011 RID: 17 RVA: 0x000022D0 File Offset: 0x000004D0
     protected override MethodBase GetTargetMethod()

@@ -1,4 +1,4 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,7 +9,7 @@ namespace Fika.Headless.Patches.PhysicsPatches;
 /// <summary>
 /// This patch syncs all transforms before a bullet checks if it hits
 /// </summary>
-internal class EftBulletClass_method_14_Transpiler : FikaPatch
+internal class EftBulletClass_method_14_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

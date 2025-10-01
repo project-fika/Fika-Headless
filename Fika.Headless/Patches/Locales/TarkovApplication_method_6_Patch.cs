@@ -1,11 +1,11 @@
 ﻿using EFT;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.Locales;
 
-public class TarkovApplication_method_6_Patch : FikaPatch
+public class TarkovApplication_method_6_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

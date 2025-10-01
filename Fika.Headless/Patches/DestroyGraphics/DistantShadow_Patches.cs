@@ -1,9 +1,9 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class DistantShadow_Awake_Patch : FikaPatch
+public class DistantShadow_Awake_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
@@ -19,7 +19,7 @@ public class DistantShadow_Awake_Patch : FikaPatch
     }
 }
 
-public class DistantShadow_Update_Patch : FikaPatch
+public class DistantShadow_Update_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

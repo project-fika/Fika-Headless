@@ -1,11 +1,11 @@
 ﻿using Audio.AmbientSubsystem;
 using Audio.AutoPanner;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.Audio;
 
-internal class AmbientPlayerAutoPanner_Awake_Patch : FikaPatch
+internal class AmbientPlayerAutoPanner_Awake_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

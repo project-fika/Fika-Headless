@@ -7,7 +7,7 @@ using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
-using Fika.Core.Patching;
+using SPT.Reflection.Patching;
 using Fika.Headless.Classes.GameMode;
 using HarmonyLib;
 using JsonType;
@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.GameMode;
 
-internal class Headless_LocalGameCreator_Patch : FikaPatch
+internal class Headless_LocalGameCreator_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {

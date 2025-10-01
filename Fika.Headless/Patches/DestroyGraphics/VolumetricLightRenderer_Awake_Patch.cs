@@ -1,9 +1,9 @@
-﻿using Fika.Core.Patching;
+﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
 
-public class VolumetricLightRenderer_Awake_Patch : FikaPatch
+public class VolumetricLightRenderer_Awake_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
