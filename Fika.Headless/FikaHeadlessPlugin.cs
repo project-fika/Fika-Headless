@@ -530,15 +530,14 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         Logger.LogInfo($"Starting with: {JsonConvert.SerializeObject(raidSettings)}");
 
-        Task createMatchTask = FikaBackendUtils.CreateMatch(session.Profile.ProfileId, session.Profile.Info.Nickname, raidSettings);
-        while (!createMatchTask.IsCompleted)
-        {
-            await Task.Delay(100);
-        }
+        await FikaBackendUtils.CreateMatch(session.Profile.ProfileId,
+            session.Profile.Info.Nickname, raidSettings);
+
+        Logger.LogInfo("Match successfully created, loading raid");
 
         FikaBackendUtils.IsHeadlessGame = true;
 
-        _verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
+        //_verifyConnectionsRoutine = StartCoroutine(VerifyPlayersRoutine(tarkovApplication));
 
         try
         {

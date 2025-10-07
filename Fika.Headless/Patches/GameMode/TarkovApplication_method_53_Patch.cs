@@ -9,7 +9,8 @@ internal class TarkovApplication_method_53_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(TarkovApplication).GetMethod(nameof(TarkovApplication.method_53));
+        return typeof(TarkovApplication)
+            .GetMethod(nameof(TarkovApplication.method_53));
     }
 
     [PatchPrefix]
