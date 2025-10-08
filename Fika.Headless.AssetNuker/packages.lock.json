@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "AssetsTools.NET": {
+        "type": "Direct",
+        "requested": "[3.0.0, )",
+        "resolved": "3.0.0",
+        "contentHash": "mo7TYy/f6Z9YBhmGeluOuaZ310i4qZy0VGCMNgocYajgjwN0m0l04LDpelWIjEkzlqOKZMAp1LspTW/iygSPyQ=="
+      },
+      "AssetsTools.NET.Texture": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "gJVJeVhkZIH0GUjuW8dpDoKYw2Lk4mUqFGeW1nEFfX1eVeR5QBM7227WZ6lJKaKJmUTb08ERP3DDshDMtcySpA==",
+        "dependencies": {
+          "AssetRipper.TextureDecoder": "1.3.0",
+          "AssetsTools.NET": "3.0.0"
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[9.0.9, )",
+        "resolved": "9.0.9",
+        "contentHash": "cHi1os/s6aobEgNkbOh/jW+ru//rHuedvj4PmTh2mMY7et/mJjqphBeXeKCesDvMd0+E2JyX9EPZZC4VRKslXg=="
+      },
+      "SixLabors.ImageSharp": {
+        "type": "Direct",
+        "requested": "[3.1.11, )",
+        "resolved": "3.1.11",
+        "contentHash": "JfPLyigLthuE50yi6tMt7Amrenr/fA31t2CvJyhy/kQmfulIBAqo5T/YFUSRHtuYPXRSaUHygFeh6Qd933EoSw=="
+      },
+      "AssetRipper.TextureDecoder": {
+        "type": "Transitive",
+        "resolved": "1.3.0",
+        "contentHash": "8Ok/7NWc8DcDrJegwfaLfXUqta3r7svVPUCUZCthOfZv5/D3uWlluxP1P5Vbk0C6WotujOUofOOIYsuuQVaDkQ=="
+      }
+    },
+    "net9.0/win-x64": {}
+  }
+}
