@@ -34,7 +34,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
           cache: true
-          cache-dependency-path: 'Fika.Core/packages.lock.json'
+          cache-dependency-path: 'Fika.Headless/packages.lock.json'
 
       - name: Restore dependencies
         run: dotnet restore Fika-Headless.sln
