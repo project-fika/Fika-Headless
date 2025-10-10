@@ -1,21 +1,19 @@
 ﻿using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class LocalDustParticlesParent_Awake_Patch : ModulePatch
 {
-    public class LocalDustParticlesParent_Awake_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(LocalDustParticlesParent).GetMethod(nameof(LocalDustParticlesParent.Awake));
-        }
+        return typeof(LocalDustParticlesParent).GetMethod(nameof(LocalDustParticlesParent.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(LocalDustParticlesParent __instance)
-        {
-            GameObject.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(LocalDustParticlesParent __instance)
+    {
+        GameObject.Destroy(__instance);
+        return false;
     }
 }

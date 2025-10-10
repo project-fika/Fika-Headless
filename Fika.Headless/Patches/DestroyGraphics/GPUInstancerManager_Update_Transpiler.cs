@@ -1,29 +1,22 @@
-﻿using GPUInstancer;
+﻿using SPT.Reflection.Patching;
+using GPUInstancer;
 using HarmonyLib;
-using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class GPUInstancerManager_Update_Transpiler : ModulePatch
 {
-    public class GPUInstancerManager_Update_Transpiler : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GPUInstancerManager).GetMethod(nameof(GPUInstancerManager.Update));
-        }
+        return typeof(GPUInstancerManager).GetMethod(nameof(GPUInstancerManager.Update));
+    }
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
-        {
-            // Create a new set of instructions
-            List<CodeInstruction> instructionsList =
-            [
-                new CodeInstruction(OpCodes.Ret) // Return immediately
-            ];
-
-            return instructionsList;
-        }
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    {
+        yield return new(OpCodes.Ret);
     }
 }

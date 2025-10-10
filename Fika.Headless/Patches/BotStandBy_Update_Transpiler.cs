@@ -4,28 +4,22 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches;
+
+/// <summary>
+/// The purpose of this patch is to disable bot sleeping on the headless host
+/// </summary>
+[IgnoreAutoPatch]
+public class BotStandBy_Update_Transpiler : ModulePatch
 {
-    /// <summary>
-    /// The purpose of this patch is to disable bot sleeping on the headless host
-    /// </summary>
-    public class BotStandBy_Update_Transpiler : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(BotStandBy).GetMethod(nameof(BotStandBy.Update));
-        }
+        return typeof(BotStandBy).GetMethod(nameof(BotStandBy.Update));
+    }
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
-        {
-            // Create a new set of instructions
-            List<CodeInstruction> instructionsList =
-            [
-                new CodeInstruction(OpCodes.Ret) // Return immediately
-            ];
-
-            return instructionsList;
-        }
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile()
+    {
+        yield return new(OpCodes.Ret);
     }
 }

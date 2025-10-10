@@ -2,122 +2,133 @@
 using Diz.Utils;
 using Fika.Core.Networking.Websocket;
 using Fika.Core.Networking.Websocket.Headless;
-using Fika.Headless;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SPT.Common.Http;
 using System;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace Fika.Core.Networking
+namespace Fika.Headless.Classes;
+
+public class HeadlessWebSocket
 {
-    public class HeadlessWebSocket
+    private static ManualLogSource _logger = BepInEx.Logging.Logger.CreateLogSource("Fika.HeadlessWebSocket");
+
+    public string Host { get; set; }
+    public string Url { get; set; }
+    public string SessionId { get; set; }
+    public bool Connected
     {
-        private static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("Fika.HeadlessWebSocket");
-
-        public string Host { get; set; }
-        public string Url { get; set; }
-        public string SessionId { get; set; }
-        public bool Connected
+        get
         {
-            get
-            {
-                return _webSocket.ReadyState == WebSocketState.Open;
-            }
+            return _webSocket.ReadyState == WebSocketState.Open;
+        }
+    }
+
+    private readonly WebSocket _webSocket;
+
+    public HeadlessWebSocket()
+    {
+        Host = RequestHandler.Host.Replace("http", "ws");
+        SessionId = RequestHandler.SessionId;
+        Url = $"{Host}/fika/headless/client";
+
+        _webSocket = new WebSocket(Url)
+        {
+            WaitTime = TimeSpan.FromMinutes(1),
+            EmitOnPing = true
+        };
+
+        _webSocket.SetCredentials(SessionId, "", true);
+
+        _webSocket.OnOpen += WebSocket_OnOpen;
+        _webSocket.OnMessage += WebSocket_OnMessage;
+        _webSocket.OnError += WebSocket_OnError;
+        _webSocket.OnClose += WebSocket_OnClose;
+    }
+
+    public void Connect()
+    {
+        _logger.LogInfo($"Attempting to connect to {Url}...");
+        _webSocket.Connect();
+    }
+
+    public void Close()
+    {
+        _webSocket.Close();
+    }
+
+    private void WebSocket_OnOpen(object sender, EventArgs e)
+    {
+        _logger.LogInfo("Connected to HeadlessWebSocket");
+    }
+
+    private void WebSocket_OnMessage(object sender, MessageEventArgs e)
+    {
+#if DEBUG
+        _logger.LogInfo($"Received message"); 
+#endif
+
+        if (e == null)
+        {
+            _logger.LogWarning("WebSocket_OnMessage:: EventArgs was null");
+            return;
         }
 
-        private WebSocket _webSocket;
-
-        public HeadlessWebSocket()
+        if (string.IsNullOrEmpty(e.Data))
         {
-            Host = RequestHandler.Host.Replace("http", "ws");
-            SessionId = RequestHandler.SessionId;
-            Url = $"{Host}/fika/headless/client";
-
-            _webSocket = new WebSocket(Url)
-            {
-                WaitTime = TimeSpan.FromMinutes(1),
-                EmitOnPing = true
-            };
-
-            _webSocket.SetCredentials(SessionId, "", true);
-
-            _webSocket.OnOpen += WebSocket_OnOpen;
-            _webSocket.OnMessage += WebSocket_OnMessage;
-            _webSocket.OnError += WebSocket_OnError;
-            _webSocket.OnClose += WebSocket_OnClose;
+            _logger.LogWarning("WebSocket_OnMessage:: Data was null");
+            return;
         }
 
-        public void Connect()
+        JObject jsonObject = JObject.Parse(e.Data);
+
+        if (!jsonObject.ContainsKey("Type"))
         {
-            logger.LogInfo($"WS Connect()");
-            logger.LogInfo($"Attempting to connect to {Url}...");
-            _webSocket.Connect();
+            _logger.LogWarning("WebSocket_OnMessage:: There was no type in the data");
+            return;
         }
 
-        public void Close()
+        EFikaHeadlessWSMessageType type = (EFikaHeadlessWSMessageType)Enum.Parse(typeof(EFikaHeadlessWSMessageType), jsonObject.Value<string>("Type"));
+
+        switch (type)
         {
-            _webSocket.Close();
-        }
+            case EFikaHeadlessWSMessageType.HeadlessStartRaid:
+                StartRaid data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
 
-        private void WebSocket_OnOpen(object sender, EventArgs e)
+                AsyncWorker.RunInMainTread(() =>
+                {
+                    FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartHeadlessRequest);
+                });
+                break;
+            case EFikaHeadlessWSMessageType.ShutdownClient:
+                AsyncWorker.RunInMainTread(Application.Quit);
+                break;
+            case EFikaHeadlessWSMessageType.KeepAlive:
+            case EFikaHeadlessWSMessageType.RequesterJoinRaid:
+                break;
+        }
+    }
+
+    private void WebSocket_OnError(object sender, ErrorEventArgs e)
+    {
+        _logger.LogInfo($"HeadlessWebSocket error: {e.Message}");
+    }
+
+    private void WebSocket_OnClose(object sender, CloseEventArgs closeEventArgs)
+    {
+        if (!closeEventArgs.WasClean)
         {
-            logger.LogInfo("Connected to HeadlessWebSocket");
+            Task.Run(RetryConnect);
         }
+    }
 
-        private void WebSocket_OnMessage(object sender, MessageEventArgs e)
-        {
-            if (e == null)
-            {
-                return;
-            }
+    private async void RetryConnect()
+    {
+        _logger.LogWarning($"Websocket connection lost, retrying...");
 
-            if (string.IsNullOrEmpty(e.Data))
-            {
-                return;
-            }
-
-            JObject jsonObject = JObject.Parse(e.Data);
-
-            if (!jsonObject.ContainsKey("type"))
-            {
-                return;
-            }
-
-            EFikaHeadlessWSMessageTypes type = (EFikaHeadlessWSMessageTypes)Enum.Parse(typeof(EFikaHeadlessWSMessageTypes), jsonObject.Value<string>("type"));
-
-            switch (type)
-            {
-                case EFikaHeadlessWSMessageTypes.HeadlessStartRaid:
-                    StartRaid data = e.Data.ParseJsonTo<StartRaid>();
-
-                    AsyncWorker.RunInMainTread(() =>
-                    {
-                        FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartRequest);
-                    });
-                    break;
-            }
-        }
-
-        private void WebSocket_OnError(object sender, ErrorEventArgs e)
-        {
-            logger.LogInfo($"HeadlessWebSocket error: {e.Message}");
-        }
-
-        private void WebSocket_OnClose(object sender, CloseEventArgs closeEventArgs)
-        {
-            if (!closeEventArgs.WasClean)
-            {
-                Task.Run(RetryConnect);
-            }
-        }
-
-        private async void RetryConnect()
-        {
-            logger.LogWarning($"Websocket connection lost, retrying...");
-
-            await Task.Delay(5000);
-            Connect();
-        }
+        await Task.Delay(5000);
+        Connect();
     }
 }

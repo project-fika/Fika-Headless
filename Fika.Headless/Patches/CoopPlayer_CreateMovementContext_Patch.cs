@@ -1,33 +1,31 @@
 ﻿using EFT;
-using Fika.Core.Coop.ObservedClasses;
-using Fika.Core.Coop.Players;
+using Fika.Core.Main.Players;
 using SPT.Reflection.Patching;
-using System;
+using Fika.Headless.Classes;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches;
+
+public class CoopPlayer_CreateMovementContext_Patch : ModulePatch
 {
-    public class CoopPlayer_CreateMovementContext_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
+        return typeof(FikaPlayer)
+            .GetMethod(nameof(FikaPlayer.CreateMovementContext));
+    }
+
+    [PatchPrefix]
+    public static bool Prefix(Player __instance)
+    {
+        if (__instance.IsYourPlayer)
         {
-            return typeof(CoopPlayer).GetMethod(nameof(CoopPlayer.CreateMovementContext));
+            LayerMask localMask = EFTHardSettings.Instance.MOVEMENT_MASK;
+            __instance.MovementContext = HeadlessClientMovementContext.Create(__instance, __instance.GetBodyAnimatorCommon,
+                __instance.GetCharacterControllerCommon, localMask);
+
+            return false;
         }
 
-        [PatchPrefix]
-        public static bool Prefix(Player __instance)
-        {
-            if (__instance.IsYourPlayer)
-            {
-                LayerMask localMask = EFTHardSettings.Instance.MOVEMENT_MASK;
-                __instance.MovementContext = HeadlessClientMovementContext.Create(__instance, new Func<IAnimator>(__instance.GetBodyAnimatorCommon),
-                    new Func<ICharacterController>(__instance.GetCharacterControllerCommon), localMask);
-
-                return false;
-            }
-
-            return true;
-        }
+        return true;
     }
 }

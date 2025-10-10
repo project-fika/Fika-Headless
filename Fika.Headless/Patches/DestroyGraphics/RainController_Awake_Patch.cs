@@ -1,21 +1,19 @@
 ﻿using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class RainController_Awake_Patch : ModulePatch
 {
-    public class RainController_Awake_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(RainController).GetMethod(nameof(RainController.Awake));
-        }
+        return typeof(RainController).GetMethod(nameof(RainController.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(RainController __instance)
-        {
-            Object.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(RainController __instance)
+    {
+        Object.Destroy(__instance);
+        return false;
     }
 }

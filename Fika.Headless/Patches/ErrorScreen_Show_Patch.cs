@@ -2,30 +2,29 @@
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace Fika.Headless.Patches
+namespace Fika.Headless.Patches;
+
+public class ErrorScreen_Show_Patch : ModulePatch
 {
-    // Token: 0x02000008 RID: 8
-    internal class ErrorScreen_Show_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        // Token: 0x06000017 RID: 23 RVA: 0x0000237C File Offset: 0x0000057C
-        protected override MethodBase GetTargetMethod()
+        return typeof(ErrorScreen).GetMethod(nameof(ErrorScreen.Show),
+            [typeof(string), typeof(string), typeof(float), typeof(ErrorScreen.EButtonType), typeof(bool)]);
+    }
+
+    [PatchPrefix]
+    public static bool Prefix(string message, ref GClass3835 __result)
+    {
+        if (!string.IsNullOrEmpty(message))
         {
-            return typeof(ErrorScreen).GetMethod("Show");
+            Logger.LogError("ErrorScreen.Show: " + message);
+        }
+        else
+        {
+            Logger.LogWarning("Received an empty error");
         }
 
-        // Token: 0x06000018 RID: 24 RVA: 0x000023A4 File Offset: 0x000005A4
-        [PatchPrefix]
-        public static bool Prefix(string message)
-        {
-            if (!string.IsNullOrEmpty(message))
-            {
-                Logger.LogError("ErrorScreen.Show: " + message);
-            }
-            else
-            {
-                Logger.LogWarning("Received an empty error");
-            }
-            return false;
-        }
+        __result = new GClass3835();
+        return false;
     }
 }

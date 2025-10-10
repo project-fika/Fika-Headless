@@ -2,22 +2,20 @@
 using Audio.AutoPanner;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.Audio
+namespace Fika.Headless.Patches.Audio;
+
+internal class AmbientPlayerAutoPanner_Awake_Patch : ModulePatch
 {
-    internal class AmbientPlayerAutoPanner_Awake_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(AmbientPlayerAutoPanner).GetMethod(nameof(AmbientPlayerAutoPanner.Awake));
-        }
+        return typeof(AmbientPlayerAutoPanner).GetMethod(nameof(AmbientPlayerAutoPanner.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(AmbientSoundPlayer __instance)
-        {
-            GameObject.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(AmbientSoundPlayer __instance)
+    {
+        GameObject.Destroy(__instance);
+        return false;
     }
 }

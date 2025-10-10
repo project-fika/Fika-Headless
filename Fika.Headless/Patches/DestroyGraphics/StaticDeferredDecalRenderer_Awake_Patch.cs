@@ -1,21 +1,19 @@
 ﻿using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class StaticDeferredDecalRenderer_Awake_Patch : ModulePatch
 {
-    public class StaticDeferredDecalRenderer_Awake_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(StaticDeferredDecalRenderer).GetMethod(nameof(StaticDeferredDecalRenderer.Awake));
-        }
+        return typeof(StaticDeferredDecalRenderer).GetMethod(nameof(StaticDeferredDecalRenderer.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(StaticDeferredDecalRenderer __instance)
-        {
-            Object.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(StaticDeferredDecalRenderer __instance)
+    {
+        Object.Destroy(__instance);
+        return false;
     }
 }

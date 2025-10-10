@@ -1,93 +1,20 @@
-﻿using BepInEx.Logging;
-using Comfort.Common;
-using EFT;
-using Fika.Core.Coop.Components;
-using Fika.Core.Coop.FreeCamera;
-using Fika.Core.Coop.Players;
-using UnityEngine;
+﻿namespace Fika.Headless.Classes;
 
-namespace Fika.Headless.Classes
+/// <summary>
+/// Used to sync transforms every 1 seconds, as otherwise triggers don't work for e.g. <see cref="EFT.Interactive.TransitPoint"/>s
+/// </summary>
+public class HeadlessRaidController : MonoBehaviour
 {
-    public class HeadlessRaidController : MonoBehaviour
+    private readonly float _updateFreq = 1f;
+    private float _counter = 0f;
+
+    protected void Update()
     {
-        public CoopPlayer MainPlayer { get; set; }
-        private CoopPlayer targetPlayer;
-        private ManualLogSource logger;
-        private float counter;
-        private bool paused;
-        private Core.Coop.FreeCamera.FreeCamera freeCam;
-        private FreeCameraController freeCameraController;
-
-        private void Start()
+        _counter += Time.unscaledDeltaTime;
+        if (_counter >= _updateFreq)
         {
-            counter = 0;
-            logger = BepInEx.Logging.Logger.CreateLogSource(nameof(HeadlessRaidController));
-            paused = false;
-            freeCam = CameraClass.Instance.Camera.gameObject.GetComponent<Core.Coop.FreeCamera.FreeCamera>();
-            freeCameraController = Singleton<GameWorld>.Instance.gameObject.GetComponent<FreeCameraController>();
-        }
-
-        private void Pause(bool state)
-        {
-            paused = state;
-        }
-
-        private void Update()
-        {
-            if (paused)
-            {
-                return;
-            }
-
-            counter += Time.deltaTime;
-
-            if (counter > 10)
-            {
-                counter = 0;
-
-                if (targetPlayer != null)
-                {
-                    if (!targetPlayer.HealthController.IsAlive)
-                    {
-                        FindNewPlayer();
-                        return;
-                    }
-
-                    Vector3 currentPosition = targetPlayer.Position;
-                    MainPlayer.Teleport(new(currentPosition.x, currentPosition.y - 75, currentPosition.z));
-                    MainPlayer.MovementContext.SetPitchSmoothly(new(-90, -90));
-                }
-                else
-                {
-                    FindNewPlayer();
-                }
-            }
-        }
-
-        public void FindNewPlayer()
-        {
-            if (CoopHandler.TryGetCoopHandler(out CoopHandler coopHandler))
-            {
-                foreach (CoopPlayer player in coopHandler.HumanPlayers)
-                {
-                    if (player.HealthController.IsAlive && !player.IsYourPlayer)
-                    {
-                        targetPlayer = player;
-                        logger.LogInfo("HeadlessRaidController: New player: " + player.Profile.Info.MainProfileNickname);
-                        if (!freeCam.IsActive)
-                        {
-                            freeCameraController.ToggleCamera();
-                        }
-                        freeCam.SetCurrentPlayer(targetPlayer);
-                        freeCam.AttachHeadless(targetPlayer);
-                        return;
-                    }
-                }
-            }
-
-            targetPlayer = null;
-            logger.LogWarning("No more players found as targets");
-            Destroy(this);
+            _counter -= _updateFreq;
+            Physics.SyncTransforms();
         }
     }
 }

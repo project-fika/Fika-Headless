@@ -1,22 +1,20 @@
 ﻿using EFT.Visual;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Fika.Headless.Patches.DestroyGraphics
+namespace Fika.Headless.Patches.DestroyGraphics;
+
+public class Flicker_Awake_Patch : ModulePatch
 {
-    public class Flicker_Awake_Patch : ModulePatch
+    protected override MethodBase GetTargetMethod()
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Flicker).GetMethod(nameof(Flicker.Awake));
-        }
+        return typeof(Flicker).GetMethod(nameof(Flicker.Awake));
+    }
 
-        [PatchPrefix]
-        public static bool Prefix(Flicker __instance)
-        {
-            Object.Destroy(__instance);
-            return false;
-        }
+    [PatchPrefix]
+    public static bool Prefix(Flicker __instance)
+    {
+        Object.Destroy(__instance);
+        return false;
     }
 }
