@@ -46,7 +46,7 @@ jobs:
         run: |
           mkdir -p BepInEx/plugins/Fika
           cp -r output/Fika.Headless.dll BepInEx/plugins/Fika
-          cp LICENSE.md BepInEx/plugins/Fika
+          cp LICENSE.md BepInEx/plugins/Fika/LICENSE-HEADLESS.md
 
       - name: Zip the build and loose files
         run: zip -r "${{ inputs.release_name }}.zip" BepInEx/plugins/Fika
