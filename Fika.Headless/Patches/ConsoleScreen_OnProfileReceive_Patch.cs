@@ -1,8 +1,7 @@
 ﻿using EFT;
 using EFT.UI;
-using SPT.Reflection.Patching;
-using SPT.Core.Utils;
 using SPT.Custom.Utils;
+using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -12,7 +11,8 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ConsoleScreen).GetMethod(nameof(ConsoleScreen.OnProfileReceive));
+        return typeof(ConsoleScreen)
+            .GetMethod(nameof(ConsoleScreen.OnProfileReceive));
     }
 
     [PatchPostfix]
@@ -23,7 +23,7 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
             if (SystemInfo.operatingSystemFamily == OperatingSystemFamily.Windows)
             {
                 MessageBoxHelper.Show(
-                    $"You are not starting with a headless profile!\nRead the documentation again!\n\nIf you are not planning to run the headless client with this instance of EFT, remove 'Fika.Headless.dll' immediately!",
+                    "You are not starting with a headless profile!\nRead the documentation again!\n\nIf you are not planning to run the headless client with this instance of EFT, remove 'Fika.Headless.dll' immediately!",
                     "FIKA ERROR",
                     MessageBoxHelper.MessageBoxType.OK);
             }
@@ -35,7 +35,6 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
         }
         else
         {
-            ValidationUtil._crashHandler = "FikaHeadless";
             FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Profile verified");
             FikaHeadlessPlugin.Instance.CanHost = true;
 
