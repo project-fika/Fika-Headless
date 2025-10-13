@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fika.Headless.Patches;
+namespace Fika.Headless.Patches.BTR;
 
 /// <summary>
-/// Prevents unneccesary code from running
+/// Prevents a nullref on headless due to having no player
 /// </summary>
-public class LevelSettings_ApplySettings_Transpiler : ModulePatch
+public class BTRControllerClass_method_18_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(LevelSettings)
-            .GetMethod(nameof(LevelSettings.ApplySettings));
+        return typeof(BTRControllerClass)
+            .GetMethod(nameof(BTRControllerClass.method_18));
     }
 
     [PatchTranspiler]
