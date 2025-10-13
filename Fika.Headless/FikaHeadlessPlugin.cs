@@ -16,7 +16,6 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
 using Fika.Core.Networking.Models;
 using Fika.Core.Networking.Models.Headless;
-
 #if DEBUG
 using Fika.Core.Networking.Websocket.Headless;
 #endif
