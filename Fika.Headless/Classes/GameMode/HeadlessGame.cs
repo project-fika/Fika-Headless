@@ -343,7 +343,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             cameraTransform.rotation = Quaternion.identity;
         }
 
-        (GameController as HeadlessGameController).SyncTraps();
+        StartCoroutine((GameController as HeadlessGameController).SyncTraps());
     }
 
     private Task RunMemoryCleanup()
