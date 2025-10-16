@@ -7,7 +7,8 @@ public class StaticDeferredDecal_OnEnable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(StaticDeferredDecal).GetMethod(nameof(StaticDeferredDecal.OnEnable));
+        return typeof(StaticDeferredDecal)
+            .GetMethod(nameof(StaticDeferredDecal.OnEnable));
     }
 
     [PatchPrefix]

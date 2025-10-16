@@ -316,13 +316,17 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
         GameWorld.SynchronizableObjectLogicProcessor.Ginterface279_0 = Singleton<FikaServer>.Instance;
 
-        await RunMemoryCleanup();
-
-        int timeBeforeDeployLocal = FikaBackendUtils.IsReconnect ? 3 : Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
+        int timeBeforeDeployLocal = Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
 #if DEBUG
         timeBeforeDeployLocal = 3;
 #endif
+
+        await RunMemoryCleanup();
         await (GameController as HeadlessGameController).WaitForHeadlessInit(timeBeforeDeployLocal);
+
+        TaskCompletionSource taskCompletionSource = new();
+        StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
+        await taskCompletionSource.Task;
 
         FikaBackendUtils.GroupPlayers.Clear();
 
@@ -343,7 +347,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             cameraTransform.rotation = Quaternion.identity;
         }
 
-        (GameController as HeadlessGameController).SyncTraps();
+        StartCoroutine((GameController as HeadlessGameController).SyncTraps());
     }
 
     private Task RunMemoryCleanup()
@@ -357,9 +361,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         MemoryControllerClass.GCEnabled = false;
         Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
         InitializeCameraAndUnloadAssets();
-        TaskCompletionSource taskCompletionSource = new();
-        StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
-        return taskCompletionSource.Task;
+
+        return Task.CompletedTask;
     }
 
     private void InitializeCameraAndUnloadAssets()
