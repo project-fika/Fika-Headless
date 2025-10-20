@@ -159,11 +159,10 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             Singleton<BotEventHandler>.Create(new BotEventHandler());
         }
 
-        HeadlessGameController headlessGameController = new(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime)
+        game.GameController = new HeadlessGameController(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime)
         {
             Location = location
         };
-        game.GameController = headlessGameController;
         game.GameDateTime = backendDateTime;
         game._localRaidSettings = localRaidSettings;
         game.DoWeatherThings(timeAndWeather.IsRandomTime, timeAndWeather.IsRandomWeather);
