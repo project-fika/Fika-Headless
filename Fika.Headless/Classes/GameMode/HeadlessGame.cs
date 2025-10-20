@@ -98,7 +98,17 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     public ISession BackendSession { get; set; }
 
     public BaseGameController GameController { get; set; }
-    public GameDateTime GameDateTime { get; private set; }
+    public GameDateTime GameDateTime
+    {
+        get
+        {
+            return (GameController as HeadlessGameController).GameDateTime;
+        }
+        set
+        {
+            (GameController as HeadlessGameController).GameDateTime = value;
+        }
+    }
     public GameWorld GameWorld { get; private set; }
 
     private LocalRaidSettings _localRaidSettings;
@@ -128,7 +138,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;
 
         HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
-        game._logger = BepInEx.Logging.Logger.CreateLogSource(nameof(HeadlessGame));
+        game._logger = Logger.CreateLogSource(nameof(HeadlessGame));
         game.GameWorld = gameWorld;
 
         float num = 1.5f;
@@ -160,7 +170,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         WorldInteractiveObject.InteractionShouldBeConfirmed = false;
 
         float hearingDistance = FikaGlobals.VOIPHandler.PushToTalkSettings.HearingDistance;
-        game._voipDistance = hearingDistance * hearingDistance + 9;
+        game._voipDistance = (hearingDistance * hearingDistance) + 9;
 
         ClientHearingTable.Instance = game;
 
