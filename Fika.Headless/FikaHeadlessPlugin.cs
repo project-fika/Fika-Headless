@@ -47,7 +47,7 @@ namespace Fika.Headless;
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
 public class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.4.3";
+    public const string HeadlessVersion = "1.4.4";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -65,8 +65,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     private float _gcPoint;
     private Coroutine _verifyConnectionsRoutine;
     private bool _invalidPluginsFound;
-    private int _currentRaidCount = 0;
-    private int _restartAfterAmountOfRaids = 0;
+    private int _currentRaidCount;
+    private int _restartAfterAmountOfRaids;
     private bool _hasVerified;
 
     public static ConfigEntry<int> UpdateRate { get; private set; }
@@ -557,12 +557,10 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     public void OnSessionResultExitStatus_Show()
     {
         _currentRaidCount++;
-        if (_restartAfterAmountOfRaids != 0)
+        Logger.LogInfo($"Headless has done {_currentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
+        if (_restartAfterAmountOfRaids != 0 && _currentRaidCount >= _restartAfterAmountOfRaids)
         {
-            if (_currentRaidCount >= _restartAfterAmountOfRaids)
-            {
-                Application.Quit();
-            }
+            Application.Quit();
         }
     }
 
