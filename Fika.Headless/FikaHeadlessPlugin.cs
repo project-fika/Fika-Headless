@@ -212,8 +212,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     {
         try
         {
-            string exePath = AppContext.BaseDirectory;
-            string logsPath = Path.Combine(exePath, "Logs");
+            var exePath = AppContext.BaseDirectory;
+            var logsPath = Path.Combine(exePath, "Logs");
 
             if (!Directory.Exists(logsPath))
             {
@@ -223,7 +223,11 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
             DirectoryInfo logsDir = new(logsPath);
 
-            foreach (DirectoryInfo dir in logsDir.EnumerateDirectories())
+            var directoriesToDelete = logsDir.EnumerateDirectories()
+                                         .OrderByDescending(d => d.LastWriteTime)
+                                         .Skip(2); // keep the latest 3 folders, 1 is added which leaves 3
+
+            foreach (var dir in directoriesToDelete)
             {
                 try
                 {
