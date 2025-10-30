@@ -546,6 +546,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         try
         {
+            tarkovApplication.CurrentRaidNum++;
+            tarkovApplication.CurrentTotalRaidNum++;
             Singleton<JobScheduler>.Instance.SetForceMode(true);
             Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
             await tarkovApplication.method_41(raidSettings.TimeAndWeatherSettings);
