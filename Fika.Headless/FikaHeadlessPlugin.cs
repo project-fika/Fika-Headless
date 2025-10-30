@@ -400,7 +400,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             "IhanaMies.LootValue",
             "com.cactuspie.ramcleanerinterval",
             "com.TYR.DeClutter",
-            "SPTVRAMCleaner.UniqueGUID"
+            "SPTVRAMCleaner.UniqueGUID",
+            "harmonyzt.sptleaderboard",
+            "com.acidphantasm.stattrack"
         ];
         PluginInfo[] pluginInfos = [.. Chainloader.PluginInfos.Values];
         List<string> unsupportedMods = [];
