@@ -259,7 +259,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     public async Task Init(BotControllerSettings botsSettings, string backendUrl)
     {
         _logger.LogInfo("Unloading unused resources");
-        await Resources.UnloadUnusedAssets().Await();
+        await Resources.UnloadUnusedAssets()
+            .Await();
 
         Status = GameStatus.Running;
         UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
@@ -316,7 +317,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         GameController.CoopHandler.ShouldSync = true;
         await StartBotSystemsAndCountdown(botsSettings);
 
-        Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot, LocationScene.GetAllObjects<LootableContainer>(false));
+        Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot,
+            LocationScene.GetAllObjects<LootableContainer>(false));
         AirdropEventClass airdropEventClass = new()
         {
             AirdropParameters = _location.airdropParameters
