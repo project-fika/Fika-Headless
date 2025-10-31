@@ -11,7 +11,8 @@ internal class WindowBreaker_method_22_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(WindowBreaker).GetMethod(nameof(WindowBreaker.method_22));
+        return typeof(WindowBreaker)
+            .GetMethod(nameof(WindowBreaker.method_22));
     }
 
     [PatchTranspiler]

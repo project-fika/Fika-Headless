@@ -11,7 +11,8 @@ internal class Player_method_60_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(Player).GetMethod(nameof(Player.method_60));
+        return typeof(Player)
+            .GetMethod(nameof(Player.method_60));
     }
 
     [PatchTranspiler]

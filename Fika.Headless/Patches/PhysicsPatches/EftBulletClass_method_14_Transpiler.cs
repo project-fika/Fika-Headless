@@ -13,7 +13,8 @@ internal class EftBulletClass_method_14_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(EftBulletClass).GetMethod(nameof(EftBulletClass.method_14));
+        return typeof(EftBulletClass)
+            .GetMethod(nameof(EftBulletClass.method_14));
     }
 
     [PatchTranspiler]

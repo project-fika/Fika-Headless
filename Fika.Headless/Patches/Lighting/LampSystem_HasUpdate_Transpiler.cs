@@ -11,7 +11,8 @@ internal class LampSystem_HasUpdate_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(LampSystem).GetProperty(nameof(LampSystem.HasUpdate)).GetGetMethod();
+        return typeof(LampSystem)
+            .GetProperty(nameof(LampSystem.HasUpdate)).GetGetMethod();
     }
 
     [PatchTranspiler]

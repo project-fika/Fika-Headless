@@ -14,7 +14,8 @@ public class BotStandBy_Update_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BotStandBy).GetMethod(nameof(BotStandBy.Update));
+        return typeof(BotStandBy)
+            .GetMethod(nameof(BotStandBy.Update));
     }
 
     [PatchTranspiler]
