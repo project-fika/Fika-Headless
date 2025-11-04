@@ -137,12 +137,12 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     {
         Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;
 
-        HeadlessGame game = Create<HeadlessGame>(updateQueue, sessionTime);
+        var game = Create<HeadlessGame>(updateQueue, sessionTime);
         game._logger = Logger.CreateLogSource(nameof(HeadlessGame));
         game.GameWorld = gameWorld;
 
-        float num = 1.5f;
-        foreach (WildSpawnWave wildSpawnWave in location.waves)
+        const float num = 1.5f;
+        foreach (var wildSpawnWave in location.waves)
         {
             wildSpawnWave.slots_min = (int)(wildSpawnWave.slots_min * num);
             wildSpawnWave.slots_max = (int)(wildSpawnWave.slots_max * num);
@@ -180,7 +180,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (timeAndWeather.TimeFlowType != ETimeFlowType.x1)
         {
-            float newFlow = timeAndWeather.TimeFlowType.ToTimeFlow();
+            var newFlow = timeAndWeather.TimeFlowType.ToTimeFlow();
             gameWorld.GameDateTime.TimeFactor = newFlow;
             game._logger.LogInfo($"Using custom time flow: {newFlow}");
         }
@@ -205,7 +205,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     {
         location.OldSpawn = location.OfflineOldSpawn;
         location.NewSpawn = location.OfflineNewSpawn;
-        float num = 1f;
+        var num = 1f;
         switch (botAmount)
         {
             case EBotAmount.NoBots:
@@ -242,10 +242,10 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         if (WeatherController.Instance != null || MonoBehaviourSingleton<TODSkySimple>.Instance != null)
         {
             GClass4.Instance.CurrentTime.GameDateTime = GameDateTime;
-            WeatherClass[] randomTestWeatherNodes = WeatherClass.GetRandomTestWeatherNodes(600, 12);
+            var randomTestWeatherNodes = WeatherClass.GetRandomTestWeatherNodes(600, 12);
             if (!isRandomWeather)
             {
-                long time = randomTestWeatherNodes[0].Time;
+                var time = randomTestWeatherNodes[0].Time;
                 randomTestWeatherNodes[0] = BackendSession.Weather;
                 randomTestWeatherNodes[0].Time = time;
             }
@@ -259,19 +259,20 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     public async Task Init(BotControllerSettings botsSettings, string backendUrl)
     {
         _logger.LogInfo("Unloading unused resources");
-        await Resources.UnloadUnusedAssets().Await();
+        await Resources.UnloadUnusedAssets()
+            .Await();
 
         Status = GameStatus.Running;
         UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
 
         await GameController.SetupCoopHandler(this);
-        GameWorld gameWorld = Singleton<GameWorld>.Instance;
+        var gameWorld = Singleton<GameWorld>.Instance;
         gameWorld.LocationId = _location.Id;
         ExfiltrationControllerClass.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
         !GameController.IsServer, _location.DisabledScavExits);
 
         _logger.LogInfo($"Location: {_location.Name}");
-        BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
+        var instance = Singleton<BackendConfigSettingsClass>.Instance;
 
         GameController.InitShellingController(instance, gameWorld, _location);
         GameController.InitHalloweenEvent(instance, gameWorld, _location);
@@ -286,7 +287,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         gameWorld.ClientBroadcastSyncController = new ClientBroadcastSyncControllerClass();
 
-        ApplicationConfigClass config = BackendConfigAbstractClass.Config;
+        var config = BackendConfigAbstractClass.Config;
         if (config.FixedFrameRate > 0f)
         {
             FixedDeltaTime = 1f / config.FixedFrameRate;
@@ -309,14 +310,15 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         await GameController.WaitForHostToStart();
 
-        LocationSettingsClass.Location location = _localRaidSettings.selectedLocation;
+        var location = _localRaidSettings.selectedLocation;
         await GameController.InitializeLoot(location);
         await LoadLoot(location);
 
         GameController.CoopHandler.ShouldSync = true;
         await StartBotSystemsAndCountdown(botsSettings);
 
-        Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot, LocationScene.GetAllObjects<LootableContainer>(false));
+        Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot,
+            LocationScene.GetAllObjects<LootableContainer>(false));
         AirdropEventClass airdropEventClass = new()
         {
             AirdropParameters = _location.airdropParameters
@@ -325,7 +327,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
         GameWorld.SynchronizableObjectLogicProcessor.Ginterface279_0 = Singleton<FikaServer>.Instance;
 
-        int timeBeforeDeployLocal = Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
+        var timeBeforeDeployLocal = Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
 #if DEBUG
         timeBeforeDeployLocal = 3;
 #endif
@@ -349,8 +351,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (GameController.CoopHandler.HumanPlayers.Count > 0)
         {
-            FikaPlayer player = GameController.CoopHandler.HumanPlayers[0];
-            Transform cameraTransform = CameraClass.Instance.Camera.transform;
+            var player = GameController.CoopHandler.HumanPlayers[0];
+            var cameraTransform = CameraClass.Instance.Camera.transform;
             cameraTransform.SetParent(player.gameObject.transform, false);
             cameraTransform.localPosition = new(0f, 1.7f, 0f);
             cameraTransform.rotation = Quaternion.identity;
@@ -379,22 +381,22 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         CameraClass.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
         CameraClass.Instance.IsActive = true;
 
-        PerfectCullingAdaptiveGrid instance = PerfectCullingAdaptiveGrid.Instance;
+        var instance = PerfectCullingAdaptiveGrid.Instance;
         if (instance != null)
         {
             GameObject.Destroy(instance);
         }
 
-        PerfectCullingCrossSceneSampler cameraInstance = PerfectCullingCrossSceneSampler.Instance;
+        var cameraInstance = PerfectCullingCrossSceneSampler.Instance;
         if (cameraInstance != null)
         {
-            PerfectCullingCrossSceneSampler pCCS = cameraInstance.GetComponent<PerfectCullingCrossSceneSampler>();
+            var pCCS = cameraInstance.GetComponent<PerfectCullingCrossSceneSampler>();
             if (pCCS != null)
             {
                 GameObject.Destroy(pCCS);
             }
 
-            PerfectCullingCamera pCC = cameraInstance.GetComponent<PerfectCullingCamera>();
+            var pCC = cameraInstance.GetComponent<PerfectCullingCamera>();
             if (pCC != null)
             {
                 GameObject.Destroy(pCC);
@@ -403,16 +405,16 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (Singleton<SpatialAudioSystem>.Instantiated)
         {
-            SpatialAudioSystem sAS = Singleton<SpatialAudioSystem>.Instance;
-            GClass1122 sASManager = Traverse.Create(sAS).Field<GClass1122>("gclass1122_0").Value;
+            var sAS = Singleton<SpatialAudioSystem>.Instance;
+            var sASManager = Traverse.Create(sAS).Field<GClass1122>("gclass1122_0").Value;
             if (sASManager != null)
             {
                 _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
-                foreach ((ISpatialAudioRoom room, List<ISpatialAudioRoom> roomList) in sASManager.Dictionary_0)
+                foreach ((var room, var roomList) in sASManager.Dictionary_0)
                 {
-                    foreach (ISpatialAudioRoom rooms in roomList)
+                    foreach (var rooms in roomList)
                     {
-                        foreach (ISpatialPortal portal in rooms.GetPortals())
+                        foreach (var portal in rooms.GetPortals())
                         {
                             GameObject.Destroy((MonoBehaviour)portal);
                         }
@@ -452,19 +454,19 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     {
         if (BackendConfigAbstractClass.Config.NoLootForLocalGame)
         {
-            foreach (LootItemPositionClass lootItemPositionClass in location.Loot
+            foreach (var lootItemPositionClass in location.Loot
                 .Where(new Func<LootItemPositionClass, bool>(IsLootItemContainer))
                 .ToList()
                 )
             {
-                LootContainerItemClass lootContainerItemClass = lootItemPositionClass.Item as LootContainerItemClass;
-                StashGridClass[] grids = lootContainerItemClass.Grids;
-                for (int i = 0; i < grids.Length; i++)
+                var lootContainerItemClass = lootItemPositionClass.Item as LootContainerItemClass;
+                var grids = lootContainerItemClass.Grids;
+                for (var i = 0; i < grids.Length; i++)
                 {
                     grids[i].RemoveAll();
                 }
-                Slot[] slots = lootContainerItemClass.Slots;
-                for (int i = 0; i < slots.Length; i++)
+                var slots = lootContainerItemClass.Slots;
+                for (var i = 0; i < slots.Length; i++)
                 {
                     slots[i].RemoveItem(false);
                 }
@@ -479,9 +481,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             .SelectMany(GetResourceKeys)];
         if (array2.Length != 0)
         {
-            PlayerLoopSystem playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
-            GClass660.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out PlayerLoopSystem playerLoopSystem2, out int num);
-            PlayerLoopSystem[] array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
+            var playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
+            GClass660.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out var playerLoopSystem2, out var num);
+            var array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
             if (num != -1)
             {
                 Array.Copy(playerLoopSystem2.subSystemList, array3, playerLoopSystem2.subSystemList.Length);
@@ -506,7 +508,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             playerLoopSystem2 = default;
             array3 = null;
         }
-        GClass1404 gclass = GameWorld.method_4(location.Loot);
+        var gclass = GameWorld.method_4(location.Loot);
         GameWorld.method_5(gclass, true);
     }
 
@@ -566,7 +568,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (FikaBackendUtils.IsTransit)
         {
-            RaidTransitionInfoClass data = FikaBackendUtils.TransitData;
+            var data = FikaBackendUtils.TransitData;
             data.transitionType = ELocationTransition.Common;
             data.transitionCount++;
             data.visitedLocations = [.. data.visitedLocations, GameController.Location.Id];
@@ -587,7 +589,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         {
             // Create a copy to prevent errors when the dictionary is being modified (which happens when using spawn mods)
             FikaPlayer[] players = [.. GameController.CoopHandler.Players.Values];
-            foreach (FikaPlayer player in players)
+            foreach (var player in players)
             {
                 if (player == null)
                 {
@@ -608,7 +610,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             Destroy(GameController.CoopHandler);
         }
 
-        GameUI gameUI = GameUI.Instance;
+        var gameUI = GameUI.Instance;
 
         Status = GameStatus.Stopping;
         GameTimer.TryStop();

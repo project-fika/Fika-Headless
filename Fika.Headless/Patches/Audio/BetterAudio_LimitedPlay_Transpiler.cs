@@ -13,8 +13,7 @@ internal class BetterAudio_LimitedPlay_Transpiler : ModulePatch
     {
         return typeof(BetterAudio)
             .GetMethods()
-            .Where(x => x.Name == "LimitedPlay" && x.ReturnType == typeof(bool))
-            .First();
+            .First(x => x.Name == "LimitedPlay" && x.ReturnType == typeof(bool));
     }
 
     [PatchTranspiler]

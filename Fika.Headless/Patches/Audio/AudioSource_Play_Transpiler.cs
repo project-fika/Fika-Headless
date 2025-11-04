@@ -11,7 +11,9 @@ public class AudioSource_Play_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(AudioSource).GetMethods().Where(x => x.Name == "Play" && x.GetParameters().Length == 0).SingleOrDefault();
+        return typeof(AudioSource)
+            .GetMethods()
+            .SingleOrDefault(x => x.Name == "Play" && x.GetParameters().Length == 0);
     }
 
     [PatchTranspiler]

@@ -10,7 +10,8 @@ internal class BetterAudio_Update_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.Update));
+        return typeof(BetterAudio)
+            .GetMethod(nameof(BetterAudio.Update));
     }
 
     [PatchTranspiler]

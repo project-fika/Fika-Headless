@@ -43,6 +43,7 @@
     <Reference Include="UnityEngine" HintPath="..\References\UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.UI" HintPath="..\References\UnityEngine.UI.dll" Private="false" />
     <Reference Include="websocket-sharp" HintPath="..\References\websocket-sharp.dll" Private="false" />
+	<Reference Include="com.nvidia.reflex.Runtime" HintPath="..\References\com.nvidia.reflex.Runtime.dll" Private="false" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">

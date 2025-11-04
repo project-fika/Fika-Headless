@@ -47,7 +47,7 @@ namespace Fika.Headless;
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
 public class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.4.4";
+    public const string HeadlessVersion = "1.4.5";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -546,7 +546,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         try
         {
-            Singleton<JobScheduler>.Instance.SetForceMode(true, -1f);
+            tarkovApplication.CurrentRaidNum++;
+            tarkovApplication.CurrentTotalRaidNum++;
+            Singleton<JobScheduler>.Instance.SetForceMode(true);
             Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
             await tarkovApplication.method_41(raidSettings.TimeAndWeatherSettings);
             Logger.LogInfo("Raid init complete, starting raid");
@@ -557,7 +559,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             Logger.LogError(ex);
             tarkovApplication.method_39("Local game matching", ex);
         }
-        Singleton<JobScheduler>.Instance.SetForceMode(false, -1f);
+        Singleton<JobScheduler>.Instance.SetForceMode(false);
     }
 
     public void OnSessionResultExitStatus_Show()

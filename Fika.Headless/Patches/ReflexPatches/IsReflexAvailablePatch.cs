@@ -1,7 +1,7 @@
 ﻿using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace Fika.Headless.Patches;
+namespace Fika.Headless.Patches.ReflexPatches;
 
 /// <summary>
 /// Target the IsReflexAvailable() method with no parameters
