@@ -1,16 +1,13 @@
 ﻿using Comfort.Common;
 using EFT;
-using EFT.InputSystem;
 using EFT.UI;
-using EFT.UI.Matchmaker;
 using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
-using SPT.Reflection.Patching;
 using Fika.Headless.Classes.GameMode;
 using HarmonyLib;
-using JsonType;
+using SPT.Reflection.Patching;
 using SPT.SinglePlayer.Utils.InRaid;
 using System;
 using System.Reflection;
@@ -46,7 +43,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         RaidSettings raidSettings, GameDateTime localGameDateTime, float fixedDeltaTime, string backendUrl, MetricsEventsClass metricsEvents,
         GameWorld gameWorld, MainMenuControllerClass ___mainMenuController, CompositeDisposableClass compositeDisposableClass, BundleLockClass bundleLock)
     {
-        bool isTransit = FikaBackendUtils.IsTransit;
+        var isTransit = FikaBackendUtils.IsTransit;
 
         if (!isTransit)
         {
@@ -55,7 +52,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         else if (isTransit && FikaBackendUtils.CachedRaidSettings != null)
         {
             Logger.LogInfo("Applying cached raid settings from previous raid");
-            RaidSettings cachedSettings = FikaBackendUtils.CachedRaidSettings;
+            var cachedSettings = FikaBackendUtils.CachedRaidSettings;
             raidSettings.WavesSettings = cachedSettings.WavesSettings;
             raidSettings.BotSettings = cachedSettings.BotSettings;
             raidSettings.MetabolismDisabled = cachedSettings.MetabolismDisabled;
@@ -69,13 +66,13 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
             Singleton<NotificationManagerClass>.Instance.Deactivate();
         }
 
-        ISession session = instance.Session;
+        var session = instance.Session;
         if (session == null)
         {
             throw new NullReferenceException("Backend session was null when initializing game!");
         }
 
-        Profile profile = session.GetProfileBySide(raidSettings.Side);
+        var profile = session.GetProfileBySide(raidSettings.Side);
 
         profile.Inventory.Stash = null;
         profile.Inventory.QuestStashItems = null;
@@ -94,12 +91,12 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
             playerSide = raidSettings.Side,
             transitionType = FikaBackendUtils.TransitData.visitedLocations.Length > 0 ? ELocationTransition.Common : ELocationTransition.None
         };
-        Traverse applicationTraverse = Traverse.Create(instance);
+        var applicationTraverse = Traverse.Create(instance);
         applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value = localRaidSettings;
 
-        LocalSettings localSettings = await instance.Session.LocalRaidStarted(localRaidSettings);
-        LocalRaidSettings raidSettingsToUpdate = applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value;
-        int escapeTimeLimit = raidSettings.IsScav ? RaidChangesUtil.NewEscapeTimeMinutes : raidSettings.SelectedLocation.EscapeTimeLimit;
+        var localSettings = await instance.Session.LocalRaidStarted(localRaidSettings);
+        var raidSettingsToUpdate = applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value;
+        var escapeTimeLimit = raidSettings.IsScav ? RaidChangesUtil.NewEscapeTimeMinutes : raidSettings.SelectedLocation.EscapeTimeLimit;
         raidSettings.SelectedLocation = localSettings.locationLoot;
         raidSettings.SelectedLocation.EscapeTimeLimit = escapeTimeLimit;
         raidSettingsToUpdate.serverId = localSettings.serverId;
@@ -107,7 +104,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         raidSettingsToUpdate.selectedLocation.EscapeTimeLimit = escapeTimeLimit;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
-        ProfileInsuranceClass profileInsurance = localSettings.profileInsurance;
+        var profileInsurance = localSettings.profileInsurance;
         if ((profileInsurance?.insuredItems) != null)
         {
             profile.InsuredItems = localSettings.profileInsurance.insuredItems;
@@ -117,9 +114,9 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
 
         StartHandler startHandler = new(instance, session.Profile, session.ProfileOfPet, raidSettings.SelectedLocation);
 
-        TimeSpan raidLimits = GetRaidMinutes(raidSettings.SelectedLocation.EscapeTimeLimit);
+        var raidLimits = GetRaidMinutes(raidSettings.SelectedLocation.EscapeTimeLimit);
 
-        HeadlessGame headlessGame = HeadlessGame.Create(gameWorld, localGameDateTime, raidSettings.SelectedLocation, timeAndWeather,
+        var headlessGame = HeadlessGame.Create(gameWorld, localGameDateTime, raidSettings.SelectedLocation, timeAndWeather,
             raidSettings.WavesSettings, raidSettings.SelectedDateTime, startHandler.HandleStop, fixedDeltaTime, instance.PlayerUpdateQueue, instance.Session,
             raidLimits, localRaidSettings, raidSettings);
 
