@@ -59,13 +59,13 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         }
     }
     public bool CanHost { get; internal set; }
+    public int CurrentRaidCount { get; private set; }
 
     private HeadlessWebSocket _fikaHeadlessWebSocket;
     private float _gcCounter;
     private float _gcPoint;
     private Coroutine _verifyConnectionsRoutine;
     private bool _invalidPluginsFound;
-    private int _currentRaidCount;
     private int _restartAfterAmountOfRaids;
     private bool _hasVerified;
 
@@ -520,6 +520,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             _ = WaitForPlayersToConnect();
             await tarkovApplication.method_41(raidSettings.TimeAndWeatherSettings);
             Logger.LogInfo("Raid init complete, starting raid");
+            CurrentRaidCount++;
         }
         catch (Exception ex)
         {
@@ -554,11 +555,15 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         }
     }
 
-    public void OnSessionResultExitStatus_Show()
+    public void OnReady()
     {
-        _currentRaidCount++;
-        Logger.LogInfo($"Headless has done {_currentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
-        if (_restartAfterAmountOfRaids != 0 && _currentRaidCount >= _restartAfterAmountOfRaids)
+        if (CurrentRaidCount == 0)
+        {
+            return;
+        }
+
+        Logger.LogInfo($"Headless has done {CurrentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
+        if (_restartAfterAmountOfRaids != 0 && CurrentRaidCount >= _restartAfterAmountOfRaids)
         {
             Application.Quit();
         }

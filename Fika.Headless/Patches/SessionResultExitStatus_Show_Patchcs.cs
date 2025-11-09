@@ -19,6 +19,5 @@ public class SessionResultExitStatusPatch : ModulePatch
     public static void PatchPostfix(DefaultUIButton ____mainMenuButton)
     {
         ____mainMenuButton.OnClick.Invoke();
-        FikaHeadlessPlugin.Instance.OnSessionResultExitStatus_Show();
     }
 }
