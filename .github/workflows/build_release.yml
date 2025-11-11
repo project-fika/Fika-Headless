@@ -39,8 +39,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore Fika-Headless.sln
 
-      - name: Publish the project
-        run: dotnet publish Fika.Headless/Fika.Headless.csproj --configuration ${{ inputs.build_type }} --no-restore --output output/
+      - name: Build the project
+        run: dotnet build Fika.Headless/Fika.Headless.csproj --configuration ${{ inputs.build_type }} --no-restore --output output/
 
       - name: Copy loose files
         run: |
