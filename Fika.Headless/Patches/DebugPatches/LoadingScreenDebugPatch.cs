@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -70,4 +70,4 @@ internal class LoadingScreenDebugPatch4 : ModulePatch
         Logger.LogInfo($"Loading Spatial Audio: {pr}%");
         return false;
     }
-}
+}*/
