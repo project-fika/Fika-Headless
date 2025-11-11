@@ -6,16 +6,17 @@ using Comfort.Common;
 using Diz.Jobs;
 using Diz.Utils;
 using EFT;
+using EFT.Communications;
 using EFT.UI;
 using Fika.Core;
-using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Patches.LocalGame;
 using Fika.Core.Main.Patches.Overrides;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
-using Fika.Core.Networking.Models;
 using Fika.Core.Networking.Models.Headless;
+using Fika.Core.Networking.Packets.Communication;
+
 #if DEBUG
 using Fika.Core.Networking.Websocket.Headless;
 #endif
@@ -31,7 +32,6 @@ using SPT.Reflection.Patching;
 using SPT.SinglePlayer.Patches.RaidFix;
 using SPT.SinglePlayer.Patches.ScavMode;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,7 +47,7 @@ namespace Fika.Headless;
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
 public class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.4.5";
+    public const string HeadlessVersion = "1.4.6";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -59,13 +59,13 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         }
     }
     public bool CanHost { get; internal set; }
+    public int CurrentRaidCount { get; private set; }
 
     private HeadlessWebSocket _fikaHeadlessWebSocket;
     private float _gcCounter;
     private float _gcPoint;
     private Coroutine _verifyConnectionsRoutine;
     private bool _invalidPluginsFound;
-    private int _currentRaidCount;
     private int _restartAfterAmountOfRaids;
     private bool _hasVerified;
 
@@ -287,7 +287,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     {
         try
         {
-            if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+            if (!TarkovApplication.Exist(out var tarkovApplication))
             {
                 Logger.LogError("OnFikaStartRaid: Could not find TarkovApplication");
                 return;
@@ -299,14 +299,14 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 return;
             }
 
-            ISession session = tarkovApplication.Session;
+            var session = tarkovApplication.Session;
             if (session == null)
             {
                 Logger.LogError("Session was null when starting the raid");
                 return;
             }
 
-            if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out LocationSettingsClass.Location location))
+            if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out var location))
             {
                 Logger.LogError($"Failed to find location {request.LocationId}");
                 return;
@@ -321,7 +321,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         catch (Exception ex)
         {
             Logger.LogError(ex.Message);
-            return;
         }
     }
 
@@ -355,7 +354,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         Logger.LogInfo("Plugin validation completed");
 
-        if (!TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+        if (!TarkovApplication.Exist(out var tarkovApplication))
         {
             Logger.LogWarning("Could not find TarkovApplication");
             return;
@@ -407,7 +406,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         PluginInfo[] pluginInfos = [.. Chainloader.PluginInfos.Values];
         List<string> unsupportedMods = [];
 
-        foreach (PluginInfo Info in pluginInfos)
+        foreach (var Info in pluginInfos)
         {
             if (invalidPluginList.Contains(Info.Metadata.GUID))
             {
@@ -417,7 +416,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         if (unsupportedMods.Count > 0)
         {
-            string modsString = string.Join("; ", unsupportedMods);
+            var modsString = string.Join("; ", unsupportedMods);
             Logger.LogFatal($"{unsupportedMods.Count} invalid plugins found, this headless host will not be available for hosting! Remove these mods: {modsString}");
             _invalidPluginsFound = true;
             if (IsRunningWindows)
@@ -434,38 +433,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         Logger.LogInfo("Plugins verified successfully");
 
         return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Verifies that the <see cref="GameWorld"/> has started loading and that at least one peer has connected
-    /// </summary>
-    /// <param name="tarkovApplication"></param>
-    /// <returns></returns>
-    private IEnumerator VerifyPlayersRoutine(TarkovApplication tarkovApplication)
-    {
-        yield break;
-        yield return new WaitForSeconds(300);
-        if (Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount < 1)
-        {
-            int attempts = 0;
-            while ((CoopGame)Singleton<IFikaGame>.Instance == null && attempts < 5)
-            {
-                yield return new WaitForSeconds(5);
-                attempts++;
-                if (attempts >= 5)
-                {
-                    Logger.LogError("More than 5 attempts were required to get the CoopGame instance. Something is probably very wrong!");
-                }
-            }
-
-            // TODO: Fix
-            /*CoopGame coopGame = (CoopGame)Singleton<IFikaGame>.Instance;
-            if (coopGame != null)
-            {
-                coopGame.StopFromCancel(FikaBackendUtils.Profile.ProfileId, ExitStatus.Runner);
-            }*/
-            Logger.LogWarning("The were no connections after 5 minutes, attempting to terminate session...");
-        }
     }
 
     private async Task BeginFikaStartRaid(StartHeadlessRequest request, ISession session, TarkovApplication tarkovApplication)
@@ -495,10 +462,10 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         if (FikaPlugin.ForceIP.Value != "")
         {
             // We need to handle DNS entries as well
-            string ip = FikaPlugin.ForceIP.Value;
+            var ip = FikaPlugin.ForceIP.Value;
             try
             {
-                IPAddress[] dnsAddress = Dns.GetHostAddresses(FikaPlugin.ForceIP.Value);
+                var dnsAddress = Dns.GetHostAddresses(FikaPlugin.ForceIP.Value);
                 if (dnsAddress.Length > 0)
                 {
                     ip = dnsAddress[0].ToString();
@@ -511,7 +478,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
             if (!IPAddress.TryParse(ip, out _))
             {
-                string message = $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.";
+                var message = $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.";
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR FORCING IP",
                     message,
                     ErrorScreen.EButtonType.OkButton, 10f);
@@ -524,7 +491,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         {
             if (!IPAddress.TryParse(FikaPlugin.ForceBindIP.Value, out _))
             {
-                string message = $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.";
+                var message = $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.";
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR BINDING",
                     message,
                     ErrorScreen.EButtonType.OkButton, 10f);
@@ -550,23 +517,53 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             tarkovApplication.CurrentTotalRaidNum++;
             Singleton<JobScheduler>.Instance.SetForceMode(true);
             Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
+            _ = WaitForPlayersToConnect();
             await tarkovApplication.method_41(raidSettings.TimeAndWeatherSettings);
             Logger.LogInfo("Raid init complete, starting raid");
+            CurrentRaidCount++;
         }
         catch (Exception ex)
         {
             Logger.LogError($"Exception caught during raid init: {ex.Message}");
             Logger.LogError(ex);
-            tarkovApplication.method_39("Local game matching", ex);
+            if (Singleton<FikaServer>.Instantiated)
+            {
+                MessagePacket packet = new()
+                {
+                    Message = LocaleUtils.UI_ERROR_RAID_INIT,
+                    NotificationDurationType = ENotificationDurationType.Default,
+                    NotificationIconType = ENotificationIconType.Alert,
+                    Color = Color.red
+                };
+                Singleton<FikaServer>.Instance.SendData(ref packet, DeliveryMethod.ReliableOrdered);
+            }
+
+            Application.Quit(1);
+            //tarkovApplication.method_39("Local game matching", ex);
         }
         Singleton<JobScheduler>.Instance.SetForceMode(false);
     }
 
-    public void OnSessionResultExitStatus_Show()
+    private async Task WaitForPlayersToConnect()
     {
-        _currentRaidCount++;
-        Logger.LogInfo($"Headless has done {_currentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
-        if (_restartAfterAmountOfRaids != 0 && _currentRaidCount >= _restartAfterAmountOfRaids)
+        await Task.Delay(TimeSpan.FromSeconds(45));
+        if (Singleton<FikaServer>.Instantiated && Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount == 0)
+        {
+            Logger.LogWarning("No connections after 2 minutes, terminating");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            AsyncWorker.RunInMainTread(Application.Quit);
+        }
+    }
+
+    public void OnReady()
+    {
+        if (CurrentRaidCount == 0)
+        {
+            return;
+        }
+
+        Logger.LogInfo($"Headless has done {CurrentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
+        if (_restartAfterAmountOfRaids != 0 && CurrentRaidCount >= _restartAfterAmountOfRaids)
         {
             Application.Quit();
         }
@@ -574,7 +571,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
     private void GetHeadlessRestartAfterRaidAmount()
     {
-        RestartAfterRaidAmountModel headlessConfig = FikaRequestHandler.GetHeadlessRestartAfterRaidAmount();
+        var headlessConfig = FikaRequestHandler.GetHeadlessRestartAfterRaidAmount();
         _restartAfterAmountOfRaids = headlessConfig.Amount;
     }
 }

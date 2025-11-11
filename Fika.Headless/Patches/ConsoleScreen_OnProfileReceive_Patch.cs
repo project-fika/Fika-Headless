@@ -37,6 +37,7 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
         {
             FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Profile verified");
             FikaHeadlessPlugin.Instance.CanHost = true;
+            FikaHeadlessPlugin.Instance.OnReady();
 
             _ = Task.Run(FikaHeadlessPlugin.Instance.RunPluginValidation);
         }
