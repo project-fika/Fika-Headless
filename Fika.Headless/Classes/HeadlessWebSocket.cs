@@ -8,7 +8,6 @@ using SPT.Common.Http;
 using System;
 using System.Threading.Tasks;
 using WebSocketSharp;
-using LogLevel = BepInEx.Logging.LogLevel;
 
 namespace Fika.Headless.Classes;
 
