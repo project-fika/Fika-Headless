@@ -8,6 +8,7 @@ using SPT.Common.Http;
 using System;
 using System.Threading.Tasks;
 using WebSocketSharp;
+using LogLevel = BepInEx.Logging.LogLevel;
 
 namespace Fika.Headless.Classes;
 
@@ -61,7 +62,8 @@ public class HeadlessWebSocket
 
     private void WebSocket_OnOpen(object sender, EventArgs e)
     {
-        _logger.LogInfo("Connected to HeadlessWebSocket");
+        _logger.LogMessage("Connected to HeadlessWebSocket");
+
     }
 
     private void WebSocket_OnMessage(object sender, MessageEventArgs e)
