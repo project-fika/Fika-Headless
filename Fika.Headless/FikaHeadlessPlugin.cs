@@ -74,6 +74,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     public static ConfigEntry<bool> ShouldBotsSleep { get; private set; }
     public static ConfigEntry<bool> ShouldDestroyGraphics { get; private set; }
     public static ConfigEntry<bool> DestroyRenderersOnSceneLoad { get; private set; }
+    public static ConfigEntry<bool> ShowDebugLogging { get; private set; }
 
 #if DEBUG
     public BetterAudio BetterAudio
@@ -104,6 +105,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         SetupConfig();
 
         _gcPoint = RAMCleanInterval.Value * 60f;
+        
+        if (ShowDebugLogging.Value) FikaHeadlessLogger.LogMessage("Extra debug logging enabled, progress will be shown in console.");
 
         var patches = ModPatchCache.GetActivePatches();
         DisableFikaCorePatches(patches);
@@ -275,6 +278,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         DestroyRenderersOnSceneLoad = Config.Bind("Headless", "Destroy Renderers", true,
             new ConfigDescription("If the headless plugin should hook scene loading to disable unnecessary renderers as well as unloading all materials (Requires 'Destroy Graphics' to be enabled)"));
+        
+        ShowDebugLogging = Config.Bind("Headless", "Show Expanded Debug Logging", false,
+            new ConfigDescription("Whether to show extra debug logging in the headless console."));
     }
 
     /// <summary>
