@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="GoldMaster" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Project Path="Fika.Headless.AssetNuker/Fika.Headless.AssetNuker.csproj">
+    <BuildType Solution="GoldMaster|*" Project="Debug" />
+  </Project>
+  <Project Path="Fika.Headless/Fika.Headless.csproj" />
+</Solution>
