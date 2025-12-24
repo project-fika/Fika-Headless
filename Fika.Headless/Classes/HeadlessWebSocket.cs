@@ -1,19 +1,19 @@
-﻿using BepInEx.Logging;
+﻿using System;
+using System.Threading.Tasks;
+using BepInEx.Logging;
 using Diz.Utils;
 using Fika.Core.Networking.Websocket;
 using Fika.Core.Networking.Websocket.Headless;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SPT.Common.Http;
-using System;
-using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace Fika.Headless.Classes;
 
 public class HeadlessWebSocket
 {
-    private static ManualLogSource _logger = BepInEx.Logging.Logger.CreateLogSource("Fika.HeadlessWebSocket");
+    private static readonly ManualLogSource _logger = Logger.CreateLogSource("Fika.HeadlessWebSocket");
 
     public string Host { get; set; }
     public string Url { get; set; }
@@ -27,6 +27,7 @@ public class HeadlessWebSocket
     }
 
     private readonly WebSocket _webSocket;
+    private int _attempts = 1;
 
     public HeadlessWebSocket()
     {
@@ -52,6 +53,7 @@ public class HeadlessWebSocket
     {
         _logger.LogInfo($"Attempting to connect to {Url}...");
         _webSocket.Connect();
+        _attempts++;
     }
 
     public void Close()
@@ -62,7 +64,7 @@ public class HeadlessWebSocket
     private void WebSocket_OnOpen(object sender, EventArgs e)
     {
         _logger.LogMessage("Connected to HeadlessWebSocket");
-
+        _attempts = 1;
     }
 
     private void WebSocket_OnMessage(object sender, MessageEventArgs e)
@@ -83,7 +85,7 @@ public class HeadlessWebSocket
             return;
         }
 
-        JObject jsonObject = JObject.Parse(e.Data);
+        var jsonObject = JObject.Parse(e.Data);
 
         if (!jsonObject.ContainsKey("Type"))
         {
@@ -91,17 +93,13 @@ public class HeadlessWebSocket
             return;
         }
 
-        EFikaHeadlessWSMessageType type = (EFikaHeadlessWSMessageType)Enum.Parse(typeof(EFikaHeadlessWSMessageType), jsonObject.Value<string>("Type"));
-
+        var type = (EFikaHeadlessWSMessageType)Enum.Parse(typeof(EFikaHeadlessWSMessageType), jsonObject.Value<string>("Type"));
         switch (type)
         {
             case EFikaHeadlessWSMessageType.HeadlessStartRaid:
-                StartRaid data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
+                var data = JsonConvert.DeserializeObject<StartRaid>(e.Data);
 
-                AsyncWorker.RunInMainTread(() =>
-                {
-                    FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartHeadlessRequest);
-                });
+                AsyncWorker.RunInMainTread(() => FikaHeadlessPlugin.Instance.OnFikaStartRaid(data.StartHeadlessRequest));
                 break;
             case EFikaHeadlessWSMessageType.ShutdownClient:
                 AsyncWorker.RunInMainTread(Application.Quit);
@@ -127,7 +125,13 @@ public class HeadlessWebSocket
 
     private async void RetryConnect()
     {
-        _logger.LogWarning($"Websocket connection lost, retrying...");
+        if (_attempts > 15)
+        {
+            _logger.LogError("Took more than 15 attempts to connect to the websocket, quitting...");
+            AsyncWorker.RunInMainTread(Application.Quit);
+            return;
+        }
+        _logger.LogWarning($"Websocket connection lost, retrying... Attempt {_attempts}/15");
 
         await Task.Delay(5000);
         Connect();
