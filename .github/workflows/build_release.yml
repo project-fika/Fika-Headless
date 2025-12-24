@@ -37,7 +37,7 @@ jobs:
           cache-dependency-path: 'Fika.Headless/packages.lock.json'
 
       - name: Restore dependencies
-        run: dotnet restore Fika-Headless.sln
+        run: dotnet restore Fika-Headless.slnx
 
       - name: Build the project
         run: dotnet build Fika.Headless/Fika.Headless.csproj --configuration ${{ inputs.build_type }} --no-restore --output output/
