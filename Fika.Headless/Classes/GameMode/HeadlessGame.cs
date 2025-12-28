@@ -512,9 +512,12 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         GameWorld.method_5(gclass, true);
     }
 
-    private void HandleProgress(LoadingProgressStruct progress)
+    private void HandleProgress(LoadingProgressStruct p)
     {
-        // Do nothing
+        var progress = p.Stage == EFT.InitLevelStage.LoadingBundles
+            ? 50f + (p.Progress * 20f)
+            : 70f + (p.Progress * 5f);
+        LoadingScreenUI.Instance.UpdateAndBroadcast(progress);
     }
 
     private void StaticUpdateFunction()

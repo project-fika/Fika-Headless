@@ -80,16 +80,20 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
 
 #if DEBUG
         Logger.LogInfo("TarkovApplication_LocalGameCreator_Patch:Postfix: Attempt to set Raid Settings");
+        Logger.LogInfo($"RaidSettings TransitType: {raidSettings.transitionType}");
 #endif
 
-        await session.SendRaidSettings(raidSettings);
+        if (!raidSettings.isInTransition)
+        {
+            await session.SendRaidSettings(raidSettings);
+        }
         LocalRaidSettings localRaidSettings = new()
         {
             location = raidSettings.LocationId,
             timeVariant = raidSettings.SelectedDateTime,
             mode = ELocalMode.PVE_OFFLINE,
             playerSide = raidSettings.Side,
-            transitionType = FikaBackendUtils.TransitData.visitedLocations.Length > 0 ? ELocationTransition.Common : ELocationTransition.None
+            transitionType = FikaBackendUtils.TransitData.visitedLocations.Length > 0 ? ELocationTransition.Common : raidSettings.transitionType
         };
         var applicationTraverse = Traverse.Create(instance);
         applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value = localRaidSettings;
@@ -102,6 +106,9 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         raidSettingsToUpdate.serverId = localSettings.serverId;
         raidSettingsToUpdate.selectedLocation = localSettings.locationLoot;
         raidSettingsToUpdate.selectedLocation.EscapeTimeLimit = escapeTimeLimit;
+
+        var transitData = FikaBackendUtils.TransitData;
+        transitData.transitionType = raidSettings.transitionType;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
         var profileInsurance = localSettings.profileInsurance;
@@ -110,7 +117,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
             profile.InsuredItems = localSettings.profileInsurance.insuredItems;
         }
 
-        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Creating coop game...");
+        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Creating headless game...");
 
         StartHandler startHandler = new(instance, session.Profile, session.ProfileOfPet, raidSettings.SelectedLocation);
 
@@ -128,7 +135,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         metricsEvents.SetGameCreated();
         FikaEventDispatcher.DispatchEvent(new AbstractGameCreatedEvent(headlessGame));
 
-        headlessGame.SetMatchmakerStatus("Coop game created");
+        headlessGame.SetMatchmakerStatus("Headless game created");
 
         try
         {
