@@ -33,6 +33,14 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
         OnPlayerExit += HeadlessOnPlayerExit;
     }
 
+    public LocalRaidSettings LocalRaidSettings
+    {
+        get
+        {
+            return _localRaidSettings; 
+        }
+    }
+
     private readonly LocalRaidSettings _localRaidSettings;
     private readonly FikaServer _server = Singleton<FikaServer>.Instance;
     private readonly Dictionary<Player, int> _playersInTransitZone = [];

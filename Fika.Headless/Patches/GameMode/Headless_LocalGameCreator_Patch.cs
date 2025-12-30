@@ -93,7 +93,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
             timeVariant = raidSettings.SelectedDateTime,
             mode = ELocalMode.PVE_OFFLINE,
             playerSide = raidSettings.Side,
-            transitionType = FikaBackendUtils.TransitData.visitedLocations.Length > 0 ? ELocationTransition.Common : raidSettings.transitionType
+            transitionType = raidSettings.transitionType
         };
         var applicationTraverse = Traverse.Create(instance);
         applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value = localRaidSettings;
@@ -110,12 +110,6 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         var transitData = FikaBackendUtils.TransitData;
         transitData.transitionType = raidSettings.transitionType;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
-
-        var profileInsurance = localSettings.profileInsurance;
-        if ((profileInsurance?.insuredItems) != null)
-        {
-            profile.InsuredItems = localSettings.profileInsurance.insuredItems;
-        }
 
         instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Creating headless game...");
 
