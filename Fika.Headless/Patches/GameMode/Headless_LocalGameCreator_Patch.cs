@@ -1,17 +1,18 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Comfort.Common;
 using EFT;
 using EFT.UI;
 using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
+using Fika.Core.Networking;
 using Fika.Headless.Classes.GameMode;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using SPT.SinglePlayer.Utils.InRaid;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.GameMode;
 
@@ -111,7 +112,8 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         transitData.transitionType = raidSettings.transitionType;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
-        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Creating headless game...");
+        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Hosting headless game...");
+        Singleton<FikaServer>.Instance.LocationReceived = true;
 
         StartHandler startHandler = new(instance, session.Profile, session.ProfileOfPet, raidSettings.SelectedLocation);
 

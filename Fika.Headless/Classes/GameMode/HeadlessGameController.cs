@@ -39,7 +39,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
                     PlayerId = activePlayer.Id,
                     Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id),
                     TransitionCount = (ushort)transitController.LocalRaidSettings.transition.transitionCount,
-                    EventPlayer = transitController.LocalRaidSettings.transition.transitionType.HasFlagNoBox(ELocationTransition.Event)
+                    EventPlayer = transitController.IsEvent
                 };
 
                 var writer = NetworkUtils.EventDataWriter;
@@ -52,6 +52,21 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
                     Type = 0,
                     Data = new byte[writer.BytesWritten]
                 };
+                Array.Copy(writer.Buffer, syncPacket.Data, writer.BytesWritten);
+                _server.SendData(ref syncPacket, DeliveryMethod.ReliableOrdered);
+
+                var updateEvent = new TransitUpdateEvent
+                {
+                    PlayerId = activePlayer.Id,
+                    EventOnly = transitController.IsEvent,
+                    Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id)
+                };
+
+                writer.Reset();
+                updateEvent.Serialize(ref writer);
+                writer.Flush();
+
+                syncPacket.Type = 1;
                 Array.Copy(writer.Buffer, syncPacket.Data, writer.BytesWritten);
                 _server.SendData(ref syncPacket, DeliveryMethod.ReliableOrdered);
             }

@@ -140,7 +140,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 GarbageCollector.CollectIncremental(1000000);
                 GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             }
-            else
+            else if (!FikaBackendUtils.IsTransit)
             {
                 Resources.UnloadUnusedAssets().Await();
                 MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
