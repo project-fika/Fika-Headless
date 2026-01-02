@@ -27,10 +27,21 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
         : base(settings, parameters)
     {
         _localRaidSettings = localRaidSettings;
+        IsEvent = localRaidSettings.transitionType.HasFlagNoBox(ELocationTransition.Event);
 
         TransferItemsController.InitItemControllerServer(FikaGlobals.TransitTraderId, FikaGlobals.TransitTraderName);
         OnPlayerEnter += HeadlessOnPlayerEnter;
         OnPlayerExit += HeadlessOnPlayerExit;
+    }
+
+    public bool IsEvent { get; }
+
+    public LocalRaidSettings LocalRaidSettings
+    {
+        get
+        {
+            return _localRaidSettings; 
+        }
     }
 
     private readonly LocalRaidSettings _localRaidSettings;

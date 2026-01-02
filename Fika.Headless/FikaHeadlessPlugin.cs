@@ -47,7 +47,7 @@ namespace Fika.Headless;
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
 public class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.4.8";
+    public const string HeadlessVersion = "1.4.9";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -74,7 +74,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     public static ConfigEntry<bool> ShouldBotsSleep { get; private set; }
     public static ConfigEntry<bool> ShouldDestroyGraphics { get; private set; }
     public static ConfigEntry<bool> DestroyRenderersOnSceneLoad { get; private set; }
-    public static ConfigEntry<bool> ShowDebugLogging { get; private set; }
 
 #if DEBUG
     public BetterAudio BetterAudio
@@ -105,8 +104,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         SetupConfig();
 
         _gcPoint = RAMCleanInterval.Value * 60f;
-        
-        if (ShowDebugLogging.Value) FikaHeadlessLogger.LogMessage("Extra debug logging enabled, progress will be shown in console.");
 
         var patches = ModPatchCache.GetActivePatches();
         DisableFikaCorePatches(patches);
@@ -143,7 +140,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 GarbageCollector.CollectIncremental(1000000);
                 GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             }
-            else
+            else if (!FikaBackendUtils.IsTransit)
             {
                 Resources.UnloadUnusedAssets().Await();
                 MemoryControllerClass.Collect(2, GCCollectionMode.Forced, true, true, true);
@@ -201,7 +198,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 #if DEBUG
     private void StartDebugGame()
     {
-        string rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
+        var rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
         StartRaid data = JsonConvert.DeserializeObject<StartRaid>(rawData);
 
         OnFikaStartRaid(data.StartHeadlessRequest);
@@ -278,9 +275,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         DestroyRenderersOnSceneLoad = Config.Bind("Headless", "Destroy Renderers", true,
             new ConfigDescription("If the headless plugin should hook scene loading to disable unnecessary renderers as well as unloading all materials (Requires 'Destroy Graphics' to be enabled)"));
-        
-        ShowDebugLogging = Config.Bind("Headless", "Show Expanded Debug Logging", false,
-            new ConfigDescription("Whether to show extra debug logging in the headless console."));
     }
 
     /// <summary>
@@ -456,7 +450,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             isInTransition = false,
             RaidMode = ERaidMode.Local,
             IsPveOffline = true,
-            OnlinePveRaid = false
+            OnlinePveRaid = false,
+            transitionType = request.UseEvent ? ELocationTransition.Event : ELocationTransition.None
         };
 
         raidSettings.BotSettings.BotAmount = request.WavesSettings.BotAmount;

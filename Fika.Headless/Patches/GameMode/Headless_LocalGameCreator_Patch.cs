@@ -1,17 +1,18 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Comfort.Common;
 using EFT;
 using EFT.UI;
 using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
+using Fika.Core.Networking;
 using Fika.Headless.Classes.GameMode;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using SPT.SinglePlayer.Utils.InRaid;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.GameMode;
 
@@ -80,16 +81,20 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
 
 #if DEBUG
         Logger.LogInfo("TarkovApplication_LocalGameCreator_Patch:Postfix: Attempt to set Raid Settings");
+        Logger.LogInfo($"RaidSettings TransitType: {raidSettings.transitionType}");
 #endif
 
-        await session.SendRaidSettings(raidSettings);
+        if (!raidSettings.isInTransition)
+        {
+            await session.SendRaidSettings(raidSettings);
+        }
         LocalRaidSettings localRaidSettings = new()
         {
             location = raidSettings.LocationId,
             timeVariant = raidSettings.SelectedDateTime,
             mode = ELocalMode.PVE_OFFLINE,
             playerSide = raidSettings.Side,
-            transitionType = FikaBackendUtils.TransitData.visitedLocations.Length > 0 ? ELocationTransition.Common : ELocationTransition.None
+            transitionType = raidSettings.transitionType
         };
         var applicationTraverse = Traverse.Create(instance);
         applicationTraverse.Field<LocalRaidSettings>("localRaidSettings_0").Value = localRaidSettings;
@@ -102,15 +107,13 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         raidSettingsToUpdate.serverId = localSettings.serverId;
         raidSettingsToUpdate.selectedLocation = localSettings.locationLoot;
         raidSettingsToUpdate.selectedLocation.EscapeTimeLimit = escapeTimeLimit;
+
+        var transitData = FikaBackendUtils.TransitData;
+        transitData.transitionType = raidSettings.transitionType;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
-        var profileInsurance = localSettings.profileInsurance;
-        if ((profileInsurance?.insuredItems) != null)
-        {
-            profile.InsuredItems = localSettings.profileInsurance.insuredItems;
-        }
-
-        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Creating coop game...");
+        instance.MatchmakerPlayerControllerClass.UpdateMatchingStatus("Hosting headless game...");
+        Singleton<FikaServer>.Instance.LocationReceived = true;
 
         StartHandler startHandler = new(instance, session.Profile, session.ProfileOfPet, raidSettings.SelectedLocation);
 
@@ -128,7 +131,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         metricsEvents.SetGameCreated();
         FikaEventDispatcher.DispatchEvent(new AbstractGameCreatedEvent(headlessGame));
 
-        headlessGame.SetMatchmakerStatus("Coop game created");
+        headlessGame.SetMatchmakerStatus("Headless game created");
 
         try
         {

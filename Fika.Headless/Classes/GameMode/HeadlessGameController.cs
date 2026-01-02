@@ -1,14 +1,17 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Comfort.Common;
 using EFT;
 using EFT.Game.Spawning;
+using EFT.GlobalEvents;
 using EFT.Interactive;
 using EFT.UI;
 using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Backend;
-using System;
-using System.Threading.Tasks;
+using Fika.Core.Networking.Packets.Communication;
 
 namespace Fika.Headless.Classes.GameMode;
 
@@ -29,7 +32,44 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
         {
             transitController.Init();
-            // TODO: Sync to clients!!!
+            foreach (var activePlayer in CoopHandler.HumanPlayers)
+            {
+                var initEvent = new TransitInitEvent
+                {
+                    PlayerId = activePlayer.Id,
+                    Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id),
+                    TransitionCount = (ushort)transitController.LocalRaidSettings.transition.transitionCount,
+                    EventPlayer = transitController.IsEvent
+                };
+
+                var writer = NetworkUtils.EventDataWriter;
+                writer.Reset();
+                initEvent.Serialize(ref writer);
+                writer.Flush();
+
+                var syncPacket = new SyncEventPacket
+                {
+                    Type = 0,
+                    Data = new byte[writer.BytesWritten]
+                };
+                Array.Copy(writer.Buffer, syncPacket.Data, writer.BytesWritten);
+                _server.SendData(ref syncPacket, DeliveryMethod.ReliableOrdered);
+
+                var updateEvent = new TransitUpdateEvent
+                {
+                    PlayerId = activePlayer.Id,
+                    EventOnly = transitController.IsEvent,
+                    Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id)
+                };
+
+                writer.Reset();
+                updateEvent.Serialize(ref writer);
+                writer.Flush();
+
+                syncPacket.Type = 1;
+                Array.Copy(writer.Buffer, syncPacket.Data, writer.BytesWritten);
+                _server.SendData(ref syncPacket, DeliveryMethod.ReliableOrdered);
+            }
         }
 
         if (Location.EventTrapsData != null)
@@ -51,13 +91,13 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
     {
         _spawnPoints = SpawnPointManagerClass.CreateFromScene(new DateTime?(EFTDateTimeClass.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
                                 Location.SpawnPointParams);
-        int spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
+        var spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
         SpawnSettingsStruct settings = new(Location.MinDistToFreePoint,
             Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
             Location.NoGroupSpawn, Location.OneTimeSpawn);
         SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
 
-        EPlayerSide side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
+        var side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
 
         _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, side,
             null, null, null, null, null);
@@ -71,10 +111,10 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
             throw new NullReferenceException("AbstractGame was missing");
         }
 
-        FikaServer server = Singleton<FikaServer>.Instance;
+        var server = Singleton<FikaServer>.Instance;
         server.HostReady = true;
 
-        DateTime startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
+        var startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
         GameTime = startTime;
         server.GameStartTime = startTime;
         SessionTime = abstractGame.GameTimer.SessionTime;
@@ -104,7 +144,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         }
         else
         {
-            BackendConfigSettingsClass.TransitSettingsClass transitSettings = instance.transitSettings;
+            var transitSettings = instance.transitSettings;
             transitActive = transitSettings != null && transitSettings.active;
         }
         if (transitActive)

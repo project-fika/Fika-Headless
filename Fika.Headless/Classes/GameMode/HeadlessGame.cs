@@ -285,6 +285,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         GameController.InitializeRunddans(instance, gameWorld, _location);
 
+        Singleton<FikaServer>.Instance.RaidInitialized = true;
+
         gameWorld.ClientBroadcastSyncController = new ClientBroadcastSyncControllerClass();
 
         var config = BackendConfigAbstractClass.Config;
@@ -335,6 +337,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         await RunMemoryCleanup();
         await (GameController as HeadlessGameController).WaitForHeadlessInit(timeBeforeDeployLocal);
 
+        _logger.LogInfo("Headless client is ready");
+
         TaskCompletionSource taskCompletionSource = new();
         StartCoroutine(FinishRaidSetup(taskCompletionSource.Complete));
         await taskCompletionSource.Task;
@@ -346,6 +350,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         MonoBehaviourSingleton<PreloaderUI>.Instance.SetMenuTaskBarVisibility(false);
 
         FikaEventDispatcher.DispatchEvent(new FikaRaidStartedEvent(true));
+
+        NetManagerUtils.DisableLoadingScreenUI();
 
         StartCoroutine(GameController.CreateStashes());
 
@@ -512,9 +518,12 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         GameWorld.method_5(gclass, true);
     }
 
-    private void HandleProgress(LoadingProgressStruct progress)
+    private void HandleProgress(LoadingProgressStruct p)
     {
-        // Do nothing
+        var progress = p.Stage == InitLevelStage.LoadingBundles
+            ? 50f + (p.Progress * 20f)
+            : 70f + (p.Progress * 5f);
+        LoadingScreenUI.Instance.UpdateAndBroadcast(progress);
     }
 
     private void StaticUpdateFunction()
