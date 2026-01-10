@@ -5,7 +5,7 @@
 /// </summary>
 public class HeadlessRaidController : MonoBehaviour
 {
-    protected void Update()
+    protected void FixedUpdate()
     {
         Physics.SyncTransforms();
     }
