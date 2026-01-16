@@ -344,10 +344,10 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         await Task.Delay(1000);
 
-        FikaPlugin.AutoExtract.Value = true;
-        FikaPlugin.QuestTypesToShareAndReceive.Value = 0;
-        FikaPlugin.ConnectionTimeout.Value = 30;
-        FikaPlugin.UseNamePlates.Value = false;
+        FikaPlugin.Instance.Settings.AutoExtract.Value = true;
+        FikaPlugin.Instance.Settings.QuestTypesToShareAndReceive.Value = 0;
+        FikaPlugin.Instance.Settings.ConnectionTimeout.Value = 30;
+        FikaPlugin.Instance.Settings.UseNamePlates.Value = false;
 
         FikaPlugin.Instance.AllowFreeCam = true;
         FikaPlugin.Instance.AllowSpectateFreeCam = true;
@@ -456,28 +456,20 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         raidSettings.BotSettings.BotAmount = request.WavesSettings.BotAmount;
 
-        Traverse.Create(tarkovApplication).Field<RaidSettings>("_raidSettings").Value = raidSettings;
+        Traverse.Create(tarkovApplication)
+            .Field<RaidSettings>("_raidSettings").Value = raidSettings;
 
         Logger.LogInfo("Initialized raid settings");
 
-        if (FikaPlugin.ForceIP.Value != "")
+        if (FikaPlugin.Instance.Settings.ForceIP.Value != "")
         {
             // We need to handle DNS entries as well
-            var ip = FikaPlugin.ForceIP.Value;
+            var ip = FikaPlugin.Instance.Settings.ForceIP.Value;
             try
             {
-                var dnsAddress = Dns.GetHostAddresses(FikaPlugin.ForceIP.Value);
-                if (dnsAddress.Length > 0)
-                {
-                    ip = dnsAddress[0].ToString();
-                }
+                var endpoint = NetUtils.ResolveAddress(ip);
             }
             catch
-            {
-
-            }
-
-            if (!IPAddress.TryParse(ip, out _))
             {
                 var message = $"'{ip}' is not a valid IP address to connect to! Check your 'Force IP' setting.";
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR FORCING IP",
@@ -488,11 +480,11 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             }
         }
 
-        if (FikaPlugin.ForceBindIP.Value != "Disabled")
+        if (FikaPlugin.Instance.Settings.ForceBindIP.Value != "Disabled")
         {
-            if (!IPAddress.TryParse(FikaPlugin.ForceBindIP.Value, out _))
+            if (!IPAddress.TryParse(FikaPlugin.Instance.Settings.ForceBindIP.Value, out _))
             {
-                var message = $"'{FikaPlugin.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.";
+                var message = $"'{FikaPlugin.Instance.Settings.ForceBindIP.Value}' is not a valid IP address to bind to! Check your 'Force Bind IP' setting.";
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR BINDING",
                     message,
                     ErrorScreen.EButtonType.OkButton, 10f);
