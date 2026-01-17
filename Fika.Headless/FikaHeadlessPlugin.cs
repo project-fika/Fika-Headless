@@ -64,7 +64,6 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     private HeadlessWebSocket _fikaHeadlessWebSocket;
     private float _gcCounter;
     private float _gcPoint;
-    private Coroutine _verifyConnectionsRoutine;
     private bool _invalidPluginsFound;
     private int _restartAfterAmountOfRaids;
     private bool _hasVerified;
