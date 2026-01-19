@@ -97,6 +97,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         Instance = this;
         _gcCounter = 0;
 
+        TrySetConsoleTitle();
+
         FikaHeadlessLogger = Logger;
 
         GetHeadlessRestartAfterRaidAmount();
@@ -125,6 +127,18 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         CleanupLogFiles();
         FikaBackendUtils.IsHeadless = true;
+    }
+
+    private void TrySetConsoleTitle()
+    {
+        var title = Environment.GetCommandLineArgs()
+            .FirstOrDefault(a => a.StartsWith("-title=", StringComparison.OrdinalIgnoreCase))
+            ?["-title=".Length..];
+
+        if (!string.IsNullOrEmpty(title))
+        {
+            Console.Title = $"Fika Headless {HeadlessVersion} - {title}";
+        }
     }
 
     protected void Update()
@@ -198,7 +212,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     private void StartDebugGame()
     {
         var rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
-        StartRaid data = JsonConvert.DeserializeObject<StartRaid>(rawData);
+        var data = JsonConvert.DeserializeObject<StartRaid>(rawData);
 
         OnFikaStartRaid(data.StartHeadlessRequest);
     }
