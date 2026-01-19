@@ -137,6 +137,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         if (!string.IsNullOrEmpty(title))
         {
+            Logger.LogInfo($"Using custom window title: {title}");
             Console.Title = $"Fika Headless {HeadlessVersion} - {title}";
         }
     }
