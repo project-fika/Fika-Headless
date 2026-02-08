@@ -326,7 +326,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 return;
             }
 
-            OfflineRaidSettingsMenuPatch_Override.UseCustomWeather = request.CustomWeather;
+            FikaBackendUtils.CustomRaidSettings = request.CustomRaidSettings;
+            Logger.LogInfo($"Received CustomRaidSettings: {request.CustomRaidSettings}");
 
             Logger.LogInfo($"Starting on location {location.Name}");
             CanHost = false;

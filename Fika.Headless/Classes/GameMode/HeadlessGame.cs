@@ -197,7 +197,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             game._logger.LogInfo($"Using custom time flow: {newFlow}");
         }
 
-        if (OfflineRaidSettingsMenuPatch_Override.UseCustomWeather && game.GameController.IsServer)
+        if (FikaBackendUtils.CustomRaidSettings.UseCustomWeather && game.GameController.IsServer)
         {
             game._logger.LogInfo("Custom weather enabled, initializing curves");
             (game.GameController as HostGameController).SetupCustomWeather(timeAndWeather);
