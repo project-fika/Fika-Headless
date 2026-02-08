@@ -175,7 +175,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         {
             Location = location
         };
-        game.GameDateTime = backendDateTime;
+        game.GameDateTime = gameTime;
         game._localRaidSettings = localRaidSettings;
         game.DoWeatherThings(timeAndWeather.IsRandomTime, timeAndWeather.IsRandomWeather);
         WorldInteractiveObject.InteractionShouldBeConfirmed = false;
