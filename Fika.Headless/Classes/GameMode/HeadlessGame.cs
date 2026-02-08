@@ -135,11 +135,23 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         EUpdateQueue updateQueue, ISession backEndSession, TimeSpan sessionTime, LocalRaidSettings localRaidSettings,
         RaidSettings raidSettings)
     {
-        Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;
+        Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;        
 
         var game = Create<HeadlessGame>(updateQueue, sessionTime);
         game._logger = Logger.CreateLogSource(nameof(HeadlessGame));
         game.GameWorld = gameWorld;
+
+        var gameTime = backendDateTime;
+        if (timeAndWeather.HourOfDay != -1)
+        {
+            game._logger.LogInfo($"Using custom time, hour of day: {timeAndWeather.HourOfDay}");
+            var currentTime = backendDateTime.DateTime_1;
+            DateTime newTime = new(currentTime.Year, currentTime.Month, currentTime.Day, timeAndWeather.HourOfDay,
+                currentTime.Minute, currentTime.Second, currentTime.Millisecond);
+            gameTime = new(backendDateTime.DateTime_0, newTime, backendDateTime.TimeFactor);
+            gameTime.Reset(newTime);
+            dateTime = EDateTime.CURR;
+        }
 
         const float num = 1.5f;
         foreach (var wildSpawnWave in location.waves)
@@ -159,7 +171,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             Singleton<BotEventHandler>.Create(new BotEventHandler());
         }
 
-        game.GameController = new HeadlessGameController(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, backendDateTime)
+        game.GameController = new HeadlessGameController(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, gameTime)
         {
             Location = location
         };
