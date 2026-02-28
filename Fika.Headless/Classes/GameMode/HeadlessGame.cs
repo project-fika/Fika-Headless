@@ -290,7 +290,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         GameController.InitHalloweenEvent(instance, gameWorld, _location);
         GameController.InitBTRController(instance, gameWorld, _location);
 
-        if ((FikaBackendUtils.IsHeadless || FikaBackendUtils.IsHeadlessGame) && FikaPlugin.Instance.EnableTransits)
+        if ((FikaBackendUtils.IsHeadless || FikaBackendUtils.IsHeadlessGame) && FikaPlugin.Instance.Settings.EnableTransits)
         {
             GameController.InitializeTransitSystem(gameWorld, instance, null, _localRaidSettings, _location);
         }
