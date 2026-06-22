@@ -17,6 +17,7 @@ internal class LocaleFixPatch : ModulePatch
     {
         ____hasRun = true;
         ValidationUtil._crashHandler = "2000";
+        ValidationUtil.complete = true;
         return false;
     }
 }
