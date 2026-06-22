@@ -13,10 +13,10 @@ internal class LocaleFixPatch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(bool ____hasRun)
+    public static bool Prefix(ref bool ____hasRun)
     {
         ____hasRun = true;
-        ValidationUtil._crashHandler = "0";
+        ValidationUtil._crashHandler = "2000";
         return false;
     }
 }
