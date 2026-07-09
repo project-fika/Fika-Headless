@@ -313,6 +313,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 return;
             }
 
+            Application.targetFrameRate = UpdateRate.Value;
+            Logger.LogInfo($"Waking up, target framerate: {UpdateRate.Value}");
+
             var session = tarkovApplication.Session;
             if (session == null)
             {
@@ -395,6 +398,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         {
             _fikaHeadlessWebSocket.Connect();
         }
+
+        EnterIdleFrameRate();
     }
 
     /// <summary>
@@ -575,11 +580,19 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         {
             Application.Quit();
         }
+
+        EnterIdleFrameRate();
     }
 
     private void GetHeadlessRestartAfterRaidAmount()
     {
         var headlessConfig = FikaRequestHandler.GetHeadlessRestartAfterRaidAmount();
         _restartAfterAmountOfRaids = headlessConfig.Amount;
+    }
+
+    private void EnterIdleFrameRate()
+    {
+        Application.targetFrameRate = 1;
+        Logger.LogInfo("Entering idle mode (1 fps)");
     }
 }

@@ -76,7 +76,7 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Graphics.Settings.CloudsQuality.SetValue(CloudsMode.Low);
         await gameSettings.Graphics.Settings.VolumetricLight.SetValue(false);
 
-        await gameSettings.Graphics.Settings.LobbyFramerate.SetValue(30);
+        await gameSettings.Graphics.Settings.LobbyFramerate.SetValue(1);
         await gameSettings.Graphics.Settings.GameFramerate.SetValue(FikaHeadlessPlugin.UpdateRate.Value);
 
         await gameSettings.Game.Settings.EnableHideoutPreload.SetValue(false);
