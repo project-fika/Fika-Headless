@@ -1,7 +1,7 @@
-﻿using EFT.Settings.Graphics;
-using SPT.Reflection.Patching;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Threading.Tasks;
+using EFT.Settings.Graphics;
+using SPT.Reflection.Patching;
 
 namespace Fika.Headless.Patches;
 
@@ -51,6 +51,8 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Sound.Settings.BinauralSound.SetValue(false);
         await gameSettings.Sound.Settings.VoipEnabled.SetValue(false);
 
+        GameGraphicsClass.MinFramerateLimit = 1;
+
         await gameSettings.Graphics.Settings.VSync.SetValue(false);
         await gameSettings.Graphics.Settings.ShadowsQuality.SetValue(0);
         await gameSettings.Graphics.Settings.TextureQuality.SetValue(0);
@@ -94,7 +96,7 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Graphics.Save();
         await gameSettings.Game.Save();
 
-        EFTHardSettings hardSettings = EFTHardSettings.Instance;
+        var hardSettings = EFTHardSettings.Instance;
         hardSettings.CULL_GROUNDER = 2000f;
         hardSettings.AnimatorCullDistance = 2000f;
         hardSettings.DRAW_DEFERRED_DECALS = false;

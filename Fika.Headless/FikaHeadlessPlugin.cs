@@ -47,7 +47,7 @@ namespace Fika.Headless;
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
 public class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.4.14";
+    public const string HeadlessVersion = "1.4.15";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -331,6 +331,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
             Logger.LogInfo($"Starting on location {location.Name}");
             CanHost = false;
+            ToggleFramelimit(false);
             _ = BeginFikaStartRaid(request, session, tarkovApplication);
         }
         catch (Exception ex)
@@ -565,6 +566,8 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
     public void OnReady()
     {
+        ToggleFramelimit(true);
+
         if (CurrentRaidCount == 0)
         {
             return;
@@ -575,6 +578,29 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         {
             Application.Quit();
         }
+    }
+
+    public void ToggleFramelimit(bool enabled)
+    {        
+        if (enabled)
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 1;
+            if (Singleton<JobScheduler>.Instantiated)
+            {
+                Singleton<JobScheduler>.Instance.SetTargetFrameRate(1);
+            }
+        }
+        else
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = UpdateRate.Value;
+            if (Singleton<JobScheduler>.Instantiated)
+            {
+                Singleton<JobScheduler>.Instance.SetTargetFrameRate(UpdateRate.Value);
+            }
+        }
+        Logger.LogInfo($"Setting frame limiter to {(enabled ? "enabled" : "disabled")}, current target is {Application.targetFrameRate}Hz");
     }
 
     private void GetHeadlessRestartAfterRaidAmount()
