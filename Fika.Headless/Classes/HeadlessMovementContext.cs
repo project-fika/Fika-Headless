@@ -22,7 +22,7 @@ public class HeadlessMovementContext : MovementContext
     public override void DirectApplyMotion(Vector3 motion, float deltaTime)
     {
         CollisionFlags collisionFlags = CharacterController.Move(motion + PlatformMotion, deltaTime);
-        method_1(motion);
+        EmitStepNoise(motion);
         _onMotion?.Invoke(collisionFlags);
     }
 }

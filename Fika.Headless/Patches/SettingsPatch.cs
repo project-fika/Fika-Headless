@@ -1,7 +1,9 @@
-﻿using System.Reflection;
-using System.Threading.Tasks;
+﻿using EFT;
+using EFT.Settings;
 using EFT.Settings.Graphics;
 using SPT.Reflection.Patching;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches;
 
@@ -9,8 +11,8 @@ public class SettingsPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(GClass2304)
-            .GetMethod(nameof(GClass2304.smethod_2));
+        return typeof(ClientApplicationInitOperation)
+            .GetMethod(nameof(ClientApplicationInitOperation.LoadUserSettings));
     }
 
     [PatchPrefix]
@@ -27,13 +29,13 @@ public static class FikaHeadlessSettingsManager
 
     internal static async Task Initalize()
     {
-        await Class1826.smethod_5("LoadUserSettings", false);
-        await SetSettings(await SharedGameSettingsClass.InstantiateSingleton());
-        await GClass899.InstantiateSingleton();
+        await EFTDisplayHelper.AwaitScreenReady("LoadUserSettings", false);
+        await SetSettings(await SettingsManager.InstantiateSingleton());
+        await PlayerVoiceLoader.InstantiateSingleton();
         await Task.Yield();
     }
 
-    internal static async Task SetSettings(SharedGameSettingsClass gameSettings)
+    internal static async Task SetSettings(SettingsManager gameSettings)
     {
         if (_hasSet)
         {
@@ -51,7 +53,7 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Sound.Settings.BinauralSound.SetValue(false);
         await gameSettings.Sound.Settings.VoipEnabled.SetValue(false);
 
-        GameGraphicsClass.MinFramerateLimit = 1;
+        GraphicsSettingsController.MinFramerateLimit = 1;
 
         await gameSettings.Graphics.Settings.VSync.SetValue(false);
         await gameSettings.Graphics.Settings.ShadowsQuality.SetValue(0);
@@ -86,7 +88,7 @@ public static class FikaHeadlessSettingsManager
 
         await gameSettings.Graphics.Settings.DisplaySettings.SetValue(new()
         {
-            AspectRatio = Class1824.smethod_0(new(1024, 768)),
+            AspectRatio = EFTAspectHelper.SuitableAspectRatio(new(1024, 768)),
             Display = 0,
             FullScreenMode = FullScreenMode.Windowed,
             Resolution = new(1024, 768)

@@ -17,7 +17,7 @@ public class MessageWindow_Show_Patch : ModulePatch
     }
 
     [PatchPostfix]
-    public static void PatchPostfix(GClass3834 __result)
+    public static void PatchPostfix(DialogWindowContext __result)
     {
         __result.AcceptAndClose();
         /*__instance.Close(ECloseState.Accept);

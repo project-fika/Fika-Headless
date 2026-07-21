@@ -11,8 +11,8 @@ public class SessionResultExitStatusPatch : ModulePatch
     protected override MethodBase GetTargetMethod()
     {
         return typeof(SessionResultExitStatus).GetMethod(nameof(SessionResultExitStatus.Show),
-            [typeof(Profile), typeof(LastPlayerStateClass), typeof(ESideType),
-            typeof(ExitStatus), typeof(TimeSpan), typeof(ISession), typeof(bool)]);
+            [typeof(Profile), typeof(PlayerVisualRepresentation), typeof(ESideType),
+            typeof(ExitStatus), typeof(TimeSpan), typeof(IEftSession), typeof(bool)]);
     }
 
     [PatchPostfix]

@@ -1,4 +1,5 @@
-﻿using SPT.Reflection.Patching;
+﻿using EFT.CameraControl;
+using SPT.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.ReflexPatches;
@@ -10,8 +11,8 @@ public class IsReflexAvailablePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(GClass3692)
-            .GetMethod(nameof(GClass3692.IsReflexAvailable),
+        return typeof(ReflexController)
+            .GetMethod(nameof(ReflexController.IsReflexAvailable),
             BindingFlags.Public | BindingFlags.Static,
             null, [], null);
     }

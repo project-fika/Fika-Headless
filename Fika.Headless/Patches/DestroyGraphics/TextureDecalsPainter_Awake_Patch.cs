@@ -12,9 +12,9 @@ public class TextureDecalsPainter_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(TextureDecalsPainter __instance, ref GClass835<RenderTexture> ___gclass835_0)
+    public static bool Prefix(TextureDecalsPainter __instance, ref ObjectPool<RenderTexture> ____texturesPool)
     {
-        ___gclass835_0 = new(0, FakeClassFunc);
+        ____texturesPool = new(0, FakeClassFunc);
         Object.Destroy(__instance);
         return false;
     }

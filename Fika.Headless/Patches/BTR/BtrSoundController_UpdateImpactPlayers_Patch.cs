@@ -1,4 +1,5 @@
-﻿using Audio.Vehicles.BTR;
+﻿using Audio.NPC.BtrDriver;
+using Audio.Vehicles.BTR;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -16,7 +17,7 @@ public class BtrSoundController_UpdateImpactPlayers_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(GInterface83 ____phraseController)
+    public static bool Prefix(IPhraseController ____phraseController)
     {
         ____phraseController.ManualUpdate(0F);
         return false;

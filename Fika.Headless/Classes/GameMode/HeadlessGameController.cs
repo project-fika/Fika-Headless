@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Comfort.Common;
+﻿using Comfort.Common;
+using CommonAssets.Scripts.Game;
+using CommonAssets.Scripts.Game.LabyrinthEvent;
 using EFT;
 using EFT.Game.Spawning;
 using EFT.GlobalEvents;
@@ -12,11 +11,15 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Backend;
 using Fika.Core.Networking.Packets.Communication;
+using JsonType;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Fika.Headless.Classes.GameMode;
 
-internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, ISession session,
-    LocationSettingsClass.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
+internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, IEftSession session,
+    LocationSettings.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
     : HostGameController(game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
 {
     public override void SetupEventsAndExfils(Player player)
@@ -24,12 +27,12 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
         _abstractGame.GameTimer.Start();
 
-        /*ExfiltrationControllerClass exfilController = ExfiltrationControllerClass.Instance;*/
+        /*ExfiltrationController exfilController = ExfiltrationController.Instance;*/
 
         /*ExfiltrationPoint[] exfilPoints = exfilController.EligiblePoints(string.Empty);
         SecretExfiltrationPoint[] secretExfilPoints = [.. exfilController.SecretEligiblePoints(), .. exfilController.GetScavSecretExits()];*/
 
-        if (TransitControllerAbstractClass.Exist(out FikaHeadlessTransitController transitController))
+        if (TransitController.Exist(out FikaHeadlessTransitController transitController))
         {
             transitController.Init();
             foreach (var activePlayer in CoopHandler.HumanPlayers)
@@ -74,7 +77,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
 
         if (Location.EventTrapsData != null)
         {
-            LabyrinthSyncableTrapClass.InitLabyrinthSyncableTraps(Location.EventTrapsData);
+            LabyrinthSyncableTraps.InitLabyrinthSyncableTraps(Location.EventTrapsData);
             _gameWorld.SyncModule = new();
         }
         _abstractGame.Status = GameStatus.Started;
@@ -89,13 +92,13 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
 
     public override void CreateSpawnSystem(Profile profile)
     {
-        _spawnPoints = SpawnPointManagerClass.CreateFromScene(new DateTime?(EFTDateTimeClass.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
+        _spawnPoints = SpawnPointsCollection.CreateFromScene(new DateTime?(DateTimeExtensions.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
                                 Location.SpawnPointParams);
         var spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
-        SpawnSettingsStruct settings = new(Location.MinDistToFreePoint,
+        SpawnSystemSettings settings = new(Location.MinDistToFreePoint,
             Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
             Location.NoGroupSpawn, Location.OneTimeSpawn);
-        SpawnSystem = SpawnSystemCreatorClass.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
+        SpawnSystem = SpawnSystemFactory.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
 
         var side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
 
@@ -114,7 +117,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         var server = Singleton<FikaServer>.Instance;
         server.HostReady = true;
 
-        var startTime = EFTDateTimeClass.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
+        var startTime = DateTimeExtensions.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
         GameTime = startTime;
         server.GameStartTime = startTime;
         SessionTime = abstractGame.GameTimer.SessionTime;
@@ -135,7 +138,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         return Task.CompletedTask;
     }
 
-    public override void InitializeTransitSystem(GameWorld gameWorld, BackendConfigSettingsClass instance, Profile profile, LocalRaidSettings localRaidSettings, LocationSettingsClass.Location location)
+    public override void InitializeTransitSystem(GameWorld gameWorld, GlobalConfiguration instance, Profile profile, LocalRaidSettings localRaidSettings, LocationSettings.Location location)
     {
         bool transitActive;
         if (instance == null)
@@ -154,7 +157,7 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         else
         {
             Logger.LogInfo("Transits are disabled");
-            TransitControllerAbstractClass.DisableTransitPoints();
+            TransitController.DisableTransitPoints();
         }
     }
 }

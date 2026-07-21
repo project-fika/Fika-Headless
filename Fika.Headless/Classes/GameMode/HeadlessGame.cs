@@ -1,14 +1,23 @@
-﻿using Audio.SpatialSystem;
+﻿using Audio.RadioSystem;
+using Audio.SpatialSystem;
 using BepInEx.Logging;
 using Comfort.Common;
+using CommonAssets.Scripts.Game;
 using Dissonance.Networking.Client;
+using Diz.Jobs;
+using Diz.Utils;
 using EFT;
+using EFT.Airdrop;
 using EFT.AssetsManager;
 using EFT.Bots;
+using EFT.CameraControl;
 using EFT.EnvironmentEffect;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.Settings;
 using EFT.UI;
+using EFT.UI.Screens;
+using EFT.Utilities;
 using EFT.Weather;
 using Fika.Core;
 using Fika.Core.Main.GameMode;
@@ -80,7 +89,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         }
     }
 
-    public SeasonsSettingsClass SeasonsSettings
+    public SeasonsSettings SeasonsSettings
     {
         get
         {
@@ -95,7 +104,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
     private ManualLogSource _logger { get; set; }
 
-    public ISession BackendSession { get; set; }
+    public IEftSession BackendSession { get; set; }
 
     public BaseGameController GameController { get; set; }
     public GameDateTime GameDateTime
@@ -112,8 +121,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     public GameWorld GameWorld { get; private set; }
 
     private LocalRaidSettings _localRaidSettings;
-    private Callback<ExitStatus, TimeSpan, MetricsClass> _exitCallback;
-    private LocationSettingsClass.Location _location;
+    private Callback<ExitStatus, TimeSpan, ClientMetrics> _exitCallback;
+    private LocationSettings.Location _location;
     private EDateTime _tarkovDateTime;
     private DateTime _dateTime;
     private float _voipDistance;
@@ -130,9 +139,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     };
 
     public static HeadlessGame Create(GameWorld gameWorld, GameDateTime backendDateTime,
-        LocationSettingsClass.Location location, TimeAndWeatherSettings timeAndWeather, WavesSettings wavesSettings,
-        EDateTime dateTime, Callback<ExitStatus, TimeSpan, MetricsClass> callback, float fixedDeltaTime,
-        EUpdateQueue updateQueue, ISession backEndSession, TimeSpan sessionTime, LocalRaidSettings localRaidSettings,
+        LocationSettings.Location location, TimeAndWeatherSettings timeAndWeather, WavesSettings wavesSettings,
+        EDateTime dateTime, Callback<ExitStatus, TimeSpan, ClientMetrics> callback, float fixedDeltaTime,
+        EUpdateQueue updateQueue, IEftSession backEndSession, TimeSpan sessionTime, LocalRaidSettings localRaidSettings,
         RaidSettings raidSettings)
     {
         Singleton<IFikaNetworkManager>.Instance.RaidSide = localRaidSettings.playerSide;        
@@ -145,10 +154,10 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         if (timeAndWeather.HourOfDay != -1)
         {
             game._logger.LogInfo($"Using custom time, hour of day: {timeAndWeather.HourOfDay}");
-            var currentTime = backendDateTime.DateTime_1;
+            var currentTime = backendDateTime.StatedGameDateTime;
             DateTime newTime = new(currentTime.Year, currentTime.Month, currentTime.Day, timeAndWeather.HourOfDay,
                 currentTime.Minute, currentTime.Second, currentTime.Millisecond);
-            gameTime = new(backendDateTime.DateTime_0, newTime, backendDateTime.TimeFactor);
+            gameTime = new(backendDateTime.StatedRealDateTime, newTime, backendDateTime.TimeFactor);
             gameTime.Reset(newTime);
             dateTime = EDateTime.CURR;
         }
@@ -166,9 +175,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         game._tarkovDateTime = dateTime;
         game.FixedDeltaTime = fixedDeltaTime;
         game.HandleLocationData(location, wavesSettings.BotAmount);
-        if (!Singleton<BotEventHandler>.Instantiated)
+        if (!Singleton<GlobalEventDispatcher>.Instantiated)
         {
-            Singleton<BotEventHandler>.Create(new BotEventHandler());
+            Singleton<GlobalEventDispatcher>.Create(new GlobalEventDispatcher());
         }
 
         game.GameController = new HeadlessGameController(game, updateQueue, gameWorld, backEndSession, location, wavesSettings, gameTime)
@@ -187,7 +196,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (game.GameController.IsServer)
         {
-            gameWorld.World_0.method_0();
+            gameWorld.World.RegisterNetworkInteractionObjects();
         }
 
         if (timeAndWeather.TimeFlowType != ETimeFlowType.x1)
@@ -213,7 +222,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         return game;
     }
 
-    private void HandleLocationData(LocationSettingsClass.Location location, EBotAmount botAmount)
+    private void HandleLocationData(LocationSettings.Location location, EBotAmount botAmount)
     {
         location.OldSpawn = location.OfflineOldSpawn;
         location.NewSpawn = location.OfflineNewSpawn;
@@ -222,16 +231,16 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         {
             case EBotAmount.NoBots:
             case EBotAmount.Low:
-                num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_LOW : LocalBotSettingsProviderClass.Core.WAVE_COEF_LOW;
+                num = Singleton<GlobalConfiguration>.Instance != null ? Singleton<GlobalConfiguration>.Instance.WAVE_COEF_LOW : BotInternalSettingsController.Core.WAVE_COEF_LOW;
                 break;
             case EBotAmount.Medium:
-                num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_MID : LocalBotSettingsProviderClass.Core.WAVE_COEF_MID;
+                num = Singleton<GlobalConfiguration>.Instance != null ? Singleton<GlobalConfiguration>.Instance.WAVE_COEF_MID : BotInternalSettingsController.Core.WAVE_COEF_MID;
                 break;
             case EBotAmount.High:
-                num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_HIGH : LocalBotSettingsProviderClass.Core.WAVE_COEF_HIGH;
+                num = Singleton<GlobalConfiguration>.Instance != null ? Singleton<GlobalConfiguration>.Instance.WAVE_COEF_HIGH : BotInternalSettingsController.Core.WAVE_COEF_HIGH;
                 break;
             case EBotAmount.Horde:
-                num = Singleton<BackendConfigSettingsClass>.Instance != null ? Singleton<BackendConfigSettingsClass>.Instance.WAVE_COEF_HORDE : LocalBotSettingsProviderClass.Core.WAVE_COEF_HORDE;
+                num = Singleton<GlobalConfiguration>.Instance != null ? Singleton<GlobalConfiguration>.Instance.WAVE_COEF_HORDE : BotInternalSettingsController.Core.WAVE_COEF_HORDE;
                 break;
         }
 
@@ -249,12 +258,12 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         {
             _dateTime = _tarkovDateTime == EDateTime.CURR ? GameDateTime.Calculate() : GameDateTime.Calculate().AddHours(12.0);
         }
-        GameDateTime = new GameDateTime(GameDateTime.DateTime_0, _dateTime, GameDateTime.TimeFactor, GameDateTime.Boolean_0);
+        GameDateTime = new GameDateTime(GameDateTime.StatedRealDateTime, _dateTime, GameDateTime.TimeFactor, GameDateTime.Debug);
         GameWorld.GameDateTime = GameDateTime;
         if (WeatherController.Instance != null || MonoBehaviourSingleton<TODSkySimple>.Instance != null)
         {
-            GClass4.Instance.CurrentTime.GameDateTime = GameDateTime;
-            var randomTestWeatherNodes = WeatherClass.GetRandomTestWeatherNodes(600, 12);
+            TODSkyProvider.Instance.CurrentTime.GameDateTime = GameDateTime;
+            var randomTestWeatherNodes = WeatherNode.GetRandomTestWeatherNodes(600, 12);
             if (!isRandomWeather)
             {
                 var time = randomTestWeatherNodes[0].Time;
@@ -263,7 +272,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             }
             if (WeatherController.Instance != null)
             {
-                WeatherController.Instance.method_0(randomTestWeatherNodes);
+                WeatherController.Instance.SetWeatherNodes(randomTestWeatherNodes);
             }
         }
     }
@@ -275,16 +284,16 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             .Await();
 
         Status = GameStatus.Running;
-        UnityEngine.Random.InitState((int)EFTDateTimeClass.Now.Ticks);
+        UnityEngine.Random.InitState((int)DateTimeExtensions.Now.Ticks);
 
         await GameController.SetupCoopHandler(this);
         var gameWorld = Singleton<GameWorld>.Instance;
         gameWorld.LocationId = _location.Id;
-        ExfiltrationControllerClass.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
+        ExfiltrationController.Instance.InitAllExfiltrationPoints(_location._Id, _location.exits, _location.SecretExits,
         !GameController.IsServer, _location.DisabledScavExits);
 
         _logger.LogInfo($"Location: {_location.Name}");
-        var instance = Singleton<BackendConfigSettingsClass>.Instance;
+        var instance = Singleton<GlobalConfiguration>.Instance;
 
         GameController.InitShellingController(instance, gameWorld, _location);
         GameController.InitHalloweenEvent(instance, gameWorld, _location);
@@ -299,9 +308,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         Singleton<FikaServer>.Instance.RaidInitialized = true;
 
-        gameWorld.ClientBroadcastSyncController = new ClientBroadcastSyncControllerClass();
+        gameWorld.ClientBroadcastSyncController = new ClientBroadcastSyncController();
 
-        var config = BackendConfigAbstractClass.Config;
+        var config = AppEnvironment.Config;
         if (config.FixedFrameRate > 0f)
         {
             FixedDeltaTime = 1f / config.FixedFrameRate;
@@ -333,15 +342,15 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         Singleton<IBotGame>.Instance.BotsController.CoversData.Patrols.RestoreLoot(location.Loot,
             LocationScene.GetAllObjects<LootableContainer>(false));
-        AirdropEventClass airdropEventClass = new()
+        ServerAirdropManager airdropEventClass = new()
         {
             AirdropParameters = _location.airdropParameters
         };
         airdropEventClass.Init(true);
         (Singleton<GameWorld>.Instance as ClientGameWorld).ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
-        GameWorld.SynchronizableObjectLogicProcessor.Ginterface279_0 = Singleton<FikaServer>.Instance;
+        GameWorld.SynchronizableObjectLogicProcessor.AirdropDataSender = Singleton<FikaServer>.Instance;
 
-        var timeBeforeDeployLocal = Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal;
+        var timeBeforeDeployLocal = Singleton<GlobalConfiguration>.Instance.TimeBeforeDeployLocal;
 #if DEBUG
         timeBeforeDeployLocal = 3;
 #endif
@@ -357,7 +366,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         FikaBackendUtils.GroupPlayers.Clear();
 
-        Singleton<SharedGameSettingsClass>.Instance.Graphics.Controller.ChangeFramerate(true);
+        Singleton<SettingsManager>.Instance.Graphics.Controller.ChangeFramerate(true);
         MonoBehaviourSingleton<EnvironmentUI>.Instance.ShowEnvironment(false);
         MonoBehaviourSingleton<PreloaderUI>.Instance.SetMenuTaskBarVisibility(false);
 
@@ -370,7 +379,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         if (GameController.CoopHandler.HumanPlayers.Count > 0)
         {
             var player = GameController.CoopHandler.HumanPlayers[0];
-            var cameraTransform = CameraClass.Instance.Camera.transform;
+            var cameraTransform = CameraManager.Instance.Camera.transform;
             cameraTransform.SetParent(player.gameObject.transform, false);
             cameraTransform.localPosition = new(0f, 1.7f, 0f);
             cameraTransform.rotation = Quaternion.identity;
@@ -383,11 +392,11 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
     {
         _logger.LogInfo("Running memory cleanup and asset unloading");
 
-        MemoryControllerClass.RunHeapPreAllocation();
-        MemoryControllerClass.Collect(true);
-        MemoryControllerClass.EmptyWorkingSet();
+        InGameMemoryManagement.RunHeapPreAllocation();
+        InGameMemoryManagement.Collect(true);
+        InGameMemoryManagement.EmptyWorkingSet();
 
-        MemoryControllerClass.GCEnabled = false;
+        InGameMemoryManagement.GCEnabled = false;
         Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
         InitializeCameraAndUnloadAssets();
 
@@ -396,8 +405,8 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
     private void InitializeCameraAndUnloadAssets()
     {
-        CameraClass.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
-        CameraClass.Instance.IsActive = true;
+        CameraManager.Instance.SetCameraFromSettings(Singleton<LevelSettings>.Instance);
+        CameraManager.Instance.IsActive = true;
 
         var instance = PerfectCullingAdaptiveGrid.Instance;
         if (instance != null)
@@ -423,12 +432,12 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
         if (Singleton<SpatialAudioSystem>.Instantiated)
         {
-            var sAS = Singleton<SpatialAudioSystem>.Instance;
-            var sASManager = Traverse.Create(sAS).Field<GClass1122>("gclass1122_0").Value;
-            if (sASManager != null)
+            var spatialAudioSystem = Singleton<SpatialAudioSystem>.Instance;
+            var audioRoomStorage = Traverse.Create(spatialAudioSystem).Field<AudioRoomStorage>("_audioRoomStorage").Value;
+            if (audioRoomStorage != null)
             {
-                _logger.LogInfo($"SpatialAudio: Destroying {sASManager.Dictionary_0.Count} rooms");
-                foreach ((var room, var roomList) in sASManager.Dictionary_0)
+                _logger.LogInfo($"SpatialAudio: Destroying {audioRoomStorage._orderedConnections.Count} rooms");
+                foreach ((var room, var roomList) in audioRoomStorage._orderedConnections)
                 {
                     foreach (var rooms in roomList)
                     {
@@ -445,7 +454,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
                 }
             }
             // This calls the Dispose() method
-            GameObject.Destroy(sAS);
+            GameObject.Destroy(spatialAudioSystem);
         }
     }
 
@@ -457,7 +466,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
     private IEnumerator FinishHeadlessRaidSetup(Action complete)
     {
-        yield return new WaitForSeconds(Singleton<BackendConfigSettingsClass>.Instance.TimeBeforeDeployLocal);
+        yield return new WaitForSeconds(Singleton<GlobalConfiguration>.Instance.TimeBeforeDeployLocal);
         (GameController as HeadlessGameController).ActivateBots();
         GameController.SetupEventsAndExfils(null);
         complete?.Invoke();
@@ -468,16 +477,16 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         await GameController.StartBotSystemsAndCountdown(botsSettings, GameWorld);
     }
 
-    private async Task LoadLoot(LocationSettingsClass.Location location)
+    private async Task LoadLoot(LocationSettings.Location location)
     {
-        if (BackendConfigAbstractClass.Config.NoLootForLocalGame)
+        if (AppEnvironment.Config.NoLootForLocalGame)
         {
             foreach (var lootItemPositionClass in location.Loot
-                .Where(new Func<LootItemPositionClass, bool>(IsLootItemContainer))
+                .Where(new Func<JsonLootItem, bool>(IsLootItemContainer))
                 .ToList()
                 )
             {
-                var lootContainerItemClass = lootItemPositionClass.Item as LootContainerItemClass;
+                var lootContainerItemClass = lootItemPositionClass.Item as LootContainer;
                 var grids = lootContainerItemClass.Grids;
                 for (var i = 0; i < grids.Length; i++)
                 {
@@ -492,7 +501,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         }
 
         Item[] array = [.. location.Loot.Select(ItemFromPositionClass)];
-        ResourceKey[] array2 = [.. array.OfType<GClass3248>().GetAllItemsFromCollections()
+        ResourceKey[] array2 = [.. array.OfType<ContainerCollection>().GetAllItemsFromCollections()
             .Concat(array
                 .Where(IsItemSpecialContainer)
             )
@@ -500,7 +509,7 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         if (array2.Length != 0)
         {
             var playerLoopSystem = PlayerLoop.GetCurrentPlayerLoop();
-            GClass660.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out var playerLoopSystem2, out var num);
+            PlayerLoopSystemHelpers.FindParentPlayerLoopSystem(playerLoopSystem, typeof(EarlyUpdate.UpdateTextureStreamingManager), out var playerLoopSystem2, out var num);
             var array3 = new PlayerLoopSystem[playerLoopSystem2.subSystemList.Length];
             if (num != -1)
             {
@@ -513,9 +522,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
                 playerLoopSystem2.subSystemList[num] = playerLoopSystem3;
                 PlayerLoop.SetPlayerLoop(playerLoopSystem);
             }
-            await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid,
-                PoolManagerClass.AssemblyType.Local, array2, JobPriorityClass.General,
-                new GClass1519<LoadingProgressStruct>(HandleProgress, default),
+            await Singleton<ObjectsFactory>.Instance.LoadBundlesAndCreatePools(ObjectsFactory.PoolsCategory.Raid,
+                ObjectsFactory.AssemblyType.Local, array2, JobYieldPriority.General,
+                new SimpleProgress<InitLevelProgress>(HandleProgress, default),
                 default);
             if (num != -1)
             {
@@ -526,11 +535,11 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
             playerLoopSystem2 = default;
             array3 = null;
         }
-        var gclass = GameWorld.method_4(location.Loot);
-        GameWorld.method_5(gclass, true);
+        var questLoot = GameWorld.GetQuestLootReady(location.Loot);
+        GameWorld.SpawnLoot(questLoot, true);
     }
 
-    private void HandleProgress(LoadingProgressStruct p)
+    private void HandleProgress(InitLevelProgress p)
     {
         var progress = p.Stage == InitLevelStage.LoadingBundles
             ? 50f + (p.Progress * 20f)
@@ -555,15 +564,15 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
 
     private bool IsItemSpecialContainer(Item item)
     {
-        return item is not GClass3248;
+        return item is not ContainerCollection;
     }
 
-    public bool IsLootItemContainer(LootItemPositionClass x)
+    public bool IsLootItemContainer(JsonLootItem x)
     {
-        return x.Item is LootContainerItemClass;
+        return x.Item is LootContainer;
     }
 
-    public Item ItemFromPositionClass(LootItemPositionClass x)
+    public Item ItemFromPositionClass(JsonLootItem x)
     {
         return x.Item;
     }
@@ -643,9 +652,9 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         {
             EnvironmentManager.Instance.Stop();
         }
-        BackendConfigAbstractClass.Config.UseSpiritPlayer = false;
+        AppEnvironment.Config.UseSpiritPlayer = false;
 
-        CurrentScreenSingletonClass.Instance.CloseAllScreensForced();
+        EftScreenManager.Instance.CloseAllScreensForced();
 
         CleanUp();
 

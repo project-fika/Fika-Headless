@@ -1,5 +1,6 @@
 ﻿/*using Comfort.Common;
 using EFT;
+using EFT.CameraControl;
 using Fika.Core.Coop.Players;
 using Fika.Headless.Classes;
 using SPT.Reflection.Patching;
@@ -28,7 +29,7 @@ namespace Fika.Headless.Patches
                 raidController.MainPlayer.MovementContext.PitchLimit = new Vector2(-90, -90);
             }
 
-            CameraClass.Instance.SetOcclusionCullingEnabled(false);
+            CameraManager.Instance.SetOcclusionCullingEnabled(false);
         }
     }
 }

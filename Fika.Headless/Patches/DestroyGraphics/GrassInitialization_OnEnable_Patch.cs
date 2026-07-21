@@ -12,10 +12,10 @@ public class LaserBeam_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(LaserBeam __instance, ref Mesh ___mesh_0, ref Mesh ___mesh_1)
+    public static bool Prefix(LaserBeam __instance, ref Mesh ____pointMesh, ref Mesh ____beamMesh)
     {
-        ___mesh_0 = new();
-        ___mesh_1 = new();
+        ____pointMesh = new();
+        ____beamMesh = new();
         Object.Destroy(__instance);
         return false;
     }

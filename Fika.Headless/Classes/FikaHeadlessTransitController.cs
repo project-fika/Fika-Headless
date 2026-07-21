@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using CommonAssets.Scripts.Game;
 using Diz.Utils;
 using EFT;
 using EFT.GlobalEvents;
@@ -10,6 +11,7 @@ using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Communication;
+using JsonType;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,10 +21,10 @@ namespace Fika.Headless.Classes;
 /// <summary>
 /// Transit controller for the <see cref="GameMode.HeadlessGame"/>
 /// </summary>
-public class FikaHeadlessTransitController : TransitControllerAbstractClass
+public class FikaHeadlessTransitController : TransitController
 {
-    public FikaHeadlessTransitController(BackendConfigSettingsClass.TransitSettingsClass settings,
-        LocationSettingsClass.Location.TransitParameters[] parameters,
+    public FikaHeadlessTransitController(GlobalConfiguration.TransitGlobalSettings settings,
+        LocationSettings.Location.TransitParameters[] parameters,
         LocalRaidSettings localRaidSettings)
         : base(settings, parameters)
     {
@@ -98,7 +100,7 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
             _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
             return;
         }
-        Dictionary_0[point.parameters.id].GroupEnter(player);
+        pointsById[point.parameters.id].GroupEnter(player);
     }
 
     private bool method_11(Player player, int pointId, out string keyId)
@@ -127,7 +129,7 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
     private bool method_10(int pointId, out string[] accessKeys)
     {
         accessKeys = null;
-        if (!method_9(Dictionary_0[pointId].parameters.target, out LocationSettingsClass.Location location))
+        if (!method_9(pointsById[pointId].parameters.target, out LocationSettings.Location location))
         {
             return false;
         }
@@ -135,9 +137,9 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
         return accessKeys != null && accessKeys.Length != 0;
     }
 
-    private bool method_9(string locationId, out LocationSettingsClass.Location location)
+    private bool method_9(string locationId, out LocationSettings.Location location)
     {
-        return Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().LocationSettings.locations.TryGetValue(locationId, out location);
+        return Singleton<ClientApplication<IEftSession>>.Instance.GetClientBackEndSession().LocationSettings.locations.TryGetValue(locationId, out location);
     }
 
     private void HeadlessOnPlayerExit(TransitPoint point, Player player)
@@ -219,9 +221,9 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
         _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
     }
 
-    public override void InteractWithTransit(Player player, TransitInteractionPacketStruct packet)
+    public override void InteractWithTransit(Player player, InteractWithTransitPacket packet)
     {
-        TransitPoint point = Dictionary_0[packet.pointId];
+        TransitPoint point = pointsById[packet.pointId];
         if (point == null)
         {
             return;
@@ -234,9 +236,9 @@ public class FikaHeadlessTransitController : TransitControllerAbstractClass
 
         transitPlayers[player.ProfileId] = player.Id;
         profileKeys[player.ProfileId] = packet.keyId;
-        Dictionary_0[packet.pointId].GroupEnter(player);
-        ExfiltrationControllerClass.Instance.BannedPlayers.Add(player.Id);
-        ExfiltrationControllerClass.Instance.CancelExtractionForPlayer(player);
+        pointsById[packet.pointId].GroupEnter(player);
+        ExfiltrationController.Instance.BannedPlayers.Add(player.Id);
+        ExfiltrationController.Instance.CancelExtractionForPlayer(player);
     }
 
     private bool CheckForPlayers(Player player, int pointId)

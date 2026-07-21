@@ -11,9 +11,9 @@ public class DistantShadow_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(DistantShadow __instance, ref RenderTexture[] ___renderTexture_10)
+    public static bool Prefix(DistantShadow __instance, ref RenderTexture[] ____depthRTs)
     {
-        ___renderTexture_10 = [];
+        ____depthRTs = [];
         Object.Destroy(__instance);
         return false;
     }
