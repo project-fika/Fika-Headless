@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -15,9 +15,9 @@ internal class Player_UpdateSurfaceData_Transpiler : ModulePatch
             .GetMethod(nameof(Player.UpdateSurfaceData));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

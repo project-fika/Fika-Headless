@@ -1,4 +1,8 @@
-﻿using SPT.Reflection.Patching;
+﻿using UnityEngine.Audio;
+using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using JsonType;
 using System.Collections.Generic;
@@ -11,12 +15,12 @@ internal class BetterAudio_PlayDropItem2_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayDropItem), [typeof(BaseBallistic.ESurfaceSound), typeof(EItemDropSoundType), typeof(Vector3), typeof(float)]);
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayDropItem), [typeof(BaseBallistic.ESurfaceSound), typeof(string), typeof(Vector3), typeof(float)]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

@@ -1,54 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\Build.props" />
-    
-    <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>disable</Nullable>
-    <DelaySign>True</DelaySign>
-    </PropertyGroup>
 
-    <!-- targets -->
-    <PropertyGroup>
-	    <Configurations>Debug;Release;GoldMaster</Configurations>
-	    <DefineConstants Condition="'$(Configuration)' == 'GoldMaster|AnyCPU' ">TRACE;GOLDMASTER</DefineConstants>
-    </PropertyGroup>
-    
-    <ItemGroup>
-    <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="UnityEngine.Modules" Version="2019.4.39" IncludeAssets="compile" />
-    </ItemGroup>
-    
-    <ItemGroup>
-    <Reference Include="AnimationSystem.Types" HintPath="..\References\AnimationSystem.Types.dll" Private="false" />
-    <Reference Include="Assembly-CSharp" HintPath="..\References\hollowed.dll" Private="false" />
-    <Reference Include="bsg.componentace.compression.libs.zlib" HintPath="..\References\bsg.componentace.compression.libs.zlib.dll" Private="false" />
-    <Reference Include="bsg.console.core" HintPath="..\References\bsg.console.core.dll" Private="false" />
-    <Reference Include="bsg.unity.wires" HintPath="..\References\BSG.Unity.Wires.dll" Private="false" />
-    <Reference Include="Comfort" HintPath="..\References\Comfort.dll" Private="false" />
-    <Reference Include="Comfort.Unity" HintPath="..\References\Comfort.Unity.dll" Private="false" />
-    <Reference Include="CommonExtensions" HintPath="..\References\CommonExtensions.dll" Private="false" />
-    <Reference Include="DissonanceVoip" HintPath="..\References\DissonanceVoip.dll" Private="false" />
-    <Reference Include="Fika.Core" HintPath="..\References\Fika.Core.dll" Private="false" />
-    <Reference Include="ItemComponent.Types" HintPath="..\References\ItemComponent.Types.dll" Private="false" />
-    <Reference Include="Newtonsoft.Json" HintPath="..\References\Newtonsoft.Json.dll" Private="false" />
-    <Reference Include="Sirenix.Serialization" HintPath="..\References\Sirenix.Serialization.dll" Private="false" />
-    <Reference Include="spt-common" HintPath="..\References\spt-common.dll" Private="false" />
-    <Reference Include="spt-core" HintPath="..\References\spt-core.dll" Private="false" />
-    <Reference Include="spt-custom" HintPath="..\References\spt-custom.dll" Private="false" />
-    <Reference Include="spt-debugging" HintPath="..\References\spt-debugging.dll" Private="false" />
-    <Reference Include="spt-reflection" HintPath="..\References\spt-reflection.dll" Private="false" />
-    <Reference Include="spt-singleplayer" HintPath="..\References\spt-singleplayer.dll" Private="false" />
-    <Reference Include="Unity.Postprocessing.Runtime" HintPath="..\References\Unity.Postprocessing.Runtime.dll" Private="false" />
-    <Reference Include="Unity.TextMeshPro" HintPath="..\References\Unity.TextMeshPro.dll" Private="false" />
-    <Reference Include="UnityEngine" HintPath="..\References\UnityEngine.dll" Private="false" />
-    <Reference Include="UnityEngine.UI" HintPath="..\References\UnityEngine.UI.dll" Private="false" />
-    <Reference Include="websocket-sharp" HintPath="..\References\websocket-sharp.dll" Private="false" />
-	<Reference Include="com.nvidia.reflex.Runtime" HintPath="..\References\com.nvidia.reflex.Runtime.dll" Private="false" />
-    </ItemGroup>
+	<Import Project="..\Build.props" />
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
-	    <Exec Command="call ../Properties/build/postbuild-core.bat &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;" />
-	    <!--<Exec Condition=" '$(Configuration)|$(Platform)' == 'GoldMaster|AnyCPU' " Command="call ../Properties/build/goldmaster-core.bat" />-->
-    </Target>
-	
+	<PropertyGroup>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Nullable>disable</Nullable>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+
+	<!-- targets -->
+	<PropertyGroup>
+		<Configurations>Debug;Release;GoldMaster</Configurations>
+		<DefineConstants Condition="'$(Configuration)' == 'GoldMaster|AnyCPU' ">TRACE;GOLDMASTER</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='GoldMaster'">
+		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+		<Optimize>true</Optimize>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="$(BepInExCore)/BepInEx.Core.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/BepInEx.Unity.IL2CPP.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/BepInEx.Unity.Common.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/0Harmony.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/SemanticVersioning.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/Il2CppInterop.Common.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/Il2CppInterop.Runtime.dll" Private="false" />
+		<Reference Include="$(BepInExCore)/Il2CppInterop.HarmonySupport.dll" Private="false" />
+		<Reference Include="$(Interop)/*.dll" Exclude="$(Interop)/__Generated.dll" Private="false" />
+		<Reference Include="$(SptPlugins)/SPTushonka.*.dll" Private="false" />
+		<Reference Include="$(FikaPlugins)/Fika.Core.dll" Private="false" />
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
+		<Exec Condition=" '$(Configuration)|$(Platform)' != 'GoldMaster|AnyCPU' " Command="call ../Properties/build/postbuild-core.bat &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;" />
+	</Target>
+
 </Project>

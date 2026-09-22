@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,9 +13,9 @@ internal class BetterAudio_AddToAudioSourceQueue_Transpiler : ModulePatch
         return typeof(BetterAudio).GetMethod(nameof(BetterAudio.AddToAudioSourceQueue));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new CodeInstruction(OpCodes.Ret);
+        return false;
     }
 }

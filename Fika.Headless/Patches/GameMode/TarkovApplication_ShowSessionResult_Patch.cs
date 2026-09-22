@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -14,7 +14,7 @@ internal class TarkovApplication_ShowSessionResult_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result, TarkovApplication __instance)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result, TarkovApplication __instance)
     {
         __result = __instance.ComebackToMainMenu();
         return false;

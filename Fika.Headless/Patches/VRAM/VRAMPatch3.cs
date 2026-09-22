@@ -1,5 +1,5 @@
 ﻿using EFT.CameraControl;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.VRAM;
@@ -15,8 +15,11 @@ public class VRAMPatch3 : ModulePatch
 
     // Token: 0x06000021 RID: 33 RVA: 0x000024E4 File Offset: 0x000006E4
     [PatchPrefix]
-    public static bool Prefix()
+    public static bool Prefix(ref ulong totalVRam, ref ulong localBudget, ref ulong localCurrentUsage)
     {
+        totalVRam = 0;
+        localBudget = 0;
+        localCurrentUsage = 0;
         return false;
     }
 }

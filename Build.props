@@ -1,26 +1,10 @@
-
 <Project>
 
 	<!-- csharp version -->
 	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
-
-	<!-- assembly signing --><!--
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'GoldMaster|AnyCPU' ">
-		<SignAssembly>true</SignAssembly>
-		<DelaySign>true</DelaySign>
-		<AssemblyOriginatorKeyFile>../Properties/signing/public.snk</AssemblyOriginatorKeyFile>
-		<NoWarn>$(NoWarn);CS8002</NoWarn>
-	</PropertyGroup>
-
-	--><!-- assembly versioning --><!--
-	<PropertyGroup>
-		<AssemblyVersion>0.9.*</AssemblyVersion>
-		<Deterministic>false</Deterministic>
-		<NoWarn>$(NoWarn);CS7035</NoWarn>
-	</PropertyGroup>-->
 
 	<!-- use author info from AssemblyInfo.cs -->
 	<PropertyGroup>
@@ -29,5 +13,13 @@
 	<ItemGroup>
 		<Compile Include="../Properties/AssemblyInfo.cs" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<GameDir Condition="'$(GameDir)' == ''">D:/SPT-5.0.0/DEV</GameDir>
+		<BepInExCore>$(GameDir)/BepInEx/core</BepInExCore>
+		<Interop>$(GameDir)/BepInEx/interop</Interop>
+		<SptPlugins>$(GameDir)/BepInEx/plugins/sptushonka</SptPlugins>
+		<FikaPlugins>$(GameDir)/BepInEx/plugins/Fika</FikaPlugins>
+	</PropertyGroup>
 
 </Project>

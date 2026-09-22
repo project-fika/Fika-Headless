@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DLSS;
@@ -9,14 +9,9 @@ public class DLSSPatch4 : ModulePatch
     // Token: 0x06000014 RID: 20 RVA: 0x00002318 File Offset: 0x00000518
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(DLSSWrapper).GetConstructor(
-        [
-            typeof(Material),
-            typeof(Material)
-        ]);
+        return typeof(SSAAImpl).GetMethod(nameof(SSAAImpl.Awake));
     }
 
-    // Token: 0x06000015 RID: 21 RVA: 0x00002359 File Offset: 0x00000559
     [PatchPostfix]
     public static void Postfix(SSAAImpl __instance)
     {

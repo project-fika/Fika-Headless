@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -18,9 +18,9 @@ public class BotStandBy_Update_Transpiler : ModulePatch
             .GetMethod(nameof(BotStandBy.Update));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

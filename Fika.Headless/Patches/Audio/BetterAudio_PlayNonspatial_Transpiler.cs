@@ -1,4 +1,8 @@
-﻿using SPT.Reflection.Patching;
+﻿using UnityEngine.Audio;
+using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,12 +14,12 @@ internal class BetterAudio_PlayNonspatial_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayNonspatial));
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayNonspatial), [typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(float), typeof(float), typeof(AudioMixerGroup), typeof(bool), typeof(bool)]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new CodeInstruction(OpCodes.Ret);
+        return false;
     }
 }

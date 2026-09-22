@@ -1,6 +1,6 @@
 ﻿/*using EFT;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -15,17 +15,10 @@ namespace Fika.Headless.Patches.Audio
                 [typeof(BetterAudio.AudioSourceGroupType), typeof(bool)]);
         }
 
-        [PatchTranspiler]
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        [PatchPrefix]
+        public static bool Prefix()
         {
-            // Create a new set of instructions
-            List<CodeInstruction> instructionsList =
-            [
-                new CodeInstruction(OpCodes.Ldnull), // Push null to stack
-                new CodeInstruction(OpCodes.Ret) // Return immediately
-            ];
-
-            return instructionsList;
+            return false;
         }
     }
 }

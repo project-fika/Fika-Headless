@@ -1,5 +1,5 @@
 ﻿using CustomPlayerLoopSystem;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -17,9 +17,9 @@ internal class CustomPlayerLoopSystemsInjector_Injection_Patch : ModulePatch
         return typeof(CustomPlayerLoopSystemsInjector).GetMethod(nameof(CustomPlayerLoopSystemsInjector.Injection));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new CodeInstruction(OpCodes.Ret);
+        return false;
     }
 }

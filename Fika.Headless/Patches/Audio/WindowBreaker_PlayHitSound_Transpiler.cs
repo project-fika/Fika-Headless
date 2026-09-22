@@ -1,5 +1,5 @@
 ﻿using EFT.Interactive;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -15,9 +15,9 @@ internal class WindowBreaker_PlayHitSound_Transpiler : ModulePatch
             .GetMethod(nameof(WindowBreaker.PlayHitSound));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

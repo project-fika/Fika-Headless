@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,9 +13,9 @@ internal class BetterAudio_StartTinnitusEffect_Transpiler : ModulePatch
         return typeof(BetterAudio).GetMethod(nameof(BetterAudio.StartTinnitusEffect));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

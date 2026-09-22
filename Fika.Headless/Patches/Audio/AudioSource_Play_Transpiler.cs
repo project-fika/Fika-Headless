@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +16,9 @@ public class AudioSource_Play_Transpiler : ModulePatch
             .SingleOrDefault(x => x.Name == "Play" && x.GetParameters().Length == 0);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

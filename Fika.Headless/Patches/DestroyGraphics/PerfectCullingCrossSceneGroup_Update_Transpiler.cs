@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using Koenigz.PerfectCulling.EFT;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ internal class PerfectCullingCrossSceneGroup_Update_Transpiler : ModulePatch
         return typeof(PerfectCullingCrossSceneGroup).GetMethod(nameof(PerfectCullingCrossSceneGroup.Update));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

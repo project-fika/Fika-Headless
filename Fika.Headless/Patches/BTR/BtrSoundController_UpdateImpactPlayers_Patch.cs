@@ -1,6 +1,6 @@
 ﻿using Audio.NPC.BtrDriver;
 using Audio.Vehicles.BTR;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.BTR;
@@ -15,11 +15,10 @@ public class BtrSoundController_UpdateImpactPlayers_Patch : ModulePatch
         return typeof(BtrSoundController)
             .GetMethod(nameof(BtrSoundController.Update));
     }
-
+    
     [PatchPrefix]
-    public static bool Prefix(IPhraseController ____phraseController)
+    public static bool Prefix()
     {
-        ____phraseController.ManualUpdate(0F);
         return false;
     }
 }

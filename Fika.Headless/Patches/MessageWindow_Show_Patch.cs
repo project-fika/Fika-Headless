@@ -1,5 +1,5 @@
 ﻿using EFT.UI;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches;
@@ -13,7 +13,9 @@ public class MessageWindow_Show_Patch : ModulePatch
             [typeof(string),
             typeof(string),
             typeof(bool),
-            typeof(float)]);
+            typeof(float),
+            typeof(bool),
+            typeof(bool)]);
     }
 
     [PatchPostfix]

@@ -1,6 +1,6 @@
 ﻿using EFT;
 using Fika.Core.Main.Players;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using Fika.Headless.Classes;
 using System.Reflection;
 
@@ -20,8 +20,8 @@ public class CoopPlayer_CreateMovementContext_Patch : ModulePatch
         if (__instance.IsYourPlayer)
         {
             LayerMask localMask = EFTHardSettings.Instance.MOVEMENT_MASK;
-            __instance.MovementContext = HeadlessClientMovementContext.Create(__instance, __instance.GetBodyAnimatorCommon,
-                __instance.GetCharacterControllerCommon, localMask);
+            __instance.MovementContext = HeadlessClientMovementContext.Create(__instance,
+                new System.Func<ICharacterController>(__instance.GetCharacterControllerCommon), localMask);
 
             return false;
         }

@@ -3,7 +3,7 @@ using EFT;
 using EFT.CameraControl;
 using Fika.Core.Coop.Players;
 using Fika.Headless.Classes;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 

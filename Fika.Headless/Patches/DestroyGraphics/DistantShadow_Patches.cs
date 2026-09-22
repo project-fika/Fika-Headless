@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
@@ -11,9 +11,8 @@ public class DistantShadow_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(DistantShadow __instance, ref RenderTexture[] ____depthRTs)
+    public static bool Prefix(DistantShadow __instance)
     {
-        ____depthRTs = [];
         Object.Destroy(__instance);
         return false;
     }

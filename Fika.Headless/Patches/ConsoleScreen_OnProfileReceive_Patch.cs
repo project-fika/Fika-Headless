@@ -1,7 +1,7 @@
 ﻿using EFT;
 using EFT.UI;
-using SPT.Custom.Utils;
-using SPT.Reflection.Patching;
+using SPTushonka.Custom.Utils;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -39,7 +39,7 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
             FikaHeadlessPlugin.Instance.CanHost = true;
             FikaHeadlessPlugin.Instance.OnReady();
 
-            _ = Task.Run(FikaHeadlessPlugin.Instance.RunPluginValidation);
+            _ = FikaHeadlessPlugin.Instance.RunPluginValidation();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using EFT.Tripwire;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -15,9 +15,9 @@ internal class TripwireSoundController_PlayFuzeSound_Transpiler : ModulePatch
             .GetMethod(nameof(TripwireSoundController.PlayFuzeSound));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new CodeInstruction(OpCodes.Ret);
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -15,10 +15,10 @@ public class SeasonsController_Run_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(SeasonsController __instance, ref Task __result, ref SeasonsController.IState ____state)
+    public static bool Prefix(SeasonsController __instance, ref Il2CppSystem.Threading.Tasks.Task __result)
     {
-        ____state = new SeasonsController.StateSpring(__instance);
-        __result = Task.CompletedTask;
+        __instance._state = new SeasonsController.StateSpring(__instance);
+        __result = Il2CppSystem.Threading.Tasks.Task.CompletedTask;
         return false;
     }
 }

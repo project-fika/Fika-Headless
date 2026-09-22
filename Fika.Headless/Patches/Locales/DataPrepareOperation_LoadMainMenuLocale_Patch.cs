@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -9,15 +9,15 @@ public class DataPrepareOperation_LoadMainMenuLocale_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(DataPrepareOperation)
-            .GetMethod(nameof(DataPrepareOperation.LoadMainMenuLocale));
+        return typeof(LocalizationLoader)
+            .GetMethod(nameof(LocalizationLoader.LoadMainMenuLocale));
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result)
     {
         LocalizationManager.Instance.UpdateApplicationLanguage();
-        __result = Task.CompletedTask;
+        __result = Il2CppSystem.Threading.Tasks.Task.CompletedTask;
         return false;
     }
 }

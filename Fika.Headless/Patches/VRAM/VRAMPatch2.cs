@@ -1,6 +1,6 @@
 ﻿using EFT.CameraControl;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System;
 using System.Reflection;
 
@@ -21,13 +21,8 @@ public class VRAMPatch2 : ModulePatch
     {
         __instance.Reset();
         __instance.Camera = camera;
-        __instance.SetOcclusionCullingEnabled(false);
-        __instance.method_2();
-        Action action = Traverse.Create(__instance).Field<Action>("action_1").Value;
-        if (action != null)
-        {
-            action();
-        }
+        __instance.InitCamera();
+        __instance.OnCameraChangedField?.Invoke();
         return false;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using EFT;
 using EFT.Settings;
 using EFT.Settings.Graphics;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -16,9 +16,9 @@ public class SettingsPatch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result)
     {
-        __result = FikaHeadlessSettingsManager.Initalize();
+        __result = FikaHeadlessSettingsManager.Initalize().ToIl2Cpp();
         return false;
     }
 }
@@ -50,7 +50,6 @@ public static class FikaHeadlessSettingsManager
         FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Setting graphics and volume");
 
         await gameSettings.Sound.Settings.OverallVolume.SetValue(0);
-        await gameSettings.Sound.Settings.BinauralSound.SetValue(false);
         await gameSettings.Sound.Settings.VoipEnabled.SetValue(false);
 
         GraphicsSettingsController.MinFramerateLimit = 1;
@@ -71,14 +70,13 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Graphics.Settings.Noise.SetValue(false);
         await gameSettings.Graphics.Settings.ZBlur.SetValue(false);
         await gameSettings.Graphics.Settings.HighQualityColor.SetValue(false);
-        await gameSettings.Graphics.Settings.MipStreaming.SetValue(false);
         await gameSettings.Graphics.Settings.SdTarkovStreets.SetValue(true);
         await gameSettings.Graphics.Settings.DLSSMode.SetValue(EDLSSMode.Off);
         await gameSettings.Graphics.Settings.DLSSPreset.SetValue(EDLSSPreset.Default);
         await gameSettings.Graphics.Settings.FSR2Mode.SetValue(EFSR2Mode.Off);
         await gameSettings.Graphics.Settings.FSR3Mode.SetValue(EFSR3Mode.Off);
         await gameSettings.Graphics.Settings.CloudsQuality.SetValue(CloudsMode.Low);
-        await gameSettings.Graphics.Settings.VolumetricLight.SetValue(false);
+        await gameSettings.Graphics.Settings.VolumetricLight.SetValue(ESSRMode.Off);
 
         await gameSettings.Graphics.Settings.LobbyFramerate.SetValue(30);
         await gameSettings.Graphics.Settings.GameFramerate.SetValue(FikaHeadlessPlugin.UpdateRate.Value);
@@ -86,9 +84,10 @@ public static class FikaHeadlessSettingsManager
         await gameSettings.Game.Settings.EnableHideoutPreload.SetValue(false);
         await gameSettings.Game.Settings.Language.SetValue("en");
 
+        EftResolution resolution = new(1024, 768);
         await gameSettings.Graphics.Settings.DisplaySettings.SetValue(new()
         {
-            AspectRatio = EFTAspectHelper.SuitableAspectRatio(new(1024, 768)),
+            AspectRatio = EFTAspectHelper.SuitableAspectRatio(ref resolution),
             Display = 0,
             FullScreenMode = FullScreenMode.Windowed,
             Resolution = new(1024, 768)

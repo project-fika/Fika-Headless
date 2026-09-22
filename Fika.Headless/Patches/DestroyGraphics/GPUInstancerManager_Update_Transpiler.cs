@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using GPUInstancer;
 using HarmonyLib;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ public class GPUInstancerManager_Update_Transpiler : ModulePatch
         return typeof(GPUInstancerManager).GetMethod(nameof(GPUInstancerManager.Update));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

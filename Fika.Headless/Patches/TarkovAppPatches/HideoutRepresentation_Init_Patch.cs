@@ -1,5 +1,6 @@
-﻿using EFT.Hideout;
-using SPT.Reflection.Patching;
+﻿using EFT;
+using EFT.Hideout;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -13,13 +14,13 @@ public class HideoutRepresentation_Init_Patch : ModulePatch
     protected override MethodBase GetTargetMethod()
     {
         return typeof(HideoutRepresentation)
-            .GetMethod(nameof(HideoutRepresentation.Init));
+            .GetMethod(nameof(HideoutRepresentation.Init), [typeof(IEftSession)]);
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result)
     {
-        __result = Task.CompletedTask;
+        __result = Il2CppSystem.Threading.Tasks.Task.CompletedTask;
         return false;
     }
 }

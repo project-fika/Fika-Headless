@@ -1,6 +1,5 @@
 ﻿using NVIDIA;
-using SPT.Reflection.Patching;
-using System.Linq;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.ReflexPatches;
@@ -9,9 +8,8 @@ public class ReflexHelper_IsReflexAvailable_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ReflexHelper).
-            GetMethods().
-            FirstOrDefault(x => x.GetParameters().Length == 1);
+        return typeof(ReflexHelper).GetMethod(nameof(ReflexHelper.IsReflexAvailable),
+            [typeof(Reflex.NvReflex_Status).MakeByRefType()]);
     }
 
     [PatchPrefix]

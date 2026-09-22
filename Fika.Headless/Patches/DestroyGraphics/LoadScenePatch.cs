@@ -1,8 +1,9 @@
 ﻿using BSG.Unity.Wires;
 using EFT.Interactive;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System;
+using TMPro;
 using System.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
@@ -22,12 +23,16 @@ public class LoadScenePatch : ModulePatch
         GameObject tempGameObject = new("SceneModificationHandler");
         SceneModificationHandler handler = tempGameObject.AddComponent<SceneModificationHandler>();
 
-        handler.StartCoroutine(handler.WaitForSceneLoad(sceneName, __result));
+        handler.StartCoroutine(handler.WaitForSceneLoad(sceneName, __result).ToIl2Cpp());
     }
 }
 
 public class SceneModificationHandler : MonoBehaviour
 {
+    public SceneModificationHandler(IntPtr pointer) : base(pointer)
+    {
+    }
+
     public IEnumerator WaitForSceneLoad(string sceneName, AsyncOperation operation)
     {
         // Wait for the scene to finish loading
@@ -86,11 +91,16 @@ public class SceneModificationHandler : MonoBehaviour
 
         foreach (Renderer renderer in renderers)
         {
+            if (renderer.GetComponent<TMP_Text>() != null)
+            {
+                continue;
+            }
+
             // Check for protected components we absolutely cannot unload, these would break the game someway or another.
             bool hasProtectedRenderer = false;
             foreach (Type componentType in _protectedComponents)
             {
-                if (renderer.gameObject.GetComponent(componentType) != null || renderer.gameObject.name.ToLower().Contains("door") || renderer.gameObject.name.ToLower().Contains("glass"))
+                if (renderer.gameObject.GetComponent(componentType.ToIl2Cpp()) != null || renderer.gameObject.name.ToLower().Contains("door") || renderer.gameObject.name.ToLower().Contains("glass"))
                 {
                     hasProtectedRenderer = true;
                     break;
@@ -102,7 +112,7 @@ public class SceneModificationHandler : MonoBehaviour
             {
                 if (material != null)
                 {
-                    if (material.name.ToLower().Contains("glass"))
+                    if (material.name.ToLower().Contains("glass") || (material.shader != null && material.shader.name.StartsWith("TextMeshPro")))
                     {
                         continue;
                     }

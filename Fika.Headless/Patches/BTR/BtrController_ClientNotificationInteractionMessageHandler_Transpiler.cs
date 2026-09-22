@@ -1,6 +1,6 @@
 ﻿using EFT.Vehicle;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -18,9 +18,9 @@ public class BtrController_ClientNotificationInteractionMessageHandler_Transpile
             .GetMethod(nameof(BtrController.ClientNotificationInteractionMessageHandler));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

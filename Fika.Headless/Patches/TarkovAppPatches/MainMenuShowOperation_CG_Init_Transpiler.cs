@@ -1,10 +1,7 @@
-﻿using EFT;
-using HarmonyLib;
-using SPT.Reflection.Patching;
-using System.Collections.Generic;
-using System.Linq;
+using EFT.Hideout;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.TarkovAppPatches;
 
@@ -15,20 +12,12 @@ public class MainMenuShowOperation_CG_Init_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(MainMenuShowOperation.CG_Init)
-            .GetMethod(nameof(MainMenuShowOperation.CG_Init.MoveNext), BindingFlags.NonPublic | BindingFlags.Instance);
+        return typeof(HideoutRepresentation).GetMethod(nameof(HideoutRepresentation.SetupControllers));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        var instr = instructions
-            .ToList();
-
-        // remove the code the sets the hideout inventory
-        instr[650].opcode = OpCodes.Nop;
-        instr[650].operand = null;
-
-        return instr;
+        return false;
     }
 }

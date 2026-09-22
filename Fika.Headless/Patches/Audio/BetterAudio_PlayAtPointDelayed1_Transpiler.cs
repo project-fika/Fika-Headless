@@ -1,4 +1,7 @@
-﻿using SPT.Reflection.Patching;
+﻿using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,15 +14,12 @@ internal class BetterAudio_PlayAtPointDelayed1_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPointDelayed),
-            [typeof(Vector3), typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(int), typeof(float),
-            typeof(float), typeof(EOcclusionTest), typeof(AudioMixerGroup), typeof(bool), typeof(bool)]);
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPointDelayed), [typeof(Vector3), typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(int), typeof(float), typeof(PlayOptions).MakeByRefType()]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ldnull);
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

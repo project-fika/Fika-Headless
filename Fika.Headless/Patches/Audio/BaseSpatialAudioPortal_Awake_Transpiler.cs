@@ -1,5 +1,5 @@
 ﻿using Audio.SpatialSystem;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,9 +14,9 @@ internal class BaseSpatialAudioPortal_Awake_Transpiler : ModulePatch
         return typeof(BaseSpatialAudioPortal).GetMethod(nameof(BaseSpatialAudioPortal.Awake));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

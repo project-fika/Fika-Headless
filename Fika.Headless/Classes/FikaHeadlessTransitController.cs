@@ -1,20 +1,20 @@
-﻿using Comfort.Common;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comfort.Common;
 using CommonAssets.Scripts.Game;
-using Diz.Utils;
 using EFT;
 using EFT.GlobalEvents;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Components;
-using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Communication;
+using Il2CppInterop.Runtime.Injection;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using JsonType;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.Classes;
 
@@ -23,17 +23,26 @@ namespace Fika.Headless.Classes;
 /// </summary>
 public class FikaHeadlessTransitController : TransitController
 {
-    public FikaHeadlessTransitController(GlobalConfiguration.TransitGlobalSettings settings,
-        LocationSettings.Location.TransitParameters[] parameters,
-        LocalRaidSettings localRaidSettings)
-        : base(settings, parameters)
+    public FikaHeadlessTransitController(IntPtr pointer) : base(pointer)
     {
+    }
+
+    public FikaHeadlessTransitController(TransitGlobalSettings settings, Il2CppReferenceArray<LocationSettings.Location.TransitParameters> parameters,
+        LocalRaidSettings localRaidSettings) : base(Il2CppInjection.Allocate<FikaHeadlessTransitController>())
+    {
+        ClassInjector.DerivedConstructorBody(this);
+        _server = Singleton<FikaServer>.Instance;
+        _playersInTransitZone = [];
+        _transittedPlayers = [];
+        ClassInjector.InvokeBaseConstructor<TransitController>(this, settings, parameters);
         _localRaidSettings = localRaidSettings;
         IsEvent = localRaidSettings.transitionType.HasFlagNoBox(ELocationTransition.Event);
 
         TransferItemsController.InitItemControllerServer(FikaGlobals.TransitTraderId, FikaGlobals.TransitTraderName);
-        OnPlayerEnter += HeadlessOnPlayerEnter;
-        OnPlayerExit += HeadlessOnPlayerExit;
+        _onHeadlessPlayerEnter = new Action<TransitPoint, Player>(HeadlessOnPlayerEnter);
+        _onHeadlessPlayerExit = new Action<TransitPoint, Player>(HeadlessOnPlayerExit);
+        OnPlayerEnter += _onHeadlessPlayerEnter;
+        OnPlayerExit += _onHeadlessPlayerExit;
     }
 
     public bool IsEvent { get; }
@@ -42,15 +51,17 @@ public class FikaHeadlessTransitController : TransitController
     {
         get
         {
-            return _localRaidSettings; 
+            return _localRaidSettings;
         }
     }
 
     private readonly LocalRaidSettings _localRaidSettings;
-    private readonly FikaServer _server = Singleton<FikaServer>.Instance;
-    private readonly Dictionary<Player, int> _playersInTransitZone = [];
+    private readonly FikaServer _server;
+    private readonly Il2CppSystem.Action<TransitPoint, Player> _onHeadlessPlayerEnter;
+    private readonly Il2CppSystem.Action<TransitPoint, Player> _onHeadlessPlayerExit;
+    private readonly Dictionary<Player, int> _playersInTransitZone;
     private bool _headlessTransit;
-    private readonly List<int> _transittedPlayers = [];
+    private readonly List<int> _transittedPlayers;
     private string _usedPoint;
 
     public int AliveTransitPlayers
@@ -67,7 +78,7 @@ public class FikaHeadlessTransitController : TransitController
         FikaGlobals.LogInfo($"{player.Profile.Info.Nickname} entered transit point {point.Description}");
 #endif
 
-        if (!method_11(player, point.parameters.id, out string _))
+        if (!TryGetAccessToLocation(player, point.parameters.id, out _))
         {
 #if DEBUG
             FikaGlobals.LogWarning("Player is not eligible for this transit point");
@@ -82,16 +93,18 @@ public class FikaHeadlessTransitController : TransitController
 
         if (!transitPlayers.ContainsKey(player.ProfileId))
         {
-            if (player is FikaPlayer coopPlayer)
+            var fikaPlayer = player.TryCast<FikaPlayer>();
+            if (fikaPlayer != null)
             {
-                coopPlayer.UpdateBtrTraderServiceData().HandleExceptions();
+                fikaPlayer.UpdateBtrTraderServiceData().HandleExceptions();
             }
+
             TransitEventPacket packet = new()
             {
                 EventType = TransitEventPacket.ETransitEventType.Interaction,
                 TransitEvent = new TransitInteractionEvent()
                 {
-                    PlayerId = player.Id,
+                    PlayerRaidId = player.RaidId,
                     PointId = point.parameters.id,
                     Type = TransitInteractionEvent.EType.Show
                 }
@@ -100,46 +113,51 @@ public class FikaHeadlessTransitController : TransitController
             _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
             return;
         }
+
         pointsById[point.parameters.id].GroupEnter(player);
     }
 
-    private bool method_11(Player player, int pointId, out string keyId)
+    private bool TryGetAccessToLocation(Player player, int pointId, out string keyId)
     {
         keyId = string.Empty;
-        if (!method_10(pointId, out var accessKeys))
+        if (!TryGetAccessRequirements(pointId, out var requirements))
         {
             return true;
         }
+
         if (player.Side == EPlayerSide.Savage)
         {
             return false;
         }
-        IEnumerable<Item> playerItems = player.InventoryController.Inventory.GetPlayerItems(EPlayerItems.Equipment);
-        Item item = playerItems?
-            .Where(item => player.InventoryController.Examined(item) && accessKeys.Contains(item.StringTemplateId))
-            .FirstOrDefault();
-        if (item == null)
+
+        var profile = player.Profile;
+        var items = profile.Inventory.GetPlayerItems(EPlayerItems.Equipment);
+        if (!LocationAccessRequirementsUtility.TryFindSatisfiedRequirement(items, requirements, new Func<Item, bool>(profile.Examined),
+            out var item, out _, out _) || item == null)
         {
             return false;
         }
+
         keyId = item.Id;
         return true;
     }
 
-    private bool method_10(int pointId, out string[] accessKeys)
+    private bool TryGetAccessRequirements(int pointId, out Il2CppSystem.Collections.Generic.IReadOnlyDictionary<string, int> requirements)
     {
-        accessKeys = null;
-        if (!method_9(pointsById[pointId].parameters.target, out LocationSettings.Location location))
+        requirements = null;
+        if (!TarkovApplication.Exist(out var tarkovApplication))
         {
             return false;
         }
-        accessKeys = ((location != null) ? location.AccessKeys : null);
-        return accessKeys != null && accessKeys.Length != 0;
-    }
 
-    private bool method_9(string locationId, out LocationSettings.Location location)
-    {
-        return Singleton<ClientApplication<IEftSession>>.Instance.GetClientBackEndSession().LocationSettings.locations.TryGetValue(locationId, out location);
+        var session = tarkovApplication.Session;
+        if (!session.LocationSettings.locations.TryGetValue(pointsById[pointId].parameters.target, out var location) || location == null)
+        {
+            return false;
+        }
+
+        requirements = location.GetAccessRequirements(session.GameMode, LocationSettings.Location.EAccessUsageType.Transit);
+        return requirements != null && requirements.Count > 0;
     }
 
     private void HeadlessOnPlayerExit(TransitPoint point, Player player)
@@ -148,7 +166,7 @@ public class FikaHeadlessTransitController : TransitController
         FikaGlobals.LogInfo($"{player.Profile.Info.Nickname} left transit point {point.Description}");
 #endif
 
-        if (_playersInTransitZone.TryGetValue(player, out int value))
+        if (_playersInTransitZone.TryGetValue(player, out var value))
         {
             if (value == point.parameters.id)
             {
@@ -166,7 +184,7 @@ public class FikaHeadlessTransitController : TransitController
             EventType = TransitEventPacket.ETransitEventType.Interaction,
             TransitEvent = new TransitInteractionEvent()
             {
-                PlayerId = player.Id,
+                PlayerRaidId = player.RaidId,
                 PointId = point.parameters.id,
                 Type = TransitInteractionEvent.EType.Hide
             }
@@ -175,7 +193,6 @@ public class FikaHeadlessTransitController : TransitController
         _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
     }
 
-
     public override void InactivePointNotification(int playerId, int pointId)
     {
         TransitEventPacket packet = new()
@@ -183,7 +200,7 @@ public class FikaHeadlessTransitController : TransitController
             EventType = TransitEventPacket.ETransitEventType.Interaction,
             TransitEvent = new TransitInteractionEvent()
             {
-                PlayerId = playerId,
+                PlayerRaidId = playerId,
                 PointId = pointId,
                 Type = TransitInteractionEvent.EType.InactivePoint
             }
@@ -192,13 +209,15 @@ public class FikaHeadlessTransitController : TransitController
         _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
     }
 
-    public override void Sizes(Dictionary<int, byte> sizes)
+    public override void Sizes(int pointId, Il2CppSystem.Collections.Generic.Dictionary<int, byte> sizes)
     {
+        _currentTransitPointId = pointId;
         TransitEventPacket packet = new()
         {
             EventType = TransitEventPacket.ETransitEventType.GroupSize,
             TransitEvent = new TransitGroupSizeEvent()
             {
+                PointId = pointId,
                 Sizes = sizes
             }
         };
@@ -206,7 +225,7 @@ public class FikaHeadlessTransitController : TransitController
         _server.SendData(ref packet, DeliveryMethod.ReliableOrdered);
     }
 
-    public override void Timers(int pointId, Dictionary<int, ushort> timers)
+    public override void Timers(int pointId, Il2CppSystem.Collections.Generic.Dictionary<int, ushort> timers)
     {
         TransitEventPacket packet = new()
         {
@@ -223,8 +242,13 @@ public class FikaHeadlessTransitController : TransitController
 
     public override void InteractWithTransit(Player player, InteractWithTransitPacket packet)
     {
-        TransitPoint point = pointsById[packet.pointId];
+        var point = pointsById[packet.pointId];
         if (point == null)
+        {
+            return;
+        }
+
+        if (transitPlayers.ContainsKey(player.ProfileId))
         {
             return;
         }
@@ -239,21 +263,34 @@ public class FikaHeadlessTransitController : TransitController
         pointsById[packet.pointId].GroupEnter(player);
         ExfiltrationController.Instance.BannedPlayers.Add(player.Id);
         ExfiltrationController.Instance.CancelExtractionForPlayer(player);
+
+        TransitEventPacket confirmPacket = new()
+        {
+            EventType = TransitEventPacket.ETransitEventType.Interaction,
+            TransitEvent = new TransitInteractionEvent()
+            {
+                PlayerRaidId = player.RaidId,
+                PointId = packet.pointId,
+                Type = TransitInteractionEvent.EType.Confirm
+            }
+        };
+
+        _server.SendData(ref confirmPacket, DeliveryMethod.ReliableOrdered);
     }
 
     private bool CheckForPlayers(Player player, int pointId)
     {
-        int humanPlayers = 0;
-        foreach (FikaPlayer coopPlayer in Singleton<IFikaNetworkManager>.Instance.CoopHandler.HumanPlayers)
+        var humanPlayers = 0;
+        foreach (var fikaPlayer in FikaGlobals.NetworkManager.CoopHandler.HumanPlayers)
         {
-            if (coopPlayer.HealthController.IsAlive)
+            if (fikaPlayer.HealthController.IsAlive)
             {
                 humanPlayers++;
             }
         }
 
-        int playersInPoint = 0;
-        foreach (KeyValuePair<Player, int> item in _playersInTransitZone)
+        var playersInPoint = 0;
+        foreach (var item in _playersInTransitZone)
         {
             if (item.Key.HealthController.IsAlive)
             {
@@ -274,7 +311,7 @@ public class FikaHeadlessTransitController : TransitController
                 EventType = TransitEventPacket.ETransitEventType.Messages,
                 TransitEvent = new TransitMessagesEvent()
                 {
-                    Messages = messages
+                    Messages = messages.ToIl2CppDictionary()
                 }
             };
 
@@ -285,7 +322,8 @@ public class FikaHeadlessTransitController : TransitController
         return true;
     }
 
-    public override void Transit(TransitPoint point, int playersCount, string hash, Dictionary<string, ProfileKey> keys, Player player)
+    public override Il2CppSystem.Threading.Tasks.Task Transit(TransitPoint point, int playersCount, string hash,
+        Il2CppSystem.Collections.Generic.Dictionary<string, ProfileKey> keys, Player player)
     {
         TransitEventPacket packet = new()
         {
@@ -302,6 +340,8 @@ public class FikaHeadlessTransitController : TransitController
         {
             ExtractHeadlessClient(point);
         }
+
+        return Il2CppSystem.Threading.Tasks.Task.CompletedTask;
     }
 
     private void ExtractHeadlessClient(TransitPoint point)
@@ -309,19 +349,19 @@ public class FikaHeadlessTransitController : TransitController
         _headlessTransit = true;
         _usedPoint = point.parameters.name;
 
-        string location = point.parameters.location;
-        if (TarkovApplication.Exist(out TarkovApplication tarkovApplication))
+        var location = point.parameters.location;
+        if (TarkovApplication.Exist(out var tarkovApplication))
         {
-            tarkovApplication.transitionStatus = new(location, false, _localRaidSettings.playerSide, ERaidMode.Local, _localRaidSettings.timeVariant);
+            tarkovApplication.TransitionStatus = new TransitionStatus(location, false, _localRaidSettings.playerSide, ERaidMode.Local, _localRaidSettings.timeVariant);
         }
 
         FikaBackendUtils.IsTransit = true;
-        _ = Task.Run(DelayHeadlessExtract);
+        _ = DelayHeadlessExtract();
     }
 
     private async Task DelayHeadlessExtract()
     {
-        CoopHandler coopHandler = Singleton<IFikaNetworkManager>.Instance.CoopHandler;
+        var coopHandler = FikaGlobals.NetworkManager.CoopHandler;
         if (coopHandler == null)
         {
             FikaGlobals.LogError("CoopHandler was null, quitting after 3 seconds");
@@ -334,18 +374,19 @@ public class FikaHeadlessTransitController : TransitController
                 await Task.Delay(1000);
             }
         }
-        AsyncWorker.RunInMainTread(StopHeadlessGameFromTransit);
+
+        StopHeadlessGameFromTransit();
     }
 
     private void StopHeadlessGameFromTransit()
     {
-        Singleton<IFikaGame>.Instance.Stop(string.Empty, ExitStatus.Transit, _usedPoint);
+        FikaGlobals.FikaGame.Stop(string.Empty, ExitStatus.Transit, _usedPoint);
     }
 
     public override void Dispose()
     {
-        OnPlayerEnter -= HeadlessOnPlayerEnter;
-        OnPlayerExit -= HeadlessOnPlayerExit;
+        OnPlayerEnter -= _onHeadlessPlayerEnter;
+        OnPlayerExit -= _onHeadlessPlayerExit;
     }
 
     public void Init()

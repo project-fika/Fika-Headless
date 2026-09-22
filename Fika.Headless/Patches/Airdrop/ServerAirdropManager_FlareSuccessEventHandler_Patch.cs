@@ -1,7 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Airdrop;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.Airdrop;

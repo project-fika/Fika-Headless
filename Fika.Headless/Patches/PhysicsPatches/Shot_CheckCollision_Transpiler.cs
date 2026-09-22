@@ -2,7 +2,7 @@
 using EFT.Ballistics;
 using EFT.Vehicle;
 using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -20,15 +20,9 @@ internal class Shot_CheckCollision_Transpiler : ModulePatch
             .GetMethod(nameof(Shot.CheckCollision), [typeof(Vector3), typeof(Vector3)]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static void Prefix()
     {
-        MethodInfo method = typeof(Physics).GetMethod(nameof(Physics.SyncTransforms));
-        yield return new(OpCodes.Call, method);
-
-        foreach (CodeInstruction instruction in instructions)
-        {
-            yield return instruction;
-        }
+        Physics.SyncTransforms();
     }
 }

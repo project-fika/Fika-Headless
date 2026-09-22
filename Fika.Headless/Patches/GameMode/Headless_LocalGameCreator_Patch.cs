@@ -11,10 +11,8 @@ using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using Fika.Headless.Classes.GameMode;
-using HarmonyLib;
 using JsonType;
-using SPT.Reflection.Patching;
-using SPT.SinglePlayer.Utils.InRaid;
+using SPTushonka.Reflection.Patching;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -30,23 +28,20 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result, TarkovApplication __instance, TimeAndWeatherSettings timeAndWeather,
-        RaidSettings ____raidSettings, InputTree ____inputTree, GameDateTime ____localGameDateTime,
-        float ____fixedDeltaTime, string ____backendUrl, ClientMetricsEvents metricsEvents,
-        ClientMetricsConfig metricsConfig, GameWorld gameWorld, MainMenuShowOperation ____menuOperation,
-        CompositeDisposable ____unsubscriber, BundleLock ___BundleLock)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result, TarkovApplication __instance, TimeAndWeatherSettings timeAndWeather,
+        ClientMetricsEvents metricsEvents, ClientMetricsConfig metricsConfig, GameWorld gameWorld)
     {
 #if DEBUG
-        Logger.LogInfo("TarkovApplication_LocalGameCreator_Patch:Prefix");
+        FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Headless_LocalGameCreator_Patch:Prefix");
 #endif
-        __result = CreateFikaGame(__instance, timeAndWeather, ____raidSettings, ____localGameDateTime,
-            ____fixedDeltaTime, ____backendUrl, metricsEvents, gameWorld, ____menuOperation,
-            ____unsubscriber, ___BundleLock);
+        __result = CreateFikaGame(__instance, timeAndWeather, __instance._raidSettings, __instance._localGameDateTime,
+            __instance._fixedDeltaTime, metricsEvents, gameWorld, __instance._menuOperation,
+            __instance._unsubscriber, __instance.BundleLock).ToIl2Cpp();
         return false;
     }
 
     public static async Task CreateFikaGame(TarkovApplication instance, TimeAndWeatherSettings timeAndWeather,
-        RaidSettings raidSettings, GameDateTime localGameDateTime, float fixedDeltaTime, string backendUrl, ClientMetricsEvents metricsEvents,
+        RaidSettings raidSettings, GameDateTime localGameDateTime, float fixedDeltaTime, ClientMetricsEvents metricsEvents,
         GameWorld gameWorld, MainMenuShowOperation menuOperation, CompositeDisposable unsubscriber, BundleLock bundleLock)
     {
         var isTransit = FikaBackendUtils.IsTransit;
@@ -57,7 +52,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         }
         else if (isTransit && FikaBackendUtils.CachedRaidSettings != null)
         {
-            Logger.LogInfo("Applying cached raid settings from previous raid");
+            FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo("Applying cached raid settings from previous raid");
             var cachedSettings = FikaBackendUtils.CachedRaidSettings;
             raidSettings.WavesSettings = cachedSettings.WavesSettings;
             raidSettings.BotSettings = cachedSettings.BotSettings;
@@ -85,8 +80,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         profile.Inventory.DiscardLimits = Singleton<ItemFactory>.Instance.GetDiscardLimits();
 
 #if DEBUG
-        Logger.LogInfo("TarkovApplication_LocalGameCreator_Patch:Postfix: Attempt to set Raid Settings");
-        Logger.LogInfo($"RaidSettings TransitType: {raidSettings.transitionType}");
+        FikaHeadlessPlugin.FikaHeadlessLogger.LogInfo($"RaidSettings TransitType: {raidSettings.transitionType}");
 #endif
 
         if (!raidSettings.isInTransition)
@@ -101,12 +95,14 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
             playerSide = raidSettings.Side,
             transitionType = raidSettings.transitionType
         };
-        var applicationTraverse = Traverse.Create(instance);
-        applicationTraverse.Field<LocalRaidSettings>("_localRaidSettings").Value = localRaidSettings;
+        instance._localRaidSettings = localRaidSettings;
 
         var localSettings = await instance.Session.LocalRaidStarted(localRaidSettings);
-        var raidSettingsToUpdate = applicationTraverse.Field<LocalRaidSettings>("_localRaidSettings").Value;
-        var escapeTimeLimit = raidSettings.IsScav ? RaidChangesUtil.NewEscapeTimeMinutes : raidSettings.SelectedLocation.EscapeTimeLimit;
+        var botControllerSettings = raidSettings.BotSettings;
+        botControllerSettings.ExcludedBosses = localSettings.excludedBosses;
+        raidSettings.BotSettings = botControllerSettings;
+        var raidSettingsToUpdate = instance._localRaidSettings;
+        var escapeTimeLimit = raidSettings.SelectedLocation.EscapeTimeLimit;
         raidSettings.SelectedLocation = localSettings.locationLoot;
         raidSettings.SelectedLocation.EscapeTimeLimit = escapeTimeLimit;
         raidSettingsToUpdate.serverId = localSettings.serverId;
@@ -117,7 +113,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         transitData.transitionType = raidSettings.transitionType;
         raidSettingsToUpdate.transition = FikaBackendUtils.TransitData;
 
-        instance.Matchmaker.UpdateMatchingStatus("Hosting headless game...");
+        instance.Matchmaker.UpdateMatchingStatus(instance.Matchmaker.MatchingProgress.CurrentStage, new Il2CppSystem.Nullable<float>());
         Singleton<FikaServer>.Instance.LocationReceived = true;
 
         StartHandler startHandler = new(instance, session.Profile, session.ProfileOfPet, raidSettings.SelectedLocation);
@@ -125,14 +121,15 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         var raidLimits = GetRaidMinutes(raidSettings.SelectedLocation.EscapeTimeLimit);
 
         var headlessGame = HeadlessGame.Create(gameWorld, localGameDateTime, raidSettings.SelectedLocation, timeAndWeather,
-            raidSettings.WavesSettings, raidSettings.SelectedDateTime, startHandler.HandleStop, fixedDeltaTime, instance.PlayerUpdateQueue, instance.Session,
-            raidLimits, localRaidSettings, raidSettings);
+            raidSettings.WavesSettings, raidSettings.SelectedDateTime, new Action<Result<ExitStatus, Il2CppSystem.TimeSpan, ClientMetrics>>(startHandler.HandleStop),
+            fixedDeltaTime, instance.PlayerUpdateQueue, instance.Session, raidLimits, localRaidSettings, raidSettings);
 
         startHandler.HeadlessGame = headlessGame;
 
         Singleton<AbstractGame>.Create(headlessGame);
-        unsubscriber.AddDisposable(headlessGame);
-        unsubscriber.AddDisposable(startHandler.ReleaseSingleton);
+        unsubscriber.AddDisposable(headlessGame.Cast<AbstractGame>());
+        Il2CppSystem.Action releaseSingleton = new Action(startHandler.ReleaseSingleton);
+        unsubscriber.AddDisposable(releaseSingleton);
         metricsEvents.SetGameCreated();
         FikaEventDispatcher.DispatchEvent(new AbstractGameCreatedEvent(headlessGame));
 
@@ -140,14 +137,14 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
 
         try
         {
-            await headlessGame.Init(raidSettings.BotSettings, backendUrl);
+            await headlessGame.Init(raidSettings.BotSettings);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.Message);
+            FikaHeadlessPlugin.FikaHeadlessLogger.LogError(ex.Message);
             throw;
         }
-        GameObject.DestroyImmediate(MonoBehaviourSingleton<MenuUI>.Instance.gameObject);
+        UnityEngine.Object.DestroyImmediate(MonoBehaviourSingleton<MenuUI>.Instance.gameObject);
         menuOperation?.Unsubscribe();
         bundleLock.MaxConcurrentOperations = 1;
         gameWorld.OnGameStarted();
@@ -157,7 +154,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
 
     private static TimeSpan GetRaidMinutes(int defaultMinutes)
     {
-        return TimeSpan.FromSeconds((double)(60 * defaultMinutes));
+        return TimeSpan.FromSeconds(60 * defaultMinutes);
     }
 
     private class StartHandler(TarkovApplication tarkovApplication, Profile pmcProfile, Profile scavProfile,
@@ -169,7 +166,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         private readonly LocationSettings.Location _location = location;
         public HeadlessGame HeadlessGame;
 
-        public void HandleStop(Result<ExitStatus, TimeSpan, ClientMetrics> result)
+        public void HandleStop(Result<ExitStatus, Il2CppSystem.TimeSpan, ClientMetrics> result)
         {
             _tarkovApplication.OnGameEnd(_pmcProfile.Id, _scavProfile, _location, result);
         }
@@ -177,7 +174,7 @@ internal class Headless_LocalGameCreator_Patch : ModulePatch
         public void ReleaseSingleton()
         {
             Singleton<AbstractGame>.Release(HeadlessGame);
-            Singleton<IFikaGame>.Release(HeadlessGame);
+            FikaGlobals.FikaGame = null;
         }
     }
 }

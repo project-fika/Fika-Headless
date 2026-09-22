@@ -1,7 +1,7 @@
 ﻿using EFT;
 using EFT.UI;
 using EFT.UI.SessionEnd;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System;
 using System.Reflection;
 namespace Fika.Headless.Patches;
@@ -12,12 +12,12 @@ public class SessionResultExitStatusPatch : ModulePatch
     {
         return typeof(SessionResultExitStatus).GetMethod(nameof(SessionResultExitStatus.Show),
             [typeof(Profile), typeof(PlayerVisualRepresentation), typeof(ESideType),
-            typeof(ExitStatus), typeof(TimeSpan), typeof(IEftSession), typeof(bool)]);
+            typeof(ExitStatus), typeof(Il2CppSystem.TimeSpan), typeof(IEftSession), typeof(bool)]);
     }
 
     [PatchPostfix]
-    public static void PatchPostfix(DefaultUIButton ____mainMenuButton)
+    public static void PatchPostfix(SessionResultExitStatus __instance)
     {
-        ____mainMenuButton.OnClick.Invoke();
+        __instance._mainMenuButton.OnClick.Invoke();
     }
 }

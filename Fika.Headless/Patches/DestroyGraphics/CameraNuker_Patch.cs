@@ -1,5 +1,5 @@
 ﻿using EFT.CameraControl;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -57,17 +57,17 @@ public class CameraNuker : ModulePatch
 
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(CameraManager).GetMethod(nameof(CameraManager.method_2));
+        return typeof(CameraManager).GetMethod(nameof(CameraManager.InitCamera));
     }
 
     [PatchPostfix]
     public static void Postfix(CameraManager __instance)
     {
-        Component[] components = __instance.Camera.GetComponents(typeof(MonoBehaviour));
+        var components = __instance.Camera.GetComponents(Il2CppInterop.Runtime.Il2CppType.Of<MonoBehaviour>());
 
-        foreach (Component component in components)
+        foreach (var component in components)
         {
-            string type = component.GetType().Name;
+            var type = component.GetIl2CppType().Name;
 
             if (_deleteTypes.Contains(type))
             {

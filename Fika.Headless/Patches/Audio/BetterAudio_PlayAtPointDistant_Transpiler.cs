@@ -1,4 +1,8 @@
-﻿using SPT.Reflection.Patching;
+﻿using UnityEngine.Audio;
+using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,13 +14,12 @@ internal class BetterAudio_PlayAtPointDistant_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPointDistant));
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPointForGameObject), [typeof(GameObject), typeof(Vector3), typeof(AudioClip), typeof(BetterAudio.AudioSourceGroupType), typeof(int), typeof(PlayOptions).MakeByRefType()]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ldnull);
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

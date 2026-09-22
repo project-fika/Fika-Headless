@@ -1,8 +1,6 @@
-﻿using SPT.Reflection.Patching;
-using HarmonyLib;
-using System.Collections.Generic;
+﻿using SPTushonka.Reflection.Patching;
+using Audio.AudioCulling;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches.Audio;
 
@@ -10,12 +8,12 @@ internal class AudioSourceCulling_StartWorkCoroutine_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(AudioSourceCulling).GetMethod(nameof(AudioSourceCulling.StartWorkCoroutine));
+        return typeof(BaseAudioCulling).GetMethod(nameof(BaseAudioCulling.StartWorkCoroutine));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

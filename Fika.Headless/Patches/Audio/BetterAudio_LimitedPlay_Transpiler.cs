@@ -1,4 +1,8 @@
-﻿using SPT.Reflection.Patching;
+﻿using UnityEngine.Audio;
+using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +15,12 @@ internal class BetterAudio_LimitedPlay_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio)
-            .GetMethods()
-            .First(x => x.Name == "LimitedPlay" && x.ReturnType == typeof(bool));
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.LimitedPlay), [typeof(Vector3), typeof(SoundBank), typeof(Vector2), typeof(float), typeof(string), typeof(PlayOptions).MakeByRefType()]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-        yield return new CodeInstruction(OpCodes.Ret);
+        return false;
     }
 }

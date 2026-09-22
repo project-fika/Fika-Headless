@@ -1,9 +1,6 @@
-﻿using EFT.Interactive;
-using SPT.Reflection.Patching;
-using HarmonyLib;
-using System.Collections.Generic;
+using EFT.Interactive;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Fika.Headless.Patches;
 
@@ -17,23 +14,25 @@ public class WindowBreaker_UpdateToFalling_Transpiler : ModulePatch
         return typeof(WindowBreaker)
             .GetMethod(nameof(WindowBreaker.UpdateToFalling));
     }
-
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    
+    [PatchPrefix]
+    public static bool Prefix(WindowBreaker __instance, WindowBreaker.Piece piece, bool wasStuck, in Vector3 position, in Vector3 force, bool instantFall)
     {
-        // Create a new set of instructions
-        List<CodeInstruction> instructionsList = [.. instructions];
-
-        for (int i = 2; i < 7; i++)
+        if (wasStuck)
         {
-            instructionsList[i].opcode = OpCodes.Nop;
+            var ballisticCollider = piece.Description.BallisticCollider;
+            ballisticCollider.UnsubscribeHitAction();
+            ballisticCollider.enabled = false;
         }
 
-        for (int i = 16; i < 29; i++)
+        if (instantFall)
         {
-            instructionsList[i].opcode = OpCodes.Nop;
+            WindowBreaker.DestroyPiece(piece);
+            return false;
         }
 
-        return instructionsList;
+        var destroyTime = Random.Range(__instance.TimeUntilPartDie * 0.5f, __instance.TimeUntilPartDie * 1.5f);
+        __instance.PieceDestroyTask(piece, destroyTime, position, force.normalized).HandleExceptions();
+        return false;
     }
 }

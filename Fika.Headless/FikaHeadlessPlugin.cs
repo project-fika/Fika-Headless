@@ -1,10 +1,9 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using BepInEx.Unity.IL2CPP;
 using Comfort.Common;
 using Diz.Jobs;
-using Diz.Utils;
 using EFT;
 using EFT.Communications;
 using EFT.UI;
@@ -24,13 +23,10 @@ using Fika.Core.UI.Patches;
 using Fika.Core.UI.Patches.MainMenuUI;
 using Fika.Headless.Classes;
 using Fika.Headless.Patches;
-using HarmonyLib;
 using Newtonsoft.Json;
-using SPT.Custom.Patches;
-using SPT.Custom.Utils;
-using SPT.Reflection.Patching;
-using SPT.SinglePlayer.Patches.RaidFix;
-using SPT.SinglePlayer.Patches.ScavMode;
+using SPTushonka.Custom.Patches;
+using SPTushonka.Custom.Utils;
+using SPTushonka.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,8 +40,8 @@ namespace Fika.Headless;
 
 [BepInPlugin("com.fika.headless", "Fika.Headless", HeadlessVersion)]
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.HardDependency)]
-[BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
-public class FikaHeadlessPlugin : BaseUnityPlugin
+[BepInDependency("com.sptushonka.custom", BepInDependency.DependencyFlags.HardDependency)]
+public class FikaHeadlessPlugin : BasePlugin
 {
     public const string HeadlessVersion = "1.5.2";
 
@@ -93,23 +89,25 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     }
 #endif
 
-    protected void Awake()
+    public override void Load()
     {
         Instance = this;
         _gcCounter = 0;
 
         TrySetConsoleTitle();
 
-        FikaHeadlessLogger = Logger;
+        FikaHeadlessLogger = Log;
 
         GetHeadlessRestartAfterRaidAmount();
         SetupConfig();
 
         _gcPoint = RAMCleanInterval.Value * 60f;
 
-        var patches = ModPatchCache.GetActivePatches();
-        DisableFikaCorePatches(patches);
-        DisableSPTPatches(patches);
+        DisableFikaCorePatches();
+        DisableSPTPatches();
+
+        Il2CppInjection.RegisterAll(typeof(FikaHeadlessPlugin).Assembly, Log);
+        AddComponent<HeadlessTicker>();
 
         PatchManager manager = new(this, true);
         manager.EnablePatches();
@@ -120,10 +118,10 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             botManager.EnablePatch(new BotStandBy_Update_Transpiler());
         }
 
-        Logger.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
+        Log.LogInfo($"Fika.Headless loaded! OS: {SystemInfo.operatingSystem}");
         if (!IsRunningWindows)
         {
-            Logger.LogWarning("You are not running an officially supported operating system by Fika. Minimal support will be given.");
+            Log.LogWarning("You are not running an officially supported operating system by Fika. Minimal support will be given.");
         }
 
         CleanupLogFiles();
@@ -138,12 +136,12 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         if (!string.IsNullOrEmpty(title))
         {
-            Logger.LogInfo($"Using custom window title: {title}");
+            Log.LogInfo($"Using custom window title: {title}");
             Console.Title = $"Fika Headless {HeadlessVersion} - {title}";
         }
     }
 
-    protected void Update()
+    internal void Tick()
     {
         _gcCounter += Time.unscaledDeltaTime;
         if (_gcCounter > _gcPoint)
@@ -157,64 +155,32 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             }
             else if (!FikaBackendUtils.IsTransit)
             {
-                Resources.UnloadUnusedAssets().Await();
-                InGameMemoryManagement.Collect(2, GCCollectionMode.Forced, true, true, true);
+                Resources.UnloadUnusedAssets();
+                InGameMemoryManagement.Collect(2, Il2CppSystem.GCCollectionMode.Forced, true, true, true);
             }
         }
     }
 
-    private void DisableSPTPatches(IReadOnlyList<ModulePatch> patches)
+    private static void DisableSPTPatches()
     {
-        var targets = new HashSet<string>
-        {
-            nameof(MemoryCollectionPatch),
-            nameof(SetPreRaidSettingsScreenDefaultsPatch),
-            nameof(DisablePMCExtractsForScavsPatch),
-            nameof(AddTraitorScavsPatch),
-            nameof(TinnitusFixPatch)
-        };
-
-        for (var i = 0; i < patches.Count; i++)
-        {
-            var patch = patches[i];
-            var name = patch.GetType().Name;
-            if (targets.Contains(name))
-            {
-                FikaHeadlessLogger.LogInfo($"Found {name}, disabling...");
-                patch.Disable();
-            }
-        }
+        new SetPreRaidSettingsScreenDefaultsPatch().Disable();
     }
 
     /// <summary>
     /// Disables patches from Fika.Core that the headless does not need
     /// </summary>
-    private static void DisableFikaCorePatches(IReadOnlyList<ModulePatch> patches)
+    private static void DisableFikaCorePatches()
     {
-        var targets = new HashSet<string>
-        {
-            nameof(TarkovApplication_InitNotificationManager_Patch),
-            nameof(MenuScreen_Awake_Patch),
-            nameof(TarkovApplication_LocalGameCreator_Patch)
-        };
-
-        for (var i = 0; i < patches.Count; i++)
-        {
-            var patch = patches[i];
-            var name = patch.GetType().Name;
-            if (targets.Contains(name))
-            {
-                FikaHeadlessLogger.LogInfo($"Found {name}, disabling...");
-                patch.Disable();
-            }
-        }
+        new TarkovApplication_InitNotificationManager_Patch().Disable();
+        new MenuScreen_Awake_Patch().Disable();
+        new TarkovApplication_LocalGameCreator_Patch().Disable();
     }
 
 #if DEBUG
     private void StartDebugGame()
     {
         var rawData = @"{""Type"":""HeadlessStartRaid"",""StartHeadlessRequest"":{""headlessSessionID"":""6840a12f76cac3fada302293"",""time"":""CURR"",""locationId"":""5b0fc42d86f7744a585f9105"",""spawnPlace"":""SamePlace"",""metabolismDisabled"":false,""timeAndWeatherSettings"":{""isRandomTime"":false,""isRandomWeather"":false,""cloudinessType"":""Clear"",""rainType"":""NoRain"",""windType"":""Light"",""fogType"":""NoFog"",""timeFlowType"":""x1"",""hourOfDay"":-1},""botSettings"":{""isScavWars"":false,""botAmount"":""AsOnline""},""wavesSettings"":{""botAmount"":""AsOnline"",""botDifficulty"":""AsOnline"",""isBosses"":true,""isTaggedAndCursed"":false},""side"":""Pmc"",""customWeather"":false}}";
-        var data = JsonConvert.DeserializeObject<StartRaid>(rawData);
+        var data = System.Text.Json.JsonSerializer.Deserialize<StartRaid>(rawData, HeadlessWebSocket.RequestOptions);
 
         OnFikaStartRaid(data.StartHeadlessRequest);
     }
@@ -232,7 +198,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
             if (!Directory.Exists(logsPath))
             {
-                Logger.LogError("CleanupLogFiles: '/Logs' folder not found!");
+                Log.LogError("CleanupLogFiles: '/Logs' folder not found!");
                 return;
             }
 
@@ -246,26 +212,26 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             {
                 try
                 {
-                    Logger.LogInfo($"CleanupLogFiles: Deleting directory '{dir.FullName}'");
+                    Log.LogInfo($"CleanupLogFiles: Deleting directory '{dir.FullName}'");
                     dir.Delete(true);
                 }
                 catch (IOException ioEx)
                 {
-                    Logger.LogWarning($"CleanupLogFiles: I/O error deleting '{dir.FullName}': {ioEx.Message}");
+                    Log.LogWarning($"CleanupLogFiles: I/O error deleting '{dir.FullName}': {ioEx.Message}");
                 }
                 catch (UnauthorizedAccessException uaEx)
                 {
-                    Logger.LogWarning($"CleanupLogFiles: Access denied for '{dir.FullName}': {uaEx.Message}");
+                    Log.LogWarning($"CleanupLogFiles: Access denied for '{dir.FullName}': {uaEx.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning($"CleanupLogFiles: Unexpected error for '{dir.FullName}': {ex.Message}");
+                    Log.LogWarning($"CleanupLogFiles: Unexpected error for '{dir.FullName}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"CleanupLogFiles: Fatal error: {ex.Message}");
+            Log.LogError($"CleanupLogFiles: Fatal error: {ex.Message}");
         }
     }
 
@@ -304,40 +270,40 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         {
             if (!TarkovApplication.Exist(out var tarkovApplication))
             {
-                Logger.LogError("OnFikaStartRaid: Could not find TarkovApplication");
+                Log.LogError("OnFikaStartRaid: Could not find TarkovApplication");
                 return;
             }
 
             if (!CanHost)
             {
-                Logger.LogError("The headless client was not ready to host yet");
+                Log.LogError("The headless client was not ready to host yet");
                 return;
             }
 
             var session = tarkovApplication.Session;
             if (session == null)
             {
-                Logger.LogError("Session was null when starting the raid");
+                Log.LogError("Session was null when starting the raid");
                 return;
             }
 
             if (!session.LocationSettings.locations.TryGetValue(request.LocationId, out var location))
             {
-                Logger.LogError($"Failed to find location {request.LocationId}");
+                Log.LogError($"Failed to find location {request.LocationId}");
                 return;
             }
 
             FikaBackendUtils.CustomRaidSettings = request.CustomRaidSettings;
-            Logger.LogInfo($"Received CustomRaidSettings: {request.CustomRaidSettings}");
+            Log.LogInfo($"Received CustomRaidSettings: {request.CustomRaidSettings}");
 
-            Logger.LogInfo($"Starting on location {location.Name}");
+            Log.LogInfo($"Starting on location {location.Name}");
             CanHost = false;
             ToggleFramelimit(false);
             _ = BeginFikaStartRaid(request, session, tarkovApplication);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.Message);
+            Log.LogError(ex.Message);
         }
     }
 
@@ -352,7 +318,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             return;
         }
 
-        Logger.LogInfo("Running plugin validation");
+        Log.LogInfo("Running plugin validation");
         while (!FikaPlugin.Instance.LocalesLoaded)
         {
             await Task.Delay(100);
@@ -369,11 +335,11 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         FikaPlugin.Instance.Settings.AllowFreeCam = true;
         FikaPlugin.Instance.Settings.AllowSpectateFreeCam = true;
 
-        Logger.LogInfo("Plugin validation completed");
+        Log.LogInfo("Plugin validation completed");
 
         if (!TarkovApplication.Exist(out var tarkovApplication))
         {
-            Logger.LogWarning("Could not find TarkovApplication");
+            Log.LogWarning("Could not find TarkovApplication");
             return;
         }
 
@@ -383,7 +349,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         // Artifical 5 second delay to let the game work an extra bit
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        AsyncWorker.RunInMainTread(CreateHeadlessWebsocket);
+        MainThread.Post(CreateHeadlessWebsocket);
         _hasVerified = true;
     }
 
@@ -404,7 +370,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     /// </summary>
     private Task VerifyPlugins()
     {
-        Logger.LogInfo("Verifying plugins");
+        Log.LogInfo("Verifying plugins");
 
         List<string> invalidPluginList =
         [
@@ -420,7 +386,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             "harmonyzt.sptleaderboard",
             "com.acidphantasm.stattrack"
         ];
-        PluginInfo[] pluginInfos = [.. Chainloader.PluginInfos.Values];
+        PluginInfo[] pluginInfos = [.. IL2CPPChainloader.Instance.Plugins.Values];
         List<string> unsupportedMods = [];
 
         foreach (var Info in pluginInfos)
@@ -434,7 +400,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         if (unsupportedMods.Count > 0)
         {
             var modsString = string.Join("; ", unsupportedMods);
-            Logger.LogFatal($"{unsupportedMods.Count} invalid plugins found, this headless host will not be available for hosting! Remove these mods: {modsString}");
+            Log.LogFatal($"{unsupportedMods.Count} invalid plugins found, this headless host will not be available for hosting! Remove these mods: {modsString}");
             _invalidPluginsFound = true;
             if (IsRunningWindows)
             {
@@ -447,7 +413,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         _invalidPluginsFound = false;
 
-        Logger.LogInfo("Plugins verified successfully");
+        Log.LogInfo("Plugins verified successfully");
 
         return Task.CompletedTask;
     }
@@ -473,10 +439,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         raidSettings.BotSettings.BotAmount = request.WavesSettings.BotAmount;
 
-        Traverse.Create(tarkovApplication)
-            .Field<RaidSettings>("_raidSettings").Value = raidSettings;
+        tarkovApplication._raidSettings = raidSettings;
 
-        Logger.LogInfo("Initialized raid settings");
+        Log.LogInfo("Initialized raid settings");
 
         if (FikaPlugin.Instance.Settings.ForceIP.Value != "")
         {
@@ -492,7 +457,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR FORCING IP",
                     message,
                     ErrorScreen.EButtonType.OkButton, 10f);
-                Logger.LogError(message);
+                Log.LogError(message);
                 return;
             }
         }
@@ -505,17 +470,17 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 Singleton<PreloaderUI>.Instance.ShowCriticalErrorScreen("ERROR BINDING",
                     message,
                     ErrorScreen.EButtonType.OkButton, 10f);
-                Logger.LogError(message);
+                Log.LogError(message);
                 return;
             }
         }
 
-        Logger.LogInfo($"Starting with: {JsonConvert.SerializeObject(raidSettings)}");
+        Log.LogInfo($"Starting with: {JsonConvert.SerializeObject(raidSettings)}");
 
         await FikaBackendUtils.CreateMatch(session.Profile.ProfileId,
             session.Profile.Info.Nickname, raidSettings);
 
-        Logger.LogInfo("Match successfully created, loading raid");
+        Log.LogInfo("Match successfully created, loading raid");
 
         FikaBackendUtils.IsHeadlessGame = true;
 
@@ -526,16 +491,16 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             tarkovApplication.CurrentRaidNum++;
             tarkovApplication.CurrentTotalRaidNum++;
             Singleton<JobScheduler>.Instance.SetForceMode(true);
-            Logger.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
+            Log.LogInfo($"Starting raid on {raidSettings.SelectedLocation.Name.Localized()}");
             _ = WaitForPlayersToConnect();
             await tarkovApplication.LocalGameMatching(raidSettings.TimeAndWeatherSettings);
-            Logger.LogInfo("Raid init complete, starting raid");
+            Log.LogInfo("Raid init complete, starting raid");
             CurrentRaidCount++;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Exception caught during raid init: {ex.Message}");
-            Logger.LogError(ex);
+            Log.LogError($"Exception caught during raid init: {ex.Message}");
+            Log.LogError(ex);
             if (Singleton<FikaServer>.Instantiated)
             {
                 MessagePacket packet = new()
@@ -559,9 +524,9 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
         await Task.Delay(TimeSpan.FromSeconds(45));
         if (Singleton<FikaServer>.Instantiated && Singleton<FikaServer>.Instance.NetServer.ConnectedPeersCount == 0)
         {
-            Logger.LogWarning("No connections after 2 minutes, terminating");
+            Log.LogWarning("No connections after 2 minutes, terminating");
             await Task.Delay(TimeSpan.FromSeconds(5));
-            AsyncWorker.RunInMainTread(Application.Quit);
+            MainThread.Post(() => Application.Quit());
         }
     }
 
@@ -571,7 +536,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
 
         if (PlayerDisposeError)
         {
-            Logger.LogError("There were some errors in the last raid while disposing of players. This is most likely caused by any content mods that adds new equipment. The headless will now shut down to prevent memory leaks.");
+            Log.LogError("There were some errors in the last raid while disposing of players. This is most likely caused by any content mods that adds new equipment. The headless will now shut down to prevent memory leaks.");
             Application.Quit();
             return;
         }
@@ -581,7 +546,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
             return;
         }
 
-        Logger.LogInfo($"Headless has done {CurrentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
+        Log.LogInfo($"Headless has done {CurrentRaidCount} raids, and is set to restart after {_restartAfterAmountOfRaids}");
         if (_restartAfterAmountOfRaids != 0 && CurrentRaidCount >= _restartAfterAmountOfRaids && !FikaBackendUtils.IsTransit)
         {
             Application.Quit();
@@ -608,7 +573,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
                 Singleton<JobScheduler>.Instance.SetTargetFrameRate(UpdateRate.Value);
             }
         }
-        Logger.LogInfo($"Setting frame limiter to {(enabled ? "enabled" : "disabled")}, current target is {Application.targetFrameRate}Hz");
+        Log.LogInfo($"Setting frame limiter to {(enabled ? "enabled" : "disabled")}, current target is {Application.targetFrameRate}Hz");
     }
 
     private void GetHeadlessRestartAfterRaidAmount()

@@ -1,7 +1,6 @@
 ﻿using EFT;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Fika.Headless.Patches.Locales;
 
@@ -13,9 +12,9 @@ public class TarkovApplication_LoadAvailableLanguages_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Task __result)
+    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result)
     {
-        __result = Task.CompletedTask;
+        __result = Il2CppSystem.Threading.Tasks.Task.CompletedTask;
         return false;
     }
 }

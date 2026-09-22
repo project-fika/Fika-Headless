@@ -1,5 +1,5 @@
 ﻿using Audio.AmbientSubsystem;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.Audio;
@@ -12,7 +12,7 @@ internal class SoundPlayerRandomPointComponent_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(AmbientSoundPlayer __instance)
+    public static bool Prefix(SoundPlayerRandomPointComponent __instance)
     {
         GameObject.Destroy(__instance);
         return false;

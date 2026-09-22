@@ -1,5 +1,8 @@
-﻿using EFT;
-using SPT.Reflection.Patching;
+﻿using UnityEngine.Audio;
+using System;
+using EFT.Ballistics;
+using EFT;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,9 +17,9 @@ internal class BetterAudio_PlayDropItem1_Transpiler : ModulePatch
         return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayDropItem), [typeof(SoundBank), typeof(Vector3), typeof(float)]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

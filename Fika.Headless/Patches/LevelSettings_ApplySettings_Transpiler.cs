@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -17,9 +17,9 @@ public class LevelSettings_ApplySettings_Transpiler : ModulePatch
             .GetMethod(nameof(LevelSettings.ApplySettings));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

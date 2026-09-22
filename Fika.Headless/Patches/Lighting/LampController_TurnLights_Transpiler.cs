@@ -1,5 +1,5 @@
 ﻿using EFT.Interactive;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,12 +11,12 @@ internal class LampController_TurnLights_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(LampController).GetMethod(nameof(LampController.TurnLights));
+        return typeof(LampLights).GetMethod(nameof(LampLights.TurnLights));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

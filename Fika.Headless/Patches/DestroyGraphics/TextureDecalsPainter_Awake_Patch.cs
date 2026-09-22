@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
@@ -12,9 +12,9 @@ public class TextureDecalsPainter_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(TextureDecalsPainter __instance, ref ObjectPool<RenderTexture> ____texturesPool)
+    public static bool Prefix(TextureDecalsPainter __instance)
     {
-        ____texturesPool = new(0, FakeClassFunc);
+        __instance._texturesPool = new ObjectPool<RenderTexture>(0, new System.Func<RenderTexture>(FakeClassFunc));
         Object.Destroy(__instance);
         return false;
     }

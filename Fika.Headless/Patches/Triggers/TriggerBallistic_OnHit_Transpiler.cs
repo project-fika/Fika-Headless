@@ -1,5 +1,5 @@
 ﻿using EFT.GameTriggers;
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,12 +11,12 @@ internal class TriggerBallistic_OnHit_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(TriggerBallistic).GetMethod(nameof(TriggerBallistic.OnHit));
+        return typeof(TriggerBallistic).GetMethod(nameof(TriggerBallistic.OnBallisticHit));
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        yield return new(OpCodes.Ret);
+        return false;
     }
 }

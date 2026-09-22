@@ -1,4 +1,4 @@
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 using UnityEngine.Experimental.Rendering;
 
@@ -11,7 +11,7 @@ public class ValidateFormatPatch3 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        MethodInfo[] methods = typeof(Texture).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+        MethodInfo[] methods = typeof(Texture).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         foreach (MethodInfo method in methods)
         {

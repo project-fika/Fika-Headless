@@ -1,4 +1,4 @@
-﻿using SPT.Reflection.Patching;
+﻿using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.DestroyGraphics;
@@ -12,10 +12,10 @@ public class LaserBeam_Awake_Patch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Prefix(LaserBeam __instance, ref Mesh ____pointMesh, ref Mesh ____beamMesh)
+    public static bool Prefix(LaserBeam __instance)
     {
-        ____pointMesh = new();
-        ____beamMesh = new();
+        __instance._pointMesh = new Mesh();
+        __instance._beamMesh = new Mesh();
         Object.Destroy(__instance);
         return false;
     }

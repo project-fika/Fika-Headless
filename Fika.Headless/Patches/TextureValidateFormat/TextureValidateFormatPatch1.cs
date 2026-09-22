@@ -1,4 +1,4 @@
-using SPT.Reflection.Patching;
+using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
 namespace Fika.Headless.Patches.TextureValidateFormat;
@@ -10,7 +10,7 @@ public class ValidateFormatPatch1 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        MethodInfo[] methods = typeof(Texture).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+        MethodInfo[] methods = typeof(Texture).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         foreach (MethodInfo method in methods)
         {

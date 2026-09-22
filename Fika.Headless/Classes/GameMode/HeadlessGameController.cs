@@ -18,14 +18,22 @@ using System.Threading.Tasks;
 
 namespace Fika.Headless.Classes.GameMode;
 
-internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, IEftSession session,
-    LocationSettings.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
-    : HostGameController(game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
+internal class HeadlessGameController : HostGameController
 {
+    public HeadlessGameController(IntPtr pointer) : base(pointer)
+    {
+    }
+
+    public HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, IEftSession session,
+        LocationSettings.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
+        : base(Il2CppInjection.Allocate<HeadlessGameController>(), game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
+    {
+    }
+
     public override void SetupEventsAndExfils(Player player)
     {
         Logger.LogInfo("[SERVER] SpawnPoint: " + _spawnPoint.Id + ", InfiltrationPoint: " + InfiltrationPoint);
-        _abstractGame.GameTimer.Start();
+        _abstractGame.GameTimer.Start(GameTime.ToIl2Cpp(), SessionTime.ToIl2Cpp());
 
         /*ExfiltrationController exfilController = ExfiltrationController.Instance;*/
 
@@ -39,8 +47,9 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
             {
                 var initEvent = new TransitInitEvent
                 {
-                    PlayerId = activePlayer.Id,
-                    Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id),
+                    PlayerRaidId = activePlayer.RaidId,
+                    Points = ActiveTransitPoints(transitController),
+                    CompletedQuestRequirementMetByPointId = CompletedQuestRequirements(activePlayer),
                     TransitionCount = (ushort)transitController.LocalRaidSettings.transition.transitionCount,
                     EventPlayer = transitController.IsEvent
                 };
@@ -60,9 +69,9 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
 
                 var updateEvent = new TransitUpdateEvent
                 {
-                    PlayerId = activePlayer.Id,
+                    PlayerRaidId = activePlayer.RaidId,
                     EventOnly = transitController.IsEvent,
-                    Points = Location.transitParameters.Where(x => x.active).ToDictionary(k => k.id)
+                    Points = ActiveTransitPoints(transitController)
                 };
 
                 writer.Reset();
@@ -92,15 +101,15 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
 
     public override void CreateSpawnSystem(Profile profile)
     {
-        _spawnPoints = SpawnPointsCollection.CreateFromScene(new DateTime?(DateTimeExtensions.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
+        _spawnPoints = SpawnPointsCollection.CreateFromScene(new Il2CppSystem.Nullable<Il2CppSystem.DateTime>(DateTimeExtensions.LocalDateTimeFromUnixTime(Location.UnixDateTime)),
                                 Location.SpawnPointParams);
         var spawnSafeDistance = (Location.SpawnSafeDistanceMeters > 0) ? Location.SpawnSafeDistanceMeters : 100;
         SpawnSystemSettings settings = new(Location.MinDistToFreePoint,
             Location.MaxDistToFreePoint, Location.MaxBotPerZone, spawnSafeDistance,
             Location.NoGroupSpawn, Location.OneTimeSpawn);
-        SpawnSystem = SpawnSystemFactory.CreateSpawnSystem(settings, FikaGlobals.GetApplicationTime, Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
+        SpawnSystem = SpawnSystemFactory.CreateSpawnSystem(settings, new System.Func<float>(FikaGlobals.GetApplicationTime), Singleton<GameWorld>.Instance, _botsController, _spawnPoints);
 
-        var side = Singleton<IFikaNetworkManager>.Instance.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
+        var side = FikaGlobals.NetworkManager.RaidSide == ESideType.Pmc ? EPlayerSide.Usec : EPlayerSide.Savage;
 
         _spawnPoint = SpawnSystem.SelectSpawnPoint(ESpawnCategory.Player, side,
             null, null, null, null, null);
@@ -118,9 +127,9 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
         server.HostReady = true;
 
         var startTime = DateTimeExtensions.UtcNow.AddSeconds((double)timeBeforeDeployLocal);
-        GameTime = startTime;
-        server.GameStartTime = startTime;
-        SessionTime = abstractGame.GameTimer.SessionTime;
+        GameTime = startTime.ToManaged();
+        server.GameStartTime = startTime.ToManaged();
+        SessionTime = abstractGame.GameTimer.SessionTime.ToManaged();
 
         InformationPacket packet = new()
         {
@@ -159,5 +168,29 @@ internal class HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, 
             Logger.LogInfo("Transits are disabled");
             TransitController.DisableTransitPoints();
         }
+    }
+
+    private Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<LocationSettings.Location.TransitParameters> TransitParameters()
+    {
+        return Location.transitParameters ?? new(0);
+    }
+
+    private Il2CppSystem.Collections.Generic.Dictionary<int, LocationSettings.Location.TransitParameters> ActiveTransitPoints(EFT.TransitController transitController)
+    {
+        return TransitParameters().Where(x => x.active && transitController.pointsById.ContainsKey(x.id)).ToDictionary(k => k.id).ToIl2CppDictionary();
+    }
+
+    private Il2CppSystem.Collections.Generic.Dictionary<int, bool> CompletedQuestRequirements(Player player)
+    {
+        var result = new Il2CppSystem.Collections.Generic.Dictionary<int, bool>();
+        foreach (var parameters in TransitParameters())
+        {
+            if (parameters.active && !string.IsNullOrEmpty(parameters.completedQuestId))
+            {
+                result[parameters.id] = new TransitCompletedQuestRequirement(parameters.completedQuestId).Met(player);
+            }
+        }
+
+        return result;
     }
 }

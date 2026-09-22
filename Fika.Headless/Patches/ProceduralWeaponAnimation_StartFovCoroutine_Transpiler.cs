@@ -1,5 +1,6 @@
-﻿using EFT.Animations;
-using SPT.Reflection.Patching;
+﻿using EFT;
+using EFT.Animations;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,18 +15,12 @@ public class ProceduralWeaponAnimation_StartFovCoroutine_Transpiler : ModulePatc
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ProceduralWeaponAnimation).GetMethod(nameof(ProceduralWeaponAnimation.StartFovCoroutine));
+        return typeof(ProceduralWeaponAnimation).GetMethod(nameof(ProceduralWeaponAnimation.StartFovCoroutine), [typeof(Player)]);
     }
 
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    [PatchPrefix]
+    public static bool Prefix()
     {
-        // Create a new set of instructions
-        List<CodeInstruction> instructionsList =
-        [
-            new CodeInstruction(OpCodes.Ret) // Return immediately
-        ];
-
-        return instructionsList;
+        return false;
     }
 }
