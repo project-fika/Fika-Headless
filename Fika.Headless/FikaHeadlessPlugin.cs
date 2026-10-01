@@ -10,7 +10,6 @@ using EFT.Communications;
 using EFT.UI;
 using Fika.Core;
 using Fika.Core.Main.Patches.LocalGame;
-using Fika.Core.Main.Patches.Overrides;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Http;
@@ -45,9 +44,9 @@ namespace Fika.Headless;
 [BepInPlugin("com.fika.headless", "Fika.Headless", HeadlessVersion)]
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("com.SPT.custom", BepInDependency.DependencyFlags.HardDependency)]
-public class FikaHeadlessPlugin : BaseUnityPlugin
+public sealed class FikaHeadlessPlugin : BaseUnityPlugin
 {
-    public const string HeadlessVersion = "1.5.2";
+    public const string HeadlessVersion = "1.5.3";
 
     public static FikaHeadlessPlugin Instance { get; private set; }
     public static ManualLogSource FikaHeadlessLogger;
@@ -589,7 +588,7 @@ public class FikaHeadlessPlugin : BaseUnityPlugin
     }
 
     public void ToggleFramelimit(bool enabled)
-    {        
+    {
         if (enabled)
         {
             QualitySettings.vSyncCount = 0;
