@@ -10,7 +10,7 @@ public class HeadlessClientMovementContext : MovementContext
     {
     }
 
-    public HeadlessClientMovementContext() : base(Il2CppInjection.Allocate<HeadlessClientMovementContext>())
+    public HeadlessClientMovementContext() : base(ClassInjector.DerivedConstructorPointer<HeadlessClientMovementContext>())
     {
         ClassInjector.DerivedConstructorBody(this);
         ClassInjector.InvokeBaseConstructor<MovementContext>(this);

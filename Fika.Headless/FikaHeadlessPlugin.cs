@@ -23,6 +23,7 @@ using Fika.Core.UI.Patches;
 using Fika.Core.UI.Patches.MainMenuUI;
 using Fika.Headless.Classes;
 using Fika.Headless.Patches;
+using Fika.Headless.Patches.DLSS;
 using Newtonsoft.Json;
 using SPTushonka.Custom.Patches;
 using SPTushonka.Custom.Utils;
@@ -97,6 +98,7 @@ public class FikaHeadlessPlugin : BasePlugin
         TrySetConsoleTitle();
 
         FikaHeadlessLogger = Log;
+        GraphicsDeviceTypeIcall.Enable(Log);
 
         GetHeadlessRestartAfterRaidAmount();
         SetupConfig();
@@ -532,7 +534,10 @@ public class FikaHeadlessPlugin : BasePlugin
 
     public void OnReady()
     {
-        ToggleFramelimit(true);
+        if (!FikaBackendUtils.IsTransit)
+        {
+            ToggleFramelimit(true);
+        }
 
         if (PlayerDisposeError)
         {

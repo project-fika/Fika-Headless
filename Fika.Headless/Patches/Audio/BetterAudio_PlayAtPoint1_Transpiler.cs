@@ -14,7 +14,7 @@ internal class BetterAudio_PlayAtPoint1_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.PlayAtPoint), [typeof(Vector3), typeof(SoundBank), typeof(PlayOptions).MakeByRefType()]);
+        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.TryPlayAtPointBankCore));
     }
 
     [PatchPrefix]

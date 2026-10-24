@@ -11,13 +11,14 @@ public class ConsoleScreen_OnProfileReceive_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ConsoleScreen)
-            .GetMethod(nameof(ConsoleScreen.OnProfileReceive));
+        return typeof(TarkovApplication)
+            .GetMethod(nameof(TarkovApplication.RunProfile));
     }
 
-    [PatchPostfix]
-    public static void Prefix(Profile profile)
+    [PatchPrefix]
+    public static void Prefix(TarkovApplication __instance)
     {
+        var profile = __instance.Session.Profile;
         if (!profile.Nickname.Contains("headless_"))
         {
             if (SystemInfo.operatingSystemFamily == OperatingSystemFamily.Windows)

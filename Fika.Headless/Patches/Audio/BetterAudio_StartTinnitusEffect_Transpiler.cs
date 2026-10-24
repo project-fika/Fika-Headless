@@ -1,4 +1,5 @@
-﻿using SPTushonka.Reflection.Patching;
+﻿using Audio.Effects;
+using SPTushonka.Reflection.Patching;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,7 +11,7 @@ internal class BetterAudio_StartTinnitusEffect_Transpiler : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BetterAudio).GetMethod(nameof(BetterAudio.StartTinnitusEffect));
+        return typeof(TinnitusEffectController).GetMethod(nameof(TinnitusEffectController.StartTinnitusEffect));
     }
 
     [PatchPrefix]

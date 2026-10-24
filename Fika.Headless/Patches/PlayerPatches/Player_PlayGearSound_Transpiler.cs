@@ -12,7 +12,7 @@ internal class Player_PlayGearSound_Transpiler : ModulePatch
     protected override MethodBase GetTargetMethod()
     {
         return typeof(Player)
-            .GetMethod(nameof(Player.PlayGearSound), [typeof(float), typeof(bool)]);
+            .GetMethod(nameof(Player.PlayGearSound), [typeof(SoundBank), typeof(float)]);
     }
 
     [PatchPrefix]

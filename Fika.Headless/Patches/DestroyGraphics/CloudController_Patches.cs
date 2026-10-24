@@ -1,4 +1,5 @@
 ﻿using EFT.Rendering.Clouds;
+using EFT.Weather;
 using SPTushonka.Reflection.Patching;
 using System.Reflection;
 
@@ -23,7 +24,7 @@ public class CloudController_UpdateAmbient_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(CloudController).GetMethod(nameof(CloudController.UpdateAmbient));
+        return typeof(WeatherController).GetMethod(nameof(WeatherController.ControlClouds));
     }
 
     [PatchPrefix]

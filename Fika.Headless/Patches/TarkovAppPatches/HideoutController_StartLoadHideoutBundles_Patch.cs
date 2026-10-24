@@ -8,8 +8,8 @@ public class HideoutController_StartLoadHideoutBundles_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(TarkovApplication.HideoutController)
-            .GetMethod(nameof(TarkovApplication.HideoutController.StartLoadHideoutBundles));
+        return typeof(TarkovApplication.HideoutController.HideoutGameLoader)
+            .GetMethod(nameof(TarkovApplication.HideoutController.HideoutGameLoader.LoadBundles));
     }
 
     [PatchPrefix]

@@ -65,7 +65,7 @@ internal class CullingGridContentSwitcher_LateUpdate_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(CullingGridContentSwitcher).GetMethod(nameof(CullingGridContentSwitcher.LateUpdate));
+        return typeof(CullingGridContentSwitcher).GetMethod(nameof(CullingGridContentSwitcher.UpdateStaticObjectsSwitchQueue));
     }
 
     [PatchPrefix]

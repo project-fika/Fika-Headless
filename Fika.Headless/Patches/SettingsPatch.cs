@@ -1,4 +1,5 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Settings;
 using EFT.Settings.Graphics;
 using SPTushonka.Reflection.Patching;
@@ -11,29 +12,31 @@ public class SettingsPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ClientApplicationInitOperation)
-            .GetMethod(nameof(ClientApplicationInitOperation.LoadUserSettings));
+        return typeof(TarkovApplication).GetMethod(nameof(TarkovApplication.RunProfile));
     }
 
     [PatchPrefix]
-    public static bool Prefix(ref Il2CppSystem.Threading.Tasks.Task __result)
+    public static void Prefix()
     {
-        __result = FikaHeadlessSettingsManager.Initalize().ToIl2Cpp();
-        return false;
+        if (!Singleton<SettingsManager>.Instantiated)
+        {
+            FikaHeadlessPlugin.FikaHeadlessLogger.LogWarning("Settings were not loaded, headless settings are not applied");
+            return;
+        }
+
+        FikaHeadlessSettingsManager.SetSettings(Singleton<SettingsManager>.Instance).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                FikaHeadlessPlugin.FikaHeadlessLogger.LogError($"Applying headless settings failed: {task.Exception}");
+            }
+        });
     }
 }
 
 public static class FikaHeadlessSettingsManager
 {
     private static bool _hasSet;
-
-    internal static async Task Initalize()
-    {
-        await EFTDisplayHelper.AwaitScreenReady("LoadUserSettings", false);
-        await SetSettings(await SettingsManager.InstantiateSingleton());
-        await PlayerVoiceLoader.InstantiateSingleton();
-        await Task.Yield();
-    }
 
     internal static async Task SetSettings(SettingsManager gameSettings)
     {

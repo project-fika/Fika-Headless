@@ -28,7 +28,7 @@ public class FikaHeadlessTransitController : TransitController
     }
 
     public FikaHeadlessTransitController(TransitGlobalSettings settings, Il2CppReferenceArray<LocationSettings.Location.TransitParameters> parameters,
-        LocalRaidSettings localRaidSettings) : base(Il2CppInjection.Allocate<FikaHeadlessTransitController>())
+        LocalRaidSettings localRaidSettings) : base(ClassInjector.DerivedConstructorPointer<FikaHeadlessTransitController>())
     {
         ClassInjector.DerivedConstructorBody(this);
         _server = Singleton<FikaServer>.Instance;
@@ -260,10 +260,7 @@ public class FikaHeadlessTransitController : TransitController
 
         transitPlayers[player.ProfileId] = player.Id;
         profileKeys[player.ProfileId] = packet.keyId;
-        pointsById[packet.pointId].GroupEnter(player);
-        ExfiltrationController.Instance.BannedPlayers.Add(player.Id);
-        ExfiltrationController.Instance.CancelExtractionForPlayer(player);
-
+        // Confirm hides the client's timer panel, so it has to arrive before GroupEnter sends the group timers
         TransitEventPacket confirmPacket = new()
         {
             EventType = TransitEventPacket.ETransitEventType.Interaction,
@@ -276,6 +273,10 @@ public class FikaHeadlessTransitController : TransitController
         };
 
         _server.SendData(ref confirmPacket, DeliveryMethod.ReliableOrdered);
+
+        pointsById[packet.pointId].GroupEnter(player);
+        ExfiltrationController.Instance.BannedPlayers.Add(player.Id);
+        ExfiltrationController.Instance.CancelExtractionForPlayer(player);
     }
 
     private bool CheckForPlayers(Player player, int pointId)

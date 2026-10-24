@@ -11,6 +11,7 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.Packets.Backend;
 using Fika.Core.Networking.Packets.Communication;
+using Il2CppInterop.Runtime.Injection;
 using JsonType;
 using System;
 using System.Linq;
@@ -26,7 +27,7 @@ internal class HeadlessGameController : HostGameController
 
     public HeadlessGameController(IFikaGame game, EUpdateQueue updateQueue, GameWorld gameWorld, IEftSession session,
         LocationSettings.Location location, WavesSettings wavesSettings, GameDateTime gameDateTime)
-        : base(Il2CppInjection.Allocate<HeadlessGameController>(), game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
+        : base(ClassInjector.DerivedConstructorPointer<HeadlessGameController>(), game, updateQueue, gameWorld, session, location, wavesSettings, gameDateTime)
     {
     }
 
