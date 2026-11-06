@@ -358,6 +358,11 @@ public class HeadlessGame : AbstractGame, IFikaGame, IClientHearingTable
         Singleton<GameWorld>.Instance.TryCast<ClientGameWorld>().ClientSynchronizableObjectLogicProcessor.ServerAirdropManager = airdropEventClass;
         GameWorld.SynchronizableObjectLogicProcessor.AirdropDataSender = Singleton<FikaServer>.Instance;
 
+        if (_location.FixedWeatherLocationConfig != null)
+        {
+            SetFixedWeather(_location.FixedWeatherLocationConfig);
+        }
+
         var timeBeforeDeployLocal = Singleton<GlobalConfiguration>.Instance.TimeBeforeDeployLocal;
 #if DEBUG
         timeBeforeDeployLocal = 3;
