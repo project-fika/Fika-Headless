@@ -20,7 +20,5 @@ public class MessageWindow_Show_Patch : ModulePatch
     public static void PatchPostfix(DialogWindowContext __result)
     {
         __result?.AcceptAndClose();
-        /*__instance.Close(ECloseState.Accept);
-        return __result;*/
     }
 }
